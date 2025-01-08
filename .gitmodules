@@ -1,0 +1,3 @@
+[submodule "pypoprf"]
+	path = pypoprf
+	url = https://github.com/wpgp/pypopRF.git
