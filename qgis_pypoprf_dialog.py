@@ -23,13 +23,28 @@
 """
 
 import os
+import sys
 
 from qgis.PyQt import uic
-from qgis.PyQt import QtWidgets
+from qgis.PyQt import QtWidgets, QtCore
+from qgis.PyQt import uic, QtWidgets
+from qgis.core import QgsMessageLog
+
+plugin_dir = os.path.dirname(__file__)
+pypoprf_dir = os.path.join(plugin_dir, 'pypoprf', 'src')
+if pypoprf_dir not in sys.path:
+    sys.path.append(pypoprf_dir)
+
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qgis_pypoprf_dialog_base.ui'))
+
+
+from .q_models.console_handler import ConsoleHandler
+from .q_models.config_manager import ConfigManager
+from .q_models.covariate_table import CovariateTableHandler
+from .q_models.file_handlers import FileHandler
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -42,3 +57,143 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        # Initialize handlers
+        self.console_handler = ConsoleHandler(self.scrollAreaWidgetContents)
+        self.logger = self.console_handler.logger
+        self.config_manager = ConfigManager(self.logger)
+        self.covariate_handler = CovariateTableHandler(
+            self.covariatesTable,
+            self.config_manager,
+            self.logger
+        )
+        self.file_handler = FileHandler('', self.logger)
+
+        # Connect signals
+        self._connect_signals()
+
+        # Setup file widgets
+        self._setup_file_widgets()
+
+        # Disable widgets until project is initialized
+        self._set_initial_state()
+
+
+    def _connect_signals(self):
+        """Connect all UI signals"""
+        # Button signals
+        self.initProjectButton.clicked.connect(self.init_project)
+        self.openProjectFolder.clicked.connect(self.open_project_folder)
+        self.mainStartButton.clicked.connect(self.run_analysis)
+        self.addCovariateButton.clicked.connect(self.add_covariate)
+
+        # File widget signals
+        self.workingDirEdit.fileChanged.connect(self.on_working_dir_changed)
+        self.mastergridFileWidget.fileChanged.connect(
+            lambda x: self._handle_file_change('mastergrid', x))
+        self.maskFileWidget.fileChanged.connect(
+            lambda x: self._handle_file_change('mask', x))
+        self.constrainFileWidget.fileChanged.connect(
+            lambda x: self._handle_file_change('constrain', x))
+        self.censusFileWidget.fileChanged.connect(
+            lambda x: self._handle_file_change('census_data', x))
+
+    def _setup_file_widgets(self):
+        """Setup file widgets with filters and titles"""
+        # Mastergrid
+        self.mastergridFileWidget.setDialogTitle("Select Mastergrid File (Required)")
+        self.mastergridFileWidget.setFilter("GeoTIFF files (*.tif *.tiff)")
+
+        # Mask
+        self.maskFileWidget.setDialogTitle("Select Mask File (Optional)")
+        self.maskFileWidget.setFilter("GeoTIFF files (*.tif *.tiff)")
+
+        # Constrain
+        self.constrainFileWidget.setDialogTitle("Select Constrain File (Optional)")
+        self.constrainFileWidget.setFilter("GeoTIFF files (*.tif *.tiff)")
+
+        # Census
+        self.censusFileWidget.setDialogTitle("Select Census CSV File")
+        self.censusFileWidget.setFilter("CSV files (*.csv)")
+
+    def _set_initial_state(self):
+        """Set initial state of UI widgets"""
+        self.initProjectButton.setEnabled(False)
+        self.mainStartButton.setEnabled(False)
+        self.openProjectFolder.setEnabled(False)
+        self._set_input_widgets_enabled(False)
+
+    def _set_input_widgets_enabled(self, enabled: bool):
+        """Enable/disable input widgets"""
+        self.mastergridFileWidget.setEnabled(enabled)
+        self.maskFileWidget.setEnabled(enabled)
+        self.constrainFileWidget.setEnabled(enabled)
+        self.censusFileWidget.setEnabled(enabled)
+        self.addCovariateButton.setEnabled(enabled)
+
+    def _handle_file_change(self, file_type: str, path: str):
+        """Handle file selection changes"""
+        if path:
+            filename = self.file_handler.copy_to_data_dir(path, file_type)
+            if filename:
+                self.config_manager.update_config(file_type, filename)
+        else:
+            self.config_manager.clear_config_value(file_type)
+
+    def on_working_dir_changed(self, path: str):
+        """Handle working directory change"""
+        self.initProjectButton.setEnabled(bool(path))
+
+    def init_project(self):
+        """Initialize new pypopRF project"""
+        self.console_handler.clear()
+        self.mainProgressBar.setValue(0)
+
+        working_dir = self.workingDirEdit.filePath()
+        if not working_dir:
+            self.logger.error("Please select working directory first")
+            return
+
+        try:
+            # Create project structure and config
+            if self.config_manager.create_initial_config(working_dir):
+                self.file_handler.set_working_dir(working_dir)
+
+                # Enable UI elements
+                self.openProjectFolder.setEnabled(True)
+                self._set_input_widgets_enabled(True)
+
+                # Show next steps
+                self.logger.info("Project initialized successfully!")
+                self.logger.info("Next steps:")
+                self.logger.info("1. Place input files in the data directory")
+                self.logger.info("2. Configure input data paths in the Input Data tab")
+                self.logger.info("3. Adjust processing settings in the Settings tab")
+
+        except Exception as e:
+            self.logger.error(f"Error initializing project: {str(e)}")
+
+    def add_covariate(self):
+        """Open file dialog and add selected covariates"""
+        file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            "Select Covariate Files",
+            "",
+            "GeoTIFF files (*.tif *.tiff)"
+        )
+        filenames = []
+        for path in file_paths:
+            filename = self.file_handler.copy_to_data_dir(path, "covariate")
+            if filename:
+                filenames.append(filename)
+        if filenames:
+            self.covariate_handler.add_covariates(filenames)
+
+    def open_project_folder(self):
+        """Open project folder in system file explorer"""
+        self.file_handler.open_folder(self.workingDirEdit.filePath())
+
+    def run_analysis(self):
+        """Run the main analysis process"""
+        # TODO: Implement analysis process
+        pass
