@@ -4,98 +4,199 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
 
 ## Overview
 
-pypopRF is a tool developed by the WorldPop SDI Team for creating detailed population distribution maps by combining:
-- Census data at administrative unit level
-- Geospatial covariates (building counts, footprints, heights)
-- Machine learning (Random Forest) for prediction
-- Dasymetric mapping techniques for high-resolution output
+pypopRF is a tool developed by the WorldPop SDI Team for creating detailed population distribution maps by combining census data with geospatial covariates using machine learning techniques. The tool uses Random Forest regression for prediction and dasymetric mapping for high-resolution population redistribution.
 
-## Key Features
+## Features
 
-- **User-Friendly Interface**: Easy-to-use graphical interface integrated into QGIS
-- **Project Management**: Create and manage pypopRF projects
-- **Data Integration**:
-  - Support for multiple geospatial covariates
-  - Census data integration
-  - Optional water mask and constraints
-- **Processing Options**:
-  - Parallel processing support
-  - Block-based processing for large datasets
-  - Customizable processing parameters
-- **Output Visualization**: Direct visualization in QGIS
-- **Progress Tracking**: Real-time progress monitoring and logging
+### Core Functionality
+- Feature extraction from geospatial covariates
+- Random Forest-based population modeling
+- Dasymetric mapping for high-resolution output
+- Support for parallel processing and block-based computation
+- Comprehensive logging and progress tracking
+
+### QGIS Integration
+- Intuitive graphical user interface
+- Project management tools
+- Real-time progress monitoring
+- Direct visualization in QGIS
+- Integrated logging console
 
 ## Installation
 
 ### Requirements
 - QGIS 3.0 or later
 - Python 3.12
-- Required Python packages are handled automatically
+- Required Python packages:
+  - numpy >= 1.24.0
+  - pandas >= 2.0.0
+  - geopandas >= 0.14.0
+  - rasterio >= 1.3.0
+  - scikit-learn >= 1.3.0
+  - matplotlib >= 3.7.0
+  - tqdm >= 4.65.0
+  - pyyaml >= 6.0.0
+  - joblib >= 1.3.0
 
 ### Installation Steps
 
 1. Download the plugin:
-   ```bash
-   git clone --recursive https://github.com/wpgp/QGIS-pypopRF.git
-    ```
+```bash
+git clone https://github.com/wpgp/QGIS-pypopRF.git
+```
+
 2. Install to QGIS plugins directory:
-    Windows: C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/
-    Linux: ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/
-    macOS: ~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/
+   - Windows: `C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/`
+   - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
+   - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`
+
 3. Enable the plugin in QGIS:
-    Open QGIS
-    Go to Plugins → Manage and Install Plugins
-    Find "pypopRF" in the list
-    Check the box to enable
+   - Open QGIS
+   - Go to Plugins → Manage and Install Plugins
+   - Find "pypopRF" in the list
+   - Check the box to enable
 
 ## Usage
-1. Project Initialization
 
-* Click "Initialize New Project"
-* Select working directory
-* Project structure will be created automatically
+### 1. Project Setup
 
+1. Open the pypopRF plugin in QGIS
+2. Select working directory
+3. Click "Initialize New Project"
+   - Creates project directory structure
+   - Generates default configuration file
+   - Sets up data and output directories
 
+### 2. Data Configuration
 
-2. Data Configuration
-Required files:
+#### Required Files:
+- **Mastergrid (GeoTIFF)**: 
+  - Defines analysis zones
+  - Must align with census boundaries
+  - Consistent CRS and resolution with covariates
 
-* Mastergrid: Zone definitions for analysis
-* Census Data: Population counts by administrative unit
-* Covariates: At least one covariate file (e.g., building counts)
+- **Census Data (CSV)**:
+  - Population counts by administrative unit
+  - Must include:
+    - ID column (matching mastergrid zones)
+    - Population column
+    - Additional attributes as needed
 
-Optional files:
+- **Covariates (GeoTIFF)**:
+  - At least one covariate required
+  - Common examples:
+    - Building counts
+    - Building footprint area
+    - Building volume
+  - Must match mastergrid resolution and extent
 
-* Water Mask: For excluding water bodies
-* Constraints: Additional spatial constraints
+#### Optional Files:
+- **Water Mask (GeoTIFF)**:
+  - For excluding water bodies
+  - Binary raster (1 = water, 0 = land)
 
-3. Settings
+- **Constraints (GeoTIFF)**:
+  - Additional spatial constraints
+  - Used to refine population distribution
 
-    Processing parameters:
+### 3. Settings Configuration
 
-        * Parallel processing options
-        * Block size for large datasets
-        * CPU core allocation
+#### Processing Options:
+- **Parallel Processing**:
+  - Enable/disable parallel computation
+  - Set number of CPU cores
+  - Memory usage management
 
+- **Block Processing**:
+  - Enable for large datasets
+  - Configurable block size
+  - Default: 512x512 pixels
 
-    Census data configuration:
-    
-        * Population column name
-        * ID column name
+#### Census Data Settings:
+- Population column name (default: "pop")
+- ID column name (default: "id")
 
+#### Additional Options:
+- Logging level (INFO/DEBUG)
+- Progress bar display
+- Output visualization settings
 
-    Logging options
+### 4. Running Analysis
 
-4. Analysis
+1. Validate inputs using built-in checks
+2. Click "Start" to begin processing
+3. Monitor progress in console window:
+   - Feature extraction status
+   - Model training progress
+   - Prediction generation
+   - Dasymetric mapping steps
 
-    Click "Start" to begin processing
-    Monitor progress in the console
-    Results will be saved in the output directory
+### 5. Output Files
 
-## Output Files
-* prediction.tif: Population probability surface
-* dasymetric.tif: Final population distribution
-* normalized_census.tif: Normalized values
-* features.csv: Extracted features
-* Processing logs and visualizations
+The plugin generates several output files in the project's output directory:
 
+#### Main Outputs:
+- **prediction.tif**: Population probability surface
+- **dasymetric.tif**: Final high-resolution population distribution
+- **normalized_census.tif**: Normalized population values
+- **features.csv**: Extracted covariate features
+
+#### Additional Files:
+- **feature_selection.png**: Feature importance visualization
+- **visualization.png**: Combined visualization of results
+- **pypoprf.log**: Processing log file
+- **model.pkl.gz**: Trained Random Forest model
+- **scaler.pkl.gz**: Fitted feature scaler
+
+## Troubleshooting
+
+### Common Issues:
+1. **Memory Errors**:
+   - Reduce block size
+   - Decrease number of parallel workers
+   - Process larger areas in segments
+
+2. **Input Data Errors**:
+   - Ensure consistent CRS across all rasters
+   - Verify matching resolutions and extents
+   - Check census data column names
+
+3. **Processing Errors**:
+   - Check log file for detailed error messages
+   - Verify input data validity
+   - Ensure sufficient disk space
+
+## Development
+
+### Project Structure:
+```
+pypopRF/
+├── core/
+│   ├── feature_extraction.py
+│   ├── model.py
+│   └── dasymetric.py
+├── utils/
+│   ├── raster.py
+│   ├── vector.py
+│   └── visualization.py
+└── config/
+    └── settings.py
+```
+
+### Contributing:
+1. Fork the repository
+2. Create a feature branch
+3. Submit pull request with:
+   - Clear description of changes
+   - Updated tests
+   - Documentation updates
+
+## License
+MIT License - See LICENSE file for details
+
+## Contact
+- Authors: 
+  - Borys Nosatiuk (b.nosatiuk@soton.ac.uk)
+  - Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
+- WorldPop SDI Team: https://sdi.worldpop.org
+- Issues: https://github.com/wpgp/pypopRF/issues
