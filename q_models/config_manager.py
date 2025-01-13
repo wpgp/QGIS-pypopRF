@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+import threading
+from contextlib import contextmanager
+from typing import Any
+
 import yaml
 from pathlib import Path
 
@@ -16,6 +20,14 @@ class ConfigManager:
         self.logger = logger
         self.config_path = None
         self.working_dir = None
+        self._lock = threading.Lock()
+
+    @contextmanager
+    def _open_config(self, mode='r'):
+        """Context manager для безопасной работы с конфигом"""
+        with self._lock:
+            with open(self.config_path, mode) as f:
+                yield f
 
     def create_initial_config(self, working_dir: str) -> bool:
         """
@@ -32,6 +44,23 @@ class ConfigManager:
             config_path = Path(working_dir) / 'config.yaml'
             self.config_path = str(config_path)
 
+            output_dir = Path(working_dir) / 'output'
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            log_file = output_dir / 'logs_pypoprf.log'
+
+            try:
+                if log_file.exists():
+                    with open(log_file, 'w') as f:
+                        pass
+                    self.logger.info("Previous log file cleared")
+                else:
+                    log_file.parent.mkdir(parents=True, exist_ok=True)
+                    log_file.touch()
+                    self.logger.info("New log file created")
+            except Exception as e:
+                self.logger.warning(f"Issue with log file handling: {str(e)}")
+
             config = {
                 'work_dir': str(working_dir),
                 'data_dir': 'data',
@@ -43,12 +72,17 @@ class ConfigManager:
                 'census_data': None,
                 'census_pop_column': 'pop',
                 'census_id_column': 'id',
-                'block_size': [512, 512],
+                'by_block': True,
+                'block_size': [256, 256],
                 'max_workers': 8,
-                'show_progress': True
+                'show_progress': False,
+                'logging': {
+                    'level': 'INFO',
+                    'file': 'logs_pypoprf.log'
+                }
             }
 
-            with open(config_path, 'w') as f:
+            with self._open_config('w') as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
             self.logger.info(f"Created config at {config_path}")
@@ -58,7 +92,7 @@ class ConfigManager:
             self.logger.error(f"Failed to create config: {str(e)}")
             return False
 
-    def update_config(self, key: str, value: str):
+    def update_config(self, key: str, value: Any):
         """
         Update configuration value.
 
@@ -67,18 +101,17 @@ class ConfigManager:
             value: New value
         """
 
-        with open(self.config_path, 'r') as f:
+        with self._open_config('r') as f:
             config = yaml.safe_load(f)
-
         if key.startswith('covariate_'):
             name = key.replace('covariate_', '')
             config['covariates'][name] = value
             self.logger.info(f"Added covariate '{name}': {value}")
         else:
             config[key] = value
-            self.logger.info(f"Updated {key}: {value}")
-
-        with open(self.config_path, 'w') as f:
+            if key not in ['logging', 'census_id_column', 'census_pop_column']:
+                self.logger.info(f"Updated {key}: {value}")
+        with self._open_config('w') as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
 
@@ -93,7 +126,7 @@ class ConfigManager:
             return
 
         try:
-            with open(self.config_path, 'r') as f:
+            with self._open_config('r') as f:
                 config = yaml.safe_load(f)
             if key.startswith('covariate_'):
                 name = key.replace('covariate_', '')
@@ -103,7 +136,7 @@ class ConfigManager:
                 config[key] = None
                 self.logger.info(f"Cleared {key} in config")
 
-            with open(self.config_path, 'w') as f:
+            with self._open_config('w') as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
         except Exception as e:

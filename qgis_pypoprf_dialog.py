@@ -25,26 +25,23 @@
 import os
 import sys
 
-from qgis.PyQt import uic
-from qgis.PyQt import QtWidgets, QtCore
 from qgis.PyQt import uic, QtWidgets
-from qgis.core import QgsMessageLog
 
 plugin_dir = os.path.dirname(__file__)
 pypoprf_dir = os.path.join(plugin_dir, 'pypoprf', 'src')
 if pypoprf_dir not in sys.path:
     sys.path.append(pypoprf_dir)
 
-
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qgis_pypoprf_dialog_base.ui'))
-
 
 from .q_models.console_handler import ConsoleHandler
 from .q_models.config_manager import ConfigManager
 from .q_models.covariate_table import CovariateTableHandler
 from .q_models.file_handlers import FileHandler
+from .q_models.settings_handler import SettingsHandler
+from .q_models.process_executor import ProcessExecutor
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -68,6 +65,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             self.logger
         )
         self.file_handler = FileHandler('', self.logger)
+        self.settings_handler = SettingsHandler(self.config_manager, self.logger)
+        self.process_executor = ProcessExecutor(self, self.logger)
 
         # Connect signals
         self._connect_signals()
@@ -84,7 +83,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # Button signals
         self.initProjectButton.clicked.connect(self.init_project)
         self.openProjectFolder.clicked.connect(self.open_project_folder)
-        self.mainStartButton.clicked.connect(self.run_analysis)
         self.addCovariateButton.clicked.connect(self.add_covariate)
 
         # File widget signals
@@ -97,6 +95,36 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             lambda x: self._handle_file_change('constrain', x))
         self.censusFileWidget.fileChanged.connect(
             lambda x: self._handle_file_change('census_data', x))
+
+        # Settings tab signals
+        self.enableParallelCheckBox.stateChanged.connect(
+            lambda: self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked()))
+        self.enableBlockProcessingCheckBox.stateChanged.connect(
+            lambda: self.blockSizeComboBox.setEnabled(self.enableBlockProcessingCheckBox.isChecked()))
+        self.cpuCoresComboBox.currentTextChanged.connect(self._handle_cpu_cores_changed)
+        self.blockSizeComboBox.currentTextChanged.connect(self._handle_block_size_changed)
+
+        # Logging signals
+        self.saveLogCheckBox.stateChanged.connect(self._update_logging_settings)
+        self.comboBox.currentTextChanged.connect(self._update_logging_settings)
+
+        # Settings lineedit signals
+        self.logsColumnEdit.textChanged.connect(
+            lambda text: self.settings_handler._debounce_settings_update(self, 'logging', text)
+        )
+
+        self.popColumnEdit.textChanged.connect(
+            lambda text: self.settings_handler._debounce_settings_update(self, 'census', text)
+        )
+
+        self.idColumnEdit.textChanged.connect(
+            lambda text: self.settings_handler._debounce_settings_update(self, 'census', text)
+        )
+
+        # Analysis signals
+        self.mainStartButton.clicked.connect(self._handle_start_button)
+        self.mainStartButton.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: black; font-weight: bold; font-size: 10pt; }")
 
     def _setup_file_widgets(self):
         """Setup file widgets with filters and titles"""
@@ -121,7 +149,17 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.initProjectButton.setEnabled(False)
         self.mainStartButton.setEnabled(False)
         self.openProjectFolder.setEnabled(False)
+
+        # Disable input and settings tabs
         self._set_input_widgets_enabled(False)
+        self._set_settings_widgets_enabled(False)
+
+    # Set input main widgets enabled
+    def _set_main_widgets_enabled(self, enabled: bool):
+        """Enable/disable main widgets"""
+        self.initProjectButton.setEnabled(enabled)
+        self.workingDirEdit.setEnabled(enabled)
+        self.openProjectFolder.setEnabled(enabled)
 
     def _set_input_widgets_enabled(self, enabled: bool):
         """Enable/disable input widgets"""
@@ -131,6 +169,27 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.censusFileWidget.setEnabled(enabled)
         self.addCovariateButton.setEnabled(enabled)
 
+    def _set_settings_widgets_enabled(self, enabled: bool):
+        """Enable/disable settings widgets"""
+
+        # Logging settings
+        self.saveLogCheckBox.setEnabled(enabled)
+        self.logsColumnEdit.setEnabled(enabled)
+        self.comboBox.setEnabled(enabled)
+
+        # Process settings
+        self.enableParallelCheckBox.setEnabled(enabled)
+        self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked() and enabled)
+        self.enableBlockProcessingCheckBox.setEnabled(enabled)
+        self.blockSizeComboBox.setEnabled(self.enableBlockProcessingCheckBox.isChecked() and enabled)
+
+        # Census settings
+        self.popColumnEdit.setEnabled(enabled)
+        self.idColumnEdit.setEnabled(enabled)
+
+        # Additional settings
+        self.addToQgisCheckBox.setEnabled(enabled)
+
     def _handle_file_change(self, file_type: str, path: str):
         """Handle file selection changes"""
         if path:
@@ -139,6 +198,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.config_manager.update_config(file_type, filename)
         else:
             self.config_manager.clear_config_value(file_type)
+
+        has_mastergrid = bool(self.mastergridFileWidget.filePath())
+        has_census = bool(self.censusFileWidget.filePath())
+
+        # Enable start button if all files are loaded
+        self.mainStartButton.setEnabled(all([has_mastergrid, has_census]))
 
     def on_working_dir_changed(self, path: str):
         """Handle working directory change"""
@@ -162,13 +227,23 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 # Enable UI elements
                 self.openProjectFolder.setEnabled(True)
                 self._set_input_widgets_enabled(True)
+                self._set_settings_widgets_enabled(True)
+
+                # Load initial settings
+                self.settings_handler.load_settings(self)
 
                 # Show next steps
                 self.logger.info("Project initialized successfully!")
-                self.logger.info("Next steps:")
-                self.logger.info("1. Place input files in the data directory")
-                self.logger.info("2. Configure input data paths in the Input Data tab")
-                self.logger.info("3. Adjust processing settings in the Settings tab")
+                self.logger.info('<span style="font-weight: bold; font-size: 11pt;">Next steps:</span>')
+                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
+                                 '1. Place input files in the data directory'
+                                 '</span>')
+                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
+                                 '2. Configure input data paths in the Input Data tab'
+                                 '</span>')
+                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
+                                 '3. Adjust processing settings in the Settings tab'
+                                 '</span>')
 
         except Exception as e:
             self.logger.error(f"Error initializing project: {str(e)}")
@@ -193,7 +268,45 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         """Open project folder in system file explorer"""
         self.file_handler.open_folder(self.workingDirEdit.filePath())
 
-    def run_analysis(self):
-        """Run the main analysis process"""
-        # TODO: Implement analysis process
-        pass
+    def _update_logging_settings(self):
+        """Update logging settings based on UI state"""
+
+        self.config_manager.update_config('logging', {
+            'level': self.comboBox.currentText(),
+            'file': self.logsColumnEdit.text()
+        })
+
+        # Then update logger
+        self.console_handler.update_logging_settings(
+            level=self.comboBox.currentText(),
+            save_log=self.saveLogCheckBox.isChecked(),
+            work_dir=self.workingDirEdit.filePath(),
+            filename=self.logsColumnEdit.text()
+        )
+
+    def _handle_cpu_cores_changed(self, text):
+        """Handle CPU cores value change"""
+        if self.enableParallelCheckBox.isChecked():
+            try:
+                cores = int(text)
+                if cores > 0:
+                    self.config_manager.update_config('max_workers', cores)
+            except ValueError:
+                self.logger.warning(f"Invalid CPU cores value: {text}")
+
+    def _handle_block_size_changed(self, text):
+        """Handle block size value change"""
+        if self.enableBlockProcessingCheckBox.isChecked():
+            try:
+                w, h = map(int, text.replace(' ', '').split(','))
+                if w > 0 and h > 0:
+                    self.config_manager.update_config('block_size', [w, h])
+            except ValueError:
+                self.logger.warning(f"Invalid block size format: {text}")
+
+    def _handle_start_button(self):
+        """Handle start/stop button click"""
+        if self.mainStartButton.text() == "Start":
+            self.process_executor.start_analysis()
+        else:
+            self.process_executor.stop_analysis()
