@@ -122,9 +122,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         )
 
         # Analysis signals
-        self.mainStartButton.clicked.connect(self._handle_start_button)
         self.mainStartButton.setStyleSheet(
-            "QPushButton { background-color: #4CAF50; color: black; font-weight: bold; font-size: 10pt; }")
+            "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
+        self.mainStartButton.clicked.connect(self._handle_start_button)
+
 
     def _setup_file_widgets(self):
         """Setup file widgets with filters and titles"""

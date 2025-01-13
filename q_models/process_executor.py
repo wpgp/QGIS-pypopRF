@@ -196,6 +196,7 @@ class ProcessExecutor:
 
     def update_progress(self, value, message):
         """Update progress bar and log message"""
+        self.dialog.mainProgressBar.setValue(value)
         self.dialog.mainProgressBar.setFormat(f"{message} ({value}%)")
         if message:
             self.logger.info(message)
