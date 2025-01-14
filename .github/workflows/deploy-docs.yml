@@ -1,8 +1,7 @@
 name: Deploy Documentation
 on:
   push:
-    branches:
-      - main
+    branches: [ "master" ]
 #    paths:
 #      - 'docs/**'  # Trigger only when docs folder changes
 #      - 'mkdocs.yml'  # Or when config changes
@@ -11,12 +10,13 @@ permissions:
   contents: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: 3.x
 
