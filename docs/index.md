@@ -5,6 +5,7 @@ Welcome to the documentation for the QGIS pypopRF plugin. This plugin provides a
 ## About pypopRF
 
 pypopRF is a powerful tool developed by the WorldPop SDI Team for creating high-resolution population distribution maps. It combines:
+
 - Census data
 - Building information
 - Other geospatial covariates
@@ -16,6 +17,7 @@ The core functionality is provided by the [pypopRF Python package](https://githu
 ## QGIS Integration
 
 This QGIS plugin wraps the pypopRF package functionality in a user-friendly interface, allowing you to:
+
 - Manage your population mapping projects
 - Configure input data and parameters visually
 - Monitor processing in real-time
@@ -41,6 +43,7 @@ The plugin is designed to make population mapping accessible to GIS users withou
 ## Use Cases
 
 The QGIS pypopRF plugin is ideal for:
+
 - Creating high-resolution population estimates
 - Analyzing population distribution patterns
 - Supporting urban and regional planning

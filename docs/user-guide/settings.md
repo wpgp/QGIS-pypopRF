@@ -5,6 +5,7 @@ This guide explains all available settings in the pypopRF plugin and how they af
 ## Settings Overview
 
 The settings tab contains several groups of options:
+
 - Logging Settings
 - Census File Settings
 - Process Settings
@@ -76,12 +77,14 @@ Control how the analysis is performed.
   ```
 
   Memory Usage Guidelines:
-  | Cores | Min RAM | Recommended RAM |
-  |-------|---------|----------------|
-  | 2     | 8 GB    | 16 GB          |
-  | 4     | 16 GB   | 32 GB          |
-  | 6     | 24 GB   | 48 GB          |
-  | 8     | 32 GB   | 64 GB          |
+
+| Cores | Min RAM  | Recommended RAM |
+|-------|----------|-----------------|
+| 2     | 8 GB     | 16 GB           |
+| 4     | 16 GB    | 32 GB           |
+| 6     | 24 GB    | 48 GB           |
+| 8     | 32 GB    | 64 GB           |
+
 
 ### Block Processing
 
@@ -96,11 +99,12 @@ Control how the analysis is performed.
   - Custom sizes available
   
   Memory Impact:
-  | Block Size | Memory Usage | Speed  |
-  |------------|--------------|--------|
-  | 256x256    | Lower        | Slower |
-  | 512x512    | Moderate     | Balanced|
-  | 1024x1024  | Higher       | Faster |
+
+| Block Size  | Memory Usage | Speed     |
+|-------------|--------------|-----------|
+| 256x256     | Lower        | Slower    |
+| 512x512     | Moderate     | Balanced  |
+| 1024x1024   | Higher       | Faster    |
 
 ### Performance Optimization
 

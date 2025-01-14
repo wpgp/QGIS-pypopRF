@@ -9,6 +9,7 @@ This guide details the requirements and specifications for all input data used i
 The mastergrid is a raster file defining analysis zones that match your census units.
 
 **Technical Requirements:**
+
 - Format: GeoTIFF (.tif)
 - Data Type: Integer
 - Values: Unique IDs for each zone
@@ -16,12 +17,14 @@ The mastergrid is a raster file defining analysis zones that match your census u
 - CRS: Must match other input rasters
 
 **Important Considerations:**
+
 - Zone IDs must match census data
 - Continuous, non-overlapping zones
 - Complete coverage of study area
 - Consistent with administrative boundaries
 
 **Common Issues:**
+
 - Missing or duplicate zone IDs
 - Gaps between zones
 - Inconsistent resolution with covariates
@@ -32,6 +35,7 @@ The mastergrid is a raster file defining analysis zones that match your census u
 Population counts and zone information in tabular format.
 
 **Technical Requirements:**
+
 - Format: CSV file (.csv)
 - Required Columns:
   - Zone ID (matching mastergrid)
@@ -48,6 +52,7 @@ id,population
 ```
 
 **Data Validation:**
+
 - No negative population values
 - No missing zone IDs
 - Population values as numbers
@@ -58,28 +63,34 @@ id,population
 Raster files containing predictive variables for population distribution.
 
 **Technical Requirements:**
+
 - Format: GeoTIFF (.tif)
 - Resolution: Consistent across all covariates
 - Extent: Must cover mastergrid extent
 - CRS: Must match mastergrid
 
 **Common Covariates:**
+
 1. Building Counts
+
    - Count of structures per pixel
    - Integer values
    - Indicates settlement density
 
 2. Building Footprints
+
    - Built-up area per pixel
    - Float values (m²)
    - Represents development intensity
 
 3. Building Volume
+
    - 3D building information
    - Float values (m³)
    - Indicates vertical development
 
 **Important Considerations:**
+
 - Consistent resolution with mastergrid
 - Proper alignment of pixels
 - Appropriate No Data values
@@ -92,6 +103,7 @@ Raster files containing predictive variables for population distribution.
 Used to exclude water bodies from analysis.
 
 **Technical Requirements:**
+
 - Format: GeoTIFF (.tif)
 - Data Type: Binary (0/1)
 - Resolution: Match mastergrid
@@ -105,6 +117,7 @@ Used to exclude water bodies from analysis.
 Additional spatial constraints for population distribution.
 
 **Technical Requirements:**
+
 - Format: GeoTIFF (.tif)
 - Data Type: Binary or float
 - Resolution: Match mastergrid
@@ -154,19 +167,20 @@ Additional spatial constraints for population distribution.
 
 Before running analysis:
 
-- [ ] All required files present
-- [ ] Consistent CRS across datasets
-- [ ] Matching resolutions
-- [ ] Census IDs match mastergrid
-- [ ] No missing or invalid values
-- [ ] Proper file formats
-- [ ] Correct column names
-- [ ] Valid value ranges
-- [ ] Complete spatial coverage
+- [x] All required files present
+- [x] Consistent CRS across datasets
+- [x] Matching resolutions
+- [x] Census IDs match mastergrid
+- [x] No missing or invalid values
+- [x] Proper file formats
+- [x] Correct column names
+- [x] Valid value ranges
+- [x] Complete spatial coverage
 
 ## File Size Considerations
 
 Recommended maximum file sizes:
+
 - Raster files: < 4 GB each
 - Census CSV: < 100 MB
 - Total project data: < 20 GB

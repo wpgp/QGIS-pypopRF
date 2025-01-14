@@ -56,7 +56,7 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 3. Plugin Location:
    - Windows: `C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/`
    - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
-   - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`
+   - macOS: `~/Library/ApplicationSupport/QGIS/QGIS3/profiles/default/python/plugins/`
 
 ## Post-Installation Steps
 

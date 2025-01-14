@@ -5,6 +5,7 @@ This guide will help you create your first population map using the QGIS pypopRF
 ## Overview
 
 A typical workflow consists of these steps:
+
 1. Project initialization
 2. Data preparation
 3. Running the analysis
@@ -15,6 +16,7 @@ Expected time: 15-30 minutes
 ## Before You Begin
 
 Ensure you have:
+
 - QGIS installed and pypopRF plugin enabled
 - Sample data files:
   - Census boundaries with population counts
@@ -45,16 +47,19 @@ my_project/
 1. In the "Input Data" tab:
    
    **Mastergrid File:**
+
    - Click "Browse" next to Mastergrid
    - Select your zone definition raster
    - Format: GeoTIFF with zone IDs
 
    **Census Data:**
+
    - Click "Browse" next to Census File
    - Select your population data CSV
    - Must contain: zone IDs and population counts
 
-   **Covariates:**
+   **Covariates:*
+
    - Click "Add Covariate"
    - Select building/infrastructure rasters
    - Add at least one covariate
@@ -98,6 +103,7 @@ Once processing is complete:
 
 
 The main output files are saved in your project's output directory:
+
 - `prediction.tif`: Initial population prediction
 - `dasymetric.tif`: Final high-resolution distribution
 - `normalized_census.tif`: Intermediate normalization

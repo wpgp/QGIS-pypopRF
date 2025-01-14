@@ -5,12 +5,12 @@ This guide explains the process of running population analysis using the pypopRF
 ## Before Running Analysis
 
 ### Pre-run Checklist
-- [ ] All required files loaded
-- [ ] Settings configured
-- [ ] Sufficient disk space
-- [ ] Adequate memory available
-- [ ] Column names verified
-- [ ] CRS consistency checked
+- [x] All required files loaded
+- [x] Settings configured
+- [x] Sufficient disk space
+- [x] Adequate memory available
+- [x] Column names verified
+- [x] CRS consistency checked
 
 ### System Preparation
 1. Close unnecessary applications
@@ -77,6 +77,7 @@ This guide explains the process of running population analysis using the pypopRF
 
 ### Console Output
 The console window shows:
+
 - Current processing stage
 - Detailed progress information
 - Warnings and errors
@@ -216,9 +217,3 @@ Solution: Check input data validity
 2. Create backups
 3. Document settings used
 4. Save log files
-
-### Next Steps
-1. Refine parameters if needed
-2. Process additional areas
-3. Export results
-4. Document process

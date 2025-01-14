@@ -5,6 +5,7 @@ The pypopRF plugin interface is organized into several tabs for different aspect
 ## Main Window Overview
 
 The plugin window consists of four main sections:
+
 1. Tab Navigation
 2. Input/Settings Area
 3. Console Output
@@ -96,6 +97,7 @@ Configure processing parameters and analysis options.
 ## Console Area
 
 The lower section of the plugin window shows:
+
 - Processing progress
 - Error messages
 - Status updates
@@ -137,12 +139,14 @@ The interface adapts to your workflow:
 ## Error Handling
 
 The interface provides visual feedback for:
+
 - Missing required files
 - Invalid input data
 - Processing errors
 - Configuration issues
 
 Error messages appear in:
+
 1. Console output
 2. Status bar
 3. Log files
