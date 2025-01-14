@@ -52,7 +52,7 @@ The QGIS pypopRF plugin is ideal for:
 - **Issues and Bugs**: Report on [GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues)
 - **Questions**: Contact the WorldPop SDI Team at [sdi.worldpop.org](https://sdi.worldpop.org)
 - **Feature Requests**: Submit through GitHub Issues
-- **Contributions**: See our [Development Guide](development/contributing.md)
+
 
 ## About WorldPop SDI
 

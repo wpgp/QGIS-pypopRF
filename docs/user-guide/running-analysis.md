@@ -220,9 +220,5 @@ Solution: Check input data validity
 ### Next Steps
 1. Refine parameters if needed
 2. Process additional areas
-3. Create visualizations
-4. Export for reporting
-
----
-
-*Next: [Visualization Guide](visualization.md)*
+3. Export results
+4. Document process

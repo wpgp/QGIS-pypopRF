@@ -127,11 +127,8 @@ The main output files are saved in your project's output directory:
    - Review mastergrid zones
 
 ## Getting Help
-
 - See detailed [User Guide](../user-guide/interface.md)
-- Check [Troubleshooting](../technical/troubleshooting.md)
 - Report issues on [GitHub](https://github.com/wpgp/QGIS-pypopRF/issues)
-
 ---
 
 *Next: [User Interface Guide](../user-guide/interface.md)*

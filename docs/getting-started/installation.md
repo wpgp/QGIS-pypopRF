@@ -92,17 +92,6 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
    - Verify Python dependencies
    - Check system permissions
 
-### Getting Help
-
-If you encounter problems:
-
-1. Check the [FAQ section](../technical/troubleshooting.md)
-2. Search [existing issues](https://github.com/wpgp/QGIS-pypopRF/issues)
-3. Create a new issue with:
-   - QGIS version
-   - Operating system
-   - Error messages
-   - Steps to reproduce
 
 ## Updating the Plugin
 

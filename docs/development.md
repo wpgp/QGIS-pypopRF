@@ -245,5 +245,3 @@ python build.py
 - Detailed debug logs
 
 ---
-
-*Next: [API Reference](api-reference.md)*

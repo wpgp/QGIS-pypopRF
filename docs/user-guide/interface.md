@@ -147,7 +147,3 @@ Error messages appear in:
 2. Status bar
 3. Log files
 4. Pop-up notifications when critical
-
----
-
-*Next: [Project Setup Guide](project-setup.md)*
