@@ -1,0 +1,48 @@
+site_name: QGIS pypopRF Plugin
+site_url: https://wpgp.github.io/QGIS-pypopRF
+repo_url: https://github.com/wpgp/QGIS-pypopRF
+repo_name: wpgp/QGIS-pypopRF
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+  - User Guide:
+    - Interface: user-guide/interface.md
+    - Input Data: user-guide/input-data.md
+    - Settings: user-guide/settings.md
+    - Running Analysis: user-guide/running-analysis.md
+  - Development: development.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
