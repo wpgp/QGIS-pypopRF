@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from qgis.PyQt.QtCore import QThread, pyqtSignal
+from qgis.PyQt.QtCore import QThread, pyqtSignal, QTimer
 from pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
 from pypoprf.utils.joblib_manager import joblib_resources
 
@@ -136,6 +136,7 @@ class ProcessWorker(QThread):
 
 class ProcessExecutor:
     """Manager for running population analysis process"""
+    progress = pyqtSignal(int, str)
 
     def __init__(self, dialog, logger, iface=None):
         """
@@ -178,8 +179,7 @@ class ProcessExecutor:
             self.worker.progress.connect(self.update_progress)
             self.worker.finished.connect(self.analysis_finished)
 
-            # Start processing
-            self.worker.start()
+            QTimer.singleShot(100, self.worker.start)
 
         except Exception as e:
             self.logger.error(f"Failed to start analysis: {str(e)}")
@@ -192,6 +192,11 @@ class ProcessExecutor:
             self.worker.stop()
             self.worker.wait()
             self.logger.info("Analysis process stopped by user")
+
+            # Reset progress bar
+            self.dialog.mainProgressBar.setValue(0)
+            self.dialog.mainProgressBar.setFormat("Stopped by user")
+
             self._set_ui_enabled(True)
 
     def update_progress(self, value, message):
@@ -223,6 +228,8 @@ class ProcessExecutor:
         """Enable/disable UI elements during processing"""
         self.dialog.mainStartButton.setEnabled(True)
         self.dialog._set_input_widgets_enabled(enabled)
+        self.dialog.openProjectFolder.setEnabled(True)
+        self.dialog._set_settings_widgets_enabled(True)
         if enabled:
             self.dialog.mainStartButton.setText("Start")
             self.dialog.mainStartButton.setStyleSheet(

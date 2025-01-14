@@ -123,7 +123,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Analysis signals
         self.mainStartButton.setStyleSheet(
-            "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
+            "QPushButton { background-color: #878c87; color: black; font-size: 10pt; }")
         self.mainStartButton.clicked.connect(self._handle_start_button)
 
 
@@ -169,6 +169,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.constrainFileWidget.setEnabled(enabled)
         self.censusFileWidget.setEnabled(enabled)
         self.addCovariateButton.setEnabled(enabled)
+        self.covariatesTable.setEnabled(enabled)
 
     def _set_settings_widgets_enabled(self, enabled: bool):
         """Enable/disable settings widgets"""
@@ -205,6 +206,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Enable start button if all files are loaded
         self.mainStartButton.setEnabled(all([has_mastergrid, has_census]))
+        if all([has_mastergrid, has_census]):
+            self.mainStartButton.setStyleSheet(
+                "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
 
     def on_working_dir_changed(self, path: str):
         """Handle working directory change"""

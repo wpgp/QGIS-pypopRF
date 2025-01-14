@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 
-from pypoprf.utils.logger import PopRFLogger
-from qgis.PyQt import QtWidgets
+from pypoprf.utils.logger import get_logger
+from qgis.PyQt import QtWidgets, QtCore
 from PyQt5.QtCore import QObject, pyqtSignal, Qt
 
+logger = get_logger()
 
 class ConsoleStream(QObject):
     """Stream handler for redirecting logs to QTextEdit with color formatting"""
@@ -98,8 +99,12 @@ class ConsoleHandler:
         layout.addWidget(self.console_text)
 
         # Initialize logger
-        self.logger = PopRFLogger()
+        self.logger = get_logger()
         self.stream = ConsoleStream(self.console_text, parent=parent_widget)
+
+        for handler in self.logger.logger.handlers[:]:
+            self.logger.logger.removeHandler(handler)
+
         self.logger.set_output_stream(self.stream)
 
         # Store logging settings
@@ -121,11 +126,17 @@ class ConsoleHandler:
             work_dir: Working directory path for log file
             filename: Custom log filename
         """
+
+        for handler in self.logger.logger.handlers[:]:
+            self.logger.logger.removeHandler(handler)
+
         # Update logging level
         if level != self._log_level:
             self._log_level = level
             self.logger.set_level(level)
             self.logger.info(f"Changed logging level to: {level}")
+
+        self.logger.set_output_stream(self.stream)
 
         # Update log file
         if save_log:
