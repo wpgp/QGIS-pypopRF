@@ -157,10 +157,6 @@ class ProcessExecutor:
         if not self._validate_all():
             return
 
-        # Save current settings
-        if not self.dialog.settings_handler.save_settings(self.dialog):
-            return
-
         # Clear console and reset progress
         self.dialog.console_handler.clear()
         self.dialog.mainProgressBar.setValue(0)
@@ -179,7 +175,7 @@ class ProcessExecutor:
             self.worker.progress.connect(self.update_progress)
             self.worker.finished.connect(self.analysis_finished)
 
-            QTimer.singleShot(100, self.worker.start)
+            self.worker.start()
 
         except Exception as e:
             self.logger.error(f"Failed to start analysis: {str(e)}")
@@ -228,8 +224,8 @@ class ProcessExecutor:
         """Enable/disable UI elements during processing"""
         self.dialog.mainStartButton.setEnabled(True)
         self.dialog._set_input_widgets_enabled(enabled)
-        self.dialog.openProjectFolder.setEnabled(True)
-        self.dialog._set_settings_widgets_enabled(True)
+        self.dialog.openProjectFolder.setEnabled(enabled)
+        self.dialog._set_settings_widgets_enabled(enabled)
         if enabled:
             self.dialog.mainStartButton.setText("Start")
             self.dialog.mainStartButton.setStyleSheet(
