@@ -76,7 +76,7 @@ Control how the analysis is performed.
   Example: 8 core system → Use 6 cores
   ```
 
-  Memory Usage Guidelines:
+Memory Usage Guidelines:
 
 | Cores | Min RAM  | Recommended RAM |
 |-------|----------|-----------------|
@@ -84,7 +84,6 @@ Control how the analysis is performed.
 | 4     | 16 GB    | 32 GB           |
 | 6     | 24 GB    | 48 GB           |
 | 8     | 32 GB    | 64 GB           |
-
 
 ### Block Processing
 
@@ -97,8 +96,8 @@ Control how the analysis is performed.
   - Default: 512x512 pixels
   - Alternative: 256x256 for less memory
   - Custom sizes available
-  
-  Memory Impact:
+
+Memory Impact:
 
 | Block Size  | Memory Usage | Speed     |
 |-------------|--------------|-----------|
