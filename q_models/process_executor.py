@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
-from qgis.PyQt.QtCore import QThread, pyqtSignal, QTimer
+from qgis.PyQt.QtCore import QThread, pyqtSignal, QTimer, QCoreApplication
 from pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
 from pypoprf.utils.joblib_manager import joblib_resources
+from qgis.core import QgsProject
 
 from pypoprf.utils.raster import remask_layer
 
@@ -13,6 +14,8 @@ class ProcessWorker(QThread):
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str)
     ui_state = pyqtSignal(bool)
+    layer_created = pyqtSignal(str, str)
+    final_layers_ready = pyqtSignal(str, str)
 
     def __init__(self, config_path, logger):
         super().__init__()
@@ -150,12 +153,16 @@ class ProcessExecutor:
         self.logger = logger
         self.iface = iface
         self.worker = None
+        self.output_layers = []
 
     def start_analysis(self):
         """Start the analysis process"""
         # Validate inputs
         if not self._validate_all():
             return
+
+        # Clear any existing output layers before starting
+        self.remove_output_layers()
 
         # Clear console and reset progress
         self.dialog.console_handler.clear()
@@ -208,7 +215,8 @@ class ProcessExecutor:
 
         if success:
             if self.dialog.addToQgisCheckBox.isChecked():
-                self.add_layers_to_qgis()
+                self.add_output_layers()
+            self.logger.info(f"Analysis completed successfully: {message}")
         else:
             self.logger.error(f"Analysis failed: {message}")
 
@@ -224,8 +232,10 @@ class ProcessExecutor:
         """Enable/disable UI elements during processing"""
         self.dialog.mainStartButton.setEnabled(True)
         self.dialog._set_input_widgets_enabled(enabled)
-        self.dialog.openProjectFolder.setEnabled(enabled)
+        self.dialog.workingDirEdit.setEnabled(enabled)
+        self.dialog.initProjectButton.setEnabled(enabled)
         self.dialog._set_settings_widgets_enabled(enabled)
+
         if enabled:
             self.dialog.mainStartButton.setText("Start")
             self.dialog.mainStartButton.setStyleSheet(
@@ -235,28 +245,59 @@ class ProcessExecutor:
             self.dialog.mainStartButton.setStyleSheet(
                 "QPushButton { background-color: #f44336; color: black; font-weight: bold; font-size: 10pt; }")
 
-    def add_layers_to_qgis(self):
-        """Add output layers to QGIS"""
+    def remove_output_layers(self):
+        """Remove any previously added output layers from QGIS"""
+        if not self.iface:
+            return
+
+        # Get list of all layers
+        layers = self.iface.mapCanvas().layers()
+        project = QgsProject.instance()
+        canvas = self.iface.mapCanvas()
+
+        # Names of output layers we want to remove
+        output_names = ['Prediction', 'Normalized Census', 'Population Distribution']
+
+        removed_count = 0
+        for layer in layers:
+            layer_name = layer.name()
+            if layer_name in output_names:
+                try:
+                    project.removeMapLayer(layer.id())
+                    canvas.refresh()
+                    self.logger.info(f"Removed layer: {layer_name}")
+                    removed_count += 1
+                except Exception as e:
+                    self.logger.warning(f"Error removing layer {layer_name}: {str(e)}")
+
+        self.logger.info(f"Total layers removed: {removed_count}")
+        # Clear our tracking list
+        self.output_layers.clear()
+
+    def add_output_layers(self):
+        """Add all output layers to QGIS"""
         try:
-            if not self.iface:
-                self.logger.warning("QGIS interface not available")
-                return
-
             output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
-            layers = {
-                'Prediction': output_dir / 'prediction.tif',
-                'Normalized Census': output_dir / 'normalized_census.tif',
-                'Population Distribution': output_dir / 'dasymetric.tif'
-            }
+            layers = [
+                ('prediction.tif', 'Prediction'),
+                ('normalized_census.tif', 'Normalized Census'),
+                ('dasymetric.tif', 'Population Distribution')
+            ]
 
-            for name, path in layers.items():
-                if path.exists():
-                    self.iface.addRasterLayer(str(path), name)
-                    self.logger.info(f"Added {name} layer to QGIS")
+            for filename, layer_name in layers:
+                file_path = output_dir / filename
+                if file_path.exists():
+                    layer = self.iface.addRasterLayer(str(file_path), layer_name)
+                    if layer and layer.isValid():
+                        self.output_layers.append(layer)
+                        self.logger.info(f"Added {layer_name} layer to QGIS")
+                    else:
+                        self.logger.warning(f"Failed to add {layer_name} layer")
+                else:
+                    self.logger.warning(f"File not found: {filename}")
 
         except Exception as e:
-            self.logger.error(f"Failed to add layers to QGIS: {str(e)}")
-
+            self.logger.error(f"Failed to add output layers: {str(e)}")
 
     def _validate_all(self):
         """Validate all settings and inputs before starting"""

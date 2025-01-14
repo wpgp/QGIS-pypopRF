@@ -17,6 +17,66 @@ class SettingsHandler:
         """
         self.config_manager = config_manager
         self.logger = logger
+        self._pending_log_filename = None
+        self._pending_pop_column = None
+        self._pending_id_column = None
+
+
+    def connect_log_filename_signals(self, dialog):
+        """Connect signals for log filename input."""
+        dialog.logsColumnEdit.textChanged.connect(
+            lambda text: setattr(self, '_pending_log_filename', text)
+        )
+
+        dialog.logsColumnEdit.editingFinished.connect(
+            lambda: self._apply_log_filename_update(dialog)
+        )
+
+    def connect_census_fields_signals(self, dialog):
+        """Connect signals for census fields input."""
+        # Для поля population
+        dialog.popColumnEdit.textChanged.connect(
+            lambda text: setattr(self, '_pending_pop_column', text)
+        )
+        dialog.popColumnEdit.editingFinished.connect(
+            lambda: self._apply_census_update(dialog)
+        )
+
+        # Для поля id
+        dialog.idColumnEdit.textChanged.connect(
+            lambda text: setattr(self, '_pending_id_column', text)
+        )
+        dialog.idColumnEdit.editingFinished.connect(
+            lambda: self._apply_census_update(dialog)
+        )
+
+    def _apply_log_filename_update(self, dialog):
+        """Apply log filename changes when editing is finished."""
+        if self._pending_log_filename is not None:
+            self.config_manager.update_config('logging', {
+                'level': dialog.comboBox.currentText(),
+                'file': self._pending_log_filename
+            })
+
+            dialog.console_handler.update_logging_settings(
+                level=dialog.comboBox.currentText(),
+                save_log=dialog.saveLogCheckBox.isChecked(),
+                work_dir=dialog.workingDirEdit.filePath(),
+                filename=self._pending_log_filename
+            )
+
+            self._pending_log_filename = None
+
+    def _apply_census_update(self, dialog):
+        """Apply census fields changes when editing is finished."""
+        if hasattr(self, '_pending_pop_column') and self._pending_pop_column is not None:
+            self.config_manager.update_config('census_pop_column', self._pending_pop_column)
+            self._pending_pop_column = None
+
+        if hasattr(self, '_pending_id_column') and self._pending_id_column is not None:
+            self.config_manager.update_config('census_id_column', self._pending_id_column)
+            self._pending_id_column = None
+
 
     def load_settings(self, dialog):
         """
@@ -97,45 +157,6 @@ class SettingsHandler:
         except Exception as e:
             self.logger.error(f"Failed to save settings: {str(e)}")
             return False
-
-    def _debounce_settings_update(self, dialog, setting_key, value):
-        if not hasattr(dialog, '_settings_update_timer'):
-            dialog._settings_update_timer = QtCore.QTimer()
-            dialog._settings_update_timer.setSingleShot(True)
-
-        if not hasattr(dialog, '_pending_updates'):
-            dialog._pending_updates = {}
-
-        dialog._pending_updates[setting_key] = value
-
-        if not dialog._settings_update_timer.isActive():
-            dialog._settings_update_timer.timeout.connect(
-                lambda: self._apply_pending_updates(dialog)
-            )
-            dialog._settings_update_timer.start(1500)
-
-    def _apply_pending_updates(self, dialog):
-
-        if hasattr(dialog, '_pending_updates'):
-            for key, value in dialog._pending_updates.items():
-                if key == 'logging':
-                    dialog.config_manager.update_config('logging', {
-                        'level': dialog.comboBox.currentText(),
-                        'file': value
-                    })
-                elif key == 'census':
-                    dialog.config_manager.update_config('census_pop_column', dialog.popColumnEdit.text())
-                    dialog.config_manager.update_config('census_id_column', dialog.idColumnEdit.text())
-
-                if key == 'logging':
-                    dialog.console_handler.update_logging_settings(
-                        level=dialog.comboBox.currentText(),
-                        save_log=dialog.saveLogCheckBox.isChecked(),
-                        work_dir=dialog.workingDirEdit.filePath(),
-                        filename=value
-                    )
-
-            dialog._pending_updates.clear()
 
     def validate_settings(self, dialog) -> bool:
         """

@@ -45,9 +45,10 @@ from .q_models.process_executor import ProcessExecutor
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, iface=None):
         """Constructor."""
         super(PyPopRFDialog, self).__init__(parent)
+        self.iface = iface
         # Set up the user interface from Designer through FORM_CLASS.
         # After self.setupUi() you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
@@ -66,7 +67,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         self.file_handler = FileHandler('', self.logger)
         self.settings_handler = SettingsHandler(self.config_manager, self.logger)
-        self.process_executor = ProcessExecutor(self, self.logger)
+        self.process_executor = ProcessExecutor(self, self.logger, iface)
 
         # Connect signals
         self._connect_signals()
@@ -108,18 +109,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.saveLogCheckBox.stateChanged.connect(self._update_logging_settings)
         self.comboBox.currentTextChanged.connect(self._update_logging_settings)
 
-        # Settings lineedit signals
-        self.logsColumnEdit.textChanged.connect(
-            lambda text: self.settings_handler._debounce_settings_update(self, 'logging', text)
-        )
-
-        self.popColumnEdit.textChanged.connect(
-            lambda text: self.settings_handler._debounce_settings_update(self, 'census', text)
-        )
-
-        self.idColumnEdit.textChanged.connect(
-            lambda text: self.settings_handler._debounce_settings_update(self, 'census', text)
-        )
+        self.settings_handler.connect_census_fields_signals(self)
+        self.settings_handler.connect_log_filename_signals(self)
 
         # Analysis signals
         self.mainStartButton.setStyleSheet(
@@ -233,13 +224,14 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.openProjectFolder.setEnabled(True)
                 self._set_input_widgets_enabled(True)
                 self._set_settings_widgets_enabled(True)
+                self.addToQgisCheckBox.setChecked(True)
 
                 # Load initial settings
                 self.settings_handler.load_settings(self)
 
                 # Show next steps
                 self.logger.info("Project initialized successfully!")
-                self.logger.info('<span style="font-weight: bold; font-size: 11pt;">Next steps:</span>')
+                self.logger.info('<span style="font-weight: bold; font-size: 11pt; color: #050505;">Next steps: &#8628;</span>')
                 self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
                                  '1. Place input files in the data directory'
                                  '</span>')
