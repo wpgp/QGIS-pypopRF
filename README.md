@@ -1,202 +1,98 @@
 # QGIS pypopRF Plugin
 
-A QGIS plugin for high-resolution population mapping using machine learning and dasymetric techniques. This plugin integrates the pypopRF Python package into QGIS, providing a user-friendly interface for population prediction and mapping.
+A QGIS plugin for high-resolution population mapping using machine learning and dasymetric techniques. Create detailed population distribution maps by combining census data with geospatial covariates.
 
-## Overview
-
-pypopRF is a tool developed by the WorldPop SDI Team for creating detailed population distribution maps by combining census data with geospatial covariates using machine learning techniques. The tool uses Random Forest regression for prediction and dasymetric mapping for high-resolution population redistribution.
+![WorldPop SDI](wp_logo.png)
 
 ## Features
 
-### Core Functionality
-- Feature extraction from geospatial covariates
-- Random Forest-based population modeling
-- Dasymetric mapping for high-resolution output
-- Support for parallel processing and block-based computation
-- Comprehensive logging and progress tracking
+- Create high-resolution population maps from census data
+- Use building data and other geospatial information as predictive variables
+- Automated machine learning workflow with Random Forest
+- User-friendly interface integrated into QGIS
+- Parallel processing support for large datasets
+- Real-time progress monitoring and logging
 
-### QGIS Integration
-- Intuitive graphical user interface
-- Project management tools
-- Real-time progress monitoring
-- Direct visualization in QGIS
-- Integrated logging console
+## Requirements
+
+- QGIS 3.0 or later
+- Python packages (installed automatically):
+  - numpy, pandas, scikit-learn
+  - geopandas, rasterio
+  - Other dependencies handled by plugin installer
 
 ## Installation
 
-### Requirements
-- QGIS 3.0 or later
-- Python 3.12
-- Required Python packages:
-  - numpy >= 1.24.0
-  - pandas >= 2.0.0
-  - geopandas >= 0.14.0
-  - rasterio >= 1.3.0
-  - scikit-learn >= 1.3.0
-  - matplotlib >= 3.7.0
-  - tqdm >= 4.65.0
-  - pyyaml >= 6.0.0
-  - joblib >= 1.3.0
+1. Open QGIS
+2. Go to "Plugins" → "Manage and Install Plugins"
+3. Search for "pypopRF"
+4. Click "Install Plugin"
 
-### Installation Steps
+## Quick Start
 
-1. Download the plugin:
-```bash
-git clone https://github.com/wpgp/QGIS-pypopRF.git
-```
+1. **Initialize Project**
+   - Open pypopRF from the QGIS plugins menu
+   - Choose a working directory
+   - Click "Initialize New Project"
 
-2. Install to QGIS plugins directory:
-   - Windows: `C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/`
-   - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
-   - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`
+2. **Configure Inputs**
+   - Add mastergrid (zone definitions)
+   - Add census data (population counts)
+   - Add building covariates (counts, footprints, heights)
+   - Optional: Add water mask or constraints
 
-3. Enable the plugin in QGIS:
-   - Open QGIS
-   - Go to Plugins → Manage and Install Plugins
-   - Find "pypopRF" in the list
-   - Check the box to enable
+3. **Adjust Settings**
+   - Set processing parameters
+   - Configure census column names
+   - Enable/disable parallel processing
 
-## Usage
+4. **Run Analysis**
+   - Click "Start"
+   - Monitor progress in the console
+   - Results automatically load in QGIS
 
-### 1. Project Setup
+## Input Data Requirements
 
-1. Open the pypopRF plugin in QGIS
-2. Select working directory
-3. Click "Initialize New Project"
-   - Creates project directory structure
-   - Generates default configuration file
-   - Sets up data and output directories
+### Required Files:
+- **Mastergrid**: GeoTIFF file defining analysis zones
+- **Census Data**: CSV file with population counts
+- **Covariates**: One or more GeoTIFF files (e.g., building data)
 
-### 2. Data Configuration
+### Optional Files:
+- **Water Mask**: For excluding water bodies
+- **Constraints**: Additional spatial constraints
 
-#### Required Files:
-- **Mastergrid (GeoTIFF)**: 
-  - Defines analysis zones
-  - Must align with census boundaries
-  - Consistent CRS and resolution with covariates
+## Outputs
 
-- **Census Data (CSV)**:
-  - Population counts by administrative unit
-  - Must include:
-    - ID column (matching mastergrid zones)
-    - Population column
-    - Additional attributes as needed
+The plugin generates several files in your project's output directory:
 
-- **Covariates (GeoTIFF)**:
-  - At least one covariate required
-  - Common examples:
-    - Building counts
-    - Building footprint area
-    - Building volume
-  - Must match mastergrid resolution and extent
+- **Final Map**: High-resolution population distribution (dasymetric.tif)
+- **Intermediate**: Probability surface and normalized values
+- **Analysis**: Feature importance plots and statistics
+- **Logs**: Detailed processing information
 
-#### Optional Files:
-- **Water Mask (GeoTIFF)**:
-  - For excluding water bodies
-  - Binary raster (1 = water, 0 = land)
+## Getting Help
 
-- **Constraints (GeoTIFF)**:
-  - Additional spatial constraints
-  - Used to refine population distribution
+- Documentation: https://wpgp.github.io/QGIS-pypopRF/
+- Issues & Support: https://github.com/wpgp/QGIS-pypopRF/issues
+- WorldPop SDI: https://sdi.worldpop.org
 
-### 3. Settings Configuration
+## For Developers
 
-#### Processing Options:
-- **Parallel Processing**:
-  - Enable/disable parallel computation
-  - Set number of CPU cores
-  - Memory usage management
-
-- **Block Processing**:
-  - Enable for large datasets
-  - Configurable block size
-  - Default: 512x512 pixels
-
-#### Census Data Settings:
-- Population column name (default: "pop")
-- ID column name (default: "id")
-
-#### Additional Options:
-- Logging level (INFO/DEBUG)
-- Progress bar display
-- Output visualization settings
-
-### 4. Running Analysis
-
-1. Validate inputs using built-in checks
-2. Click "Start" to begin processing
-3. Monitor progress in console window:
-   - Feature extraction status
-   - Model training progress
-   - Prediction generation
-   - Dasymetric mapping steps
-
-### 5. Output Files
-
-The plugin generates several output files in the project's output directory:
-
-#### Main Outputs:
-- **prediction.tif**: Population probability surface
-- **dasymetric.tif**: Final high-resolution population distribution
-- **normalized_census.tif**: Normalized population values
-- **features.csv**: Extracted covariate features
-
-#### Additional Files:
-- **feature_selection.png**: Feature importance visualization
-- **visualization.png**: Combined visualization of results
-- **pypoprf.log**: Processing log file
-- **model.pkl.gz**: Trained Random Forest model
-- **scaler.pkl.gz**: Fitted feature scaler
-
-## Troubleshooting
-
-### Common Issues:
-1. **Memory Errors**:
-   - Reduce block size
-   - Decrease number of parallel workers
-   - Process larger areas in segments
-
-2. **Input Data Errors**:
-   - Ensure consistent CRS across all rasters
-   - Verify matching resolutions and extents
-   - Check census data column names
-
-3. **Processing Errors**:
-   - Check log file for detailed error messages
-   - Verify input data validity
-   - Ensure sufficient disk space
-
-## Development
-
-### Project Structure:
-```
-pypopRF/
-├── core/
-│   ├── feature_extraction.py
-│   ├── model.py
-│   └── dasymetric.py
-├── utils/
-│   ├── raster.py
-│   ├── vector.py
-│   └── visualization.py
-└── config/
-    └── settings.py
-```
-
-### Contributing:
-1. Fork the repository
-2. Create a feature branch
-3. Submit pull request with:
-   - Clear description of changes
-   - Updated tests
-   - Documentation updates
+Interested in contributing? Check our [documentation](https://wpgp.github.io/QGIS-pypopRF/developers/) for:
+- Project structure
+- Development setup
+- Contributing guidelines
+- API reference
 
 ## License
-MIT License - See LICENSE file for details
 
-## Contact
-- Authors: 
-  - Borys Nosatiuk (b.nosatiuk@soton.ac.uk)
-  - Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
-- WorldPop SDI Team: https://sdi.worldpop.org
-- Issues: https://github.com/wpgp/pypopRF/issues
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+Developed by the WorldPop SDI Team at the University of Southampton:
+- Borys Nosatiuk (b.nosatiuk@soton.ac.uk)
+- Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
+- Maksym Bondarenko (m.bondarenko@soton.ac.uk)
+- Andrew Tatem (a.j.tatem@soton.ac.uk)
