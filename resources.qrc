@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/pypoprf" >
+    <qresource prefix="/plugins/qgis_pypoprf" >
         <file>icon.png</file>
     </qresource>
 </RCC>

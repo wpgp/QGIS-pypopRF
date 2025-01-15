@@ -1,5 +1,5 @@
 [general]
-name=pypopRF
+name=qgis_pypoprf
 qgisMinimumVersion=3.0
 description=A plugin for population prediction and dasymetric mapping using machine learning
 version=0.1
