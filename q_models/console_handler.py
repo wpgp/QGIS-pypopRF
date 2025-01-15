@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 
-from pypoprf.utils.logger import get_logger
-from qgis.PyQt import QtWidgets, QtCore
-from PyQt5.QtCore import QObject, pyqtSignal, Qt
+from PyQt5.QtCore import QObject, pyqtSignal
+from qgis.PyQt import QtWidgets
 
-logger = get_logger()
+from .imports import setup_pypoprf_path
+
+setup_pypoprf_path()
+from pypoprf.utils.logger import get_logger
 
 
 class ConsoleStream(QObject):
@@ -32,6 +34,7 @@ class ConsoleStream(QObject):
         text = text.strip()
         if text:
             self.messageReceived.emit(text)
+
 
 class ConsoleHandler:
     """Handler for QGIS plugin console output."""

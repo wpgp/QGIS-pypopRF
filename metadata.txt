@@ -26,9 +26,7 @@ icon=icon.png
 experimental=False
 deprecated=False
 
-plugin_dependencies=numpy, pandas, scikit-learn, geopandas, rasterio, fiona, shapely, pyproj, matplotlib, seaborn, joblib, scipy, gdal
-
-
+plugin_dependencies=numpy, pandas, geopandas, rasterio, scikit-learn, matplotlib, joblib
 
 # If the plugin can run on QGIS Server.
 server=False
