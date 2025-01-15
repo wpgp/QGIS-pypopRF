@@ -1,61 +1,129 @@
 # QGIS pypopRF Plugin Documentation
 
-Welcome to the documentation for the QGIS pypopRF plugin. This plugin provides a graphical user interface for the [pypopRF Python package](https://github.com/wpgp/pypopRF), integrating its population mapping capabilities directly into QGIS.
+<div align="center">
+  <img src="images/wp_logo.png" alt="WorldPop Logo" width="200"/>
+  <br/>
+  <em>High-Resolution Population Mapping Made Easy</em>
+</div>
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>
+
+## Quick Navigation
+- [About pypopRF](#about-pyPoprf)
+- [How It Works](#how-it-works)
+- [Plugin Interface](#plugin-interface)
+- [Analysis Results](#analysis-results)
+- [Getting Started](#getting-started)
+- [Support](#support)
 
 ## About pypopRF
 
-pypopRF is a powerful tool developed by the WorldPop SDI Team for creating high-resolution population distribution maps. It combines:
+pypopRF is a powerful tool developed by the WorldPop SDI Team that transforms your input data into detailed population distribution maps. It combines census data, building information, and machine learning to create accurate population estimates.
 
-- Census data
-- Building information
-- Other geospatial covariates
-- Machine learning techniques (Random Forest)
-- Dasymetric mapping methods
+## How It Works
 
-The core functionality is provided by the [pypopRF Python package](https://github.com/wpgp/pypopRF), which can be used independently via Python for more advanced use cases. The full documentation for the Python package is available at [wpgp.github.io/pypopRF](https://wpgp.github.io/pypopRF/).
+```mermaid
+graph LR
+    A[Load Data] --> B[Configure Settings]
+    B --> C[Run Analysis]
+    C --> D[Get Results]
+    style A fill:#e1f5fe
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+```
 
-## QGIS Integration
+## Plugin Interface
 
-This QGIS plugin wraps the pypopRF package functionality in a user-friendly interface, allowing you to:
+<div align="center">
+  <img src="images/main_interface.png" alt="pypopRF Plugin Interface" width="800"/>
+  <br/>
+  <em>Main plugin interface with labeled components</em>
+</div>
 
-- Manage your population mapping projects
-- Configure input data and parameters visually
-- Monitor processing in real-time
-- View results directly in QGIS
-- Handle parallel processing efficiently
+### Key Components:
 
-The plugin is designed to make population mapping accessible to GIS users without requiring Python programming knowledge.
+1. **Project Tab**: Initialize your project and manage settings
+2. **Input Data Tab**: Configure all required data files
+3. **Settings Tab**: Adjust processing parameters
+4. **Console**: Monitor progress and view logs
+5. **Control Panel**: Start/stop analysis and view progress
+
+💡 **Pro Tip:** Use the tabs to navigate through the workflow in a logical sequence.
+
+## Analysis Results
+
+The plugin generates three key outputs that show the progression of the analysis:
+
+<div align="center">
+  <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <div style="flex: 1; margin: 10px;">
+      <img src="images/prediction.png" alt="Population Prediction" width="250"/>
+      <p><strong>1. Population Prediction</strong><br/>
+      Initial probability surface showing likely population distribution</p>
+    </div>
+    <div style="flex: 1; margin: 10px;">
+      <img src="images/normalized_census.png" alt="Normalized Census" width="250"/>
+      <p><strong>2. Normalized Census</strong><br/>
+      Population values adjusted to match census totals</p>
+    </div>
+    <div style="flex: 1; margin: 10px;">
+      <img src="images/dasymetric.png" alt="Final Distribution" width="250"/>
+      <p><strong>3. Final Distribution</strong><br/>
+      High-resolution population distribution map</p>
+    </div>
+  </div>
+</div>
+
+## Processing in Action
+
+<div align="center">
+  <img src="images/analysis.png" alt="Analysis Process" width="700"/>
+  <br/>
+  <em>Real-time processing feedback and progress monitoring</em>
+</div>
 
 ## Key Features
 
-- **Project Management**: Easy project initialization and organization
-- **Visual Interface**: Intuitive data and parameter configuration
-- **Process Monitoring**: Real-time progress tracking and logging
-- **QGIS Integration**: Direct visualization of results in your GIS workspace
-- **Performance**: Support for parallel processing and large datasets
+✅ **User-Friendly Interface**
+- Visual data management
+- Intuitive configuration
+- Real-time progress tracking
+- Direct QGIS integration
 
-## Getting Started
+⚠️ **Important Considerations**
+- Ensure consistent coordinate systems
+- Verify input data quality
+- Monitor system resources
+- Back up project files
 
-1. [Installation](getting-started/installation.md): Install the plugin in QGIS
-2. [Quick Start](getting-started/quickstart.md): Create your first population map
-3. [User Guide](user-guide/interface.md): Learn about all features and capabilities
+## Input Requirements
 
-## Use Cases
+The plugin needs three main types of data:
 
-The QGIS pypopRF plugin is ideal for:
+1. **Mastergrid File** (Required)
+   - Defines analysis zones
+   - Matches census boundaries
+   - GeoTIFF format
 
-- Creating high-resolution population estimates
-- Analyzing population distribution patterns
-- Supporting urban and regional planning
-- Disaster risk assessment
-- Public health and service planning
+2. **Census Data** (Required)
+   - Population counts by zone
+   - CSV format
+   - Matches mastergrid IDs
 
-## Support and Community
+3. **Covariates** (At least one required)
+   - Building counts/footprints
+   - Infrastructure data
+   - Other relevant predictors
 
-- **Issues and Bugs**: Report on [GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues)
-- **Questions**: Contact the WorldPop SDI Team at [sdi.worldpop.org](https://sdi.worldpop.org)
-- **Feature Requests**: Submit through GitHub Issues
+## Support and Resources
 
+- 🐛 **Report Issues**: [GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues)
+- 📧 **Get Help**: Contact [WorldPop SDI Team](https://sdi.worldpop.org)
+- 📚 **Documentation**: Continue reading guides below
+- 🆕 **Updates**: Check [GitHub Releases](https://github.com/wpgp/QGIS-pypopRF/releases)
 
 ## About WorldPop SDI
 
@@ -65,12 +133,17 @@ The WorldPop Spatial Data Infrastructure (SDI) Team at the University of Southam
 - Open-source geospatial tools
 - Machine learning for population estimation
 
-Learn more at [sdi.worldpop.org](https://sdi.worldpop.org)
-
 ## License
 
 The QGIS pypopRF plugin is released under the MIT License. See the [LICENSE](https://github.com/wpgp/QGIS-pypopRF/blob/main/LICENSE) file for details.
 
 ---
 
-*Next: [Installation Guide](getting-started/installation.md)*
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>
+
+*Next Steps:*
+- [Installation Guide](getting-started/installation.md)
+- [Quick Start Guide](getting-started/quickstart.md)
+- [User Interface Guide](user-guide/interface.md)
