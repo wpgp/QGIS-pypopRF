@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple, Optional, Any, Callable
 
 from .logger import get_logger
 from .raster_processing import parallel
-from ..utils.matplotlib_utils import with_non_interactive_matplotlib
+from .matplotlib_utils import with_non_interactive_matplotlib
 
 logger = get_logger()
 

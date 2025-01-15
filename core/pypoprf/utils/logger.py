@@ -3,7 +3,6 @@ import logging
 import sys
 from typing import Optional, TextIO
 from pathlib import Path
-from colorama import Fore, Style
 
 
 class PopRFLogger:

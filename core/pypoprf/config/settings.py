@@ -1,5 +1,4 @@
 # src/pypoprf/config/settings.py
-import warnings
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
@@ -7,7 +6,7 @@ import pandas as pd
 import rasterio
 import yaml
 
-from pypoprf.utils.logger import get_logger
+from ..utils.logger import get_logger
 
 logger = get_logger()
 

@@ -3,6 +3,7 @@ from .logger import get_logger
 
 from tqdm import tqdm
 from rasterio.windows import Window
+
 logger = get_logger()
 
 def progress_bar(iterable: Any,

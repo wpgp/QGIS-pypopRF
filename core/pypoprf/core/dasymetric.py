@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import rasterio
-import concurrent.futures
 import threading
 from typing import Optional, Tuple, TypedDict, List
 from rasterio.windows import Window
