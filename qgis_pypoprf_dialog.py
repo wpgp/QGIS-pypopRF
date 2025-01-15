@@ -33,8 +33,6 @@ from .q_models.covariate_table import CovariateTableHandler
 from .q_models.file_handlers import FileHandler
 from .q_models.process_executor import ProcessExecutor
 from .q_models.settings_handler import SettingsHandler
-from .q_models.imports import setup_pypoprf_path
-setup_pypoprf_path()
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(

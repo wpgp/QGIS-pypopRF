@@ -4,10 +4,7 @@ import os
 from PyQt5.QtCore import QObject, pyqtSignal
 from qgis.PyQt import QtWidgets
 
-from .imports import setup_pypoprf_path
-
-setup_pypoprf_path()
-from pypoprf.utils.logger import get_logger
+from ..core.pypoprf.utils.logger import get_logger
 
 
 class ConsoleStream(QObject):

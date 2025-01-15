@@ -2,8 +2,8 @@ import shutil
 import traceback
 from pathlib import Path
 
-from pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
-from pypoprf.utils.joblib_manager import joblib_resources
+from ..core.pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
+from ..core.pypoprf.utils.joblib_manager import joblib_resources
 from pypoprf.utils.raster import remask_layer
 from qgis.PyQt.QtCore import QThread, pyqtSignal
 from qgis.core import QgsProject

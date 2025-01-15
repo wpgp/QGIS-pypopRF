@@ -1,5 +1,3 @@
-from qgis.PyQt import QtWidgets, QtCore
-
 import yaml
 
 
