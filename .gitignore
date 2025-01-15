@@ -22,7 +22,6 @@ wheels/
 
 # QGIS specific
 *.qm
-resources.py
 
 # IDE related
 .idea/
