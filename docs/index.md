@@ -11,24 +11,30 @@
 - [How It Works](#how-it-works)
 - [Plugin Interface](#plugin-interface)
 - [Analysis Results](#analysis-results)
-- [Getting Started](#getting-started)
-- [Support](#support)
+- [Quick Start](getting-started/quickstart.md)
+
 
 ## About pypopRF
 
 pypopRF is a powerful tool developed by the WorldPop SDI Team that transforms your input data into detailed population distribution maps. It combines census data, building information, and machine learning to create accurate population estimates.
 
+💡 Technical Foundation: The plugin is built on the [pypopRF Python package](https://github.com/wpgp/pypopRF), which provides the core computational functionality. While the plugin makes these tools accessible through a graphical interface, advanced users can also use the Python package directly for more customized workflows.
+⚠️ Note: For advanced features and detailed technical documentation of the underlying algorithms, please refer to the [pypopRF documentation](https://wpgp.github.io/pypopRF/).
+
 ## How It Works
 
 ```mermaid
 graph LR
-    A[Load Data] --> B[Configure Settings]
+    Init[Initialize Project] --> A[Load Data]
+    A --> B[Configure Settings]
     B --> C[Run Analysis]
     C --> D[Get Results]
-    style A fill:#e1f5fe
-    style B fill:#e8f5e9
-    style C fill:#fff3e0
-    style D fill:#f3e5f5
+
+    style Init fill:#dcedc8,stroke:#558b2f,stroke-width:2px
+    style A fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    style B fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style C fill:#fff3e0,stroke:#ff6f00,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
 ```
 
 ## Plugin Interface
@@ -36,7 +42,7 @@ graph LR
 <div align="center">
   <img src="images/main_interface.png" alt="pypopRF Plugin Interface" width="800"/>
   <br/>
-  <em>Main plugin interface with labeled components</em>
+  <em>Main plugin interface</em>
 </div>
 
 ### Key Components:
@@ -96,28 +102,6 @@ The plugin generates three key outputs that show the progression of the analysis
 - Verify input data quality
 - Monitor system resources
 - Back up project files
-
-## Input Requirements
-
-The plugin needs three main types of data:
-
-1. **Mastergrid File** (Required)
-
-   - Defines analysis zones
-   - Matches census boundaries
-   - GeoTIFF format
-
-2. **Census Data** (Required)
-
-   - Population counts by zone
-   - CSV format
-   - Matches mastergrid IDs
-
-3. **Covariates** (At least one required)
-
-   - Building counts/footprints
-   - Infrastructure data
-   - Other relevant predictors
 
 ## Support and Resources
 
