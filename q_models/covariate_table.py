@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 import os
 from pathlib import Path
+
 from qgis.PyQt import QtWidgets, QtCore
 
 
@@ -28,10 +28,14 @@ class CovariateTableHandler:
         """Setup covariates table structure"""
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(['Name', 'Size', 'File Path', 'Actions'])
-        self.table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            0, QtWidgets.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            1, QtWidgets.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            2, QtWidgets.QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(
+            3, QtWidgets.QHeaderView.ResizeToContents)
 
     def add_covariates(self, filenames: list):
         """
@@ -111,7 +115,6 @@ class CovariateTableHandler:
                     self.logger.debug(f"Updated delete button for row {i}")
         except Exception as e:
             self.logger.error(f"Failed to remove covariate at row {row}: {str(e)}")
-
 
     def remove_selected_covariates(self):
         """Remove selected covariates from table and config"""

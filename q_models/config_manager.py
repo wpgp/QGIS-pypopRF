@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 import threading
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 
 import yaml
-from pathlib import Path
 
 
 class ConfigManager:
@@ -113,7 +112,6 @@ class ConfigManager:
                 self.logger.info(f"Updated {key}: {value}")
         with self._open_config('w') as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
-
 
     def clear_config_value(self, key: str):
         """

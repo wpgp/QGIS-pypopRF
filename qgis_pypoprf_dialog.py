@@ -27,6 +27,13 @@ import sys
 
 from qgis.PyQt import uic, QtWidgets
 
+from .q_models.config_manager import ConfigManager
+from .q_models.console_handler import ConsoleHandler
+from .q_models.covariate_table import CovariateTableHandler
+from .q_models.file_handlers import FileHandler
+from .q_models.process_executor import ProcessExecutor
+from .q_models.settings_handler import SettingsHandler
+
 plugin_dir = os.path.dirname(__file__)
 pypoprf_dir = os.path.join(plugin_dir, 'pypoprf', 'src')
 if pypoprf_dir not in sys.path:
@@ -35,13 +42,6 @@ if pypoprf_dir not in sys.path:
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qgis_pypoprf_dialog_base.ui'))
-
-from .q_models.console_handler import ConsoleHandler
-from .q_models.config_manager import ConfigManager
-from .q_models.covariate_table import CovariateTableHandler
-from .q_models.file_handlers import FileHandler
-from .q_models.settings_handler import SettingsHandler
-from .q_models.process_executor import ProcessExecutor
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -78,7 +78,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # Disable widgets until project is initialized
         self._set_initial_state()
 
-
     def _connect_signals(self):
         """Connect all UI signals"""
         # Button signals
@@ -99,11 +98,15 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Settings tab signals
         self.enableParallelCheckBox.stateChanged.connect(
-            lambda: self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked()))
+            lambda: self.cpuCoresComboBox.setEnabled(
+                self.enableParallelCheckBox.isChecked()))
         self.enableBlockProcessingCheckBox.stateChanged.connect(
-            lambda: self.blockSizeComboBox.setEnabled(self.enableBlockProcessingCheckBox.isChecked()))
-        self.cpuCoresComboBox.currentTextChanged.connect(self._handle_cpu_cores_changed)
-        self.blockSizeComboBox.currentTextChanged.connect(self._handle_block_size_changed)
+            lambda: self.blockSizeComboBox.setEnabled(
+                self.enableBlockProcessingCheckBox.isChecked()))
+        self.cpuCoresComboBox.currentTextChanged.connect(
+            self._handle_cpu_cores_changed)
+        self.blockSizeComboBox.currentTextChanged.connect(
+            self._handle_block_size_changed)
 
         # Logging signals
         self.saveLogCheckBox.stateChanged.connect(self._update_logging_settings)
@@ -116,7 +119,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.mainStartButton.setStyleSheet(
             "QPushButton { background-color: #878c87; color: black; font-size: 10pt; }")
         self.mainStartButton.clicked.connect(self._handle_start_button)
-
 
     def _setup_file_widgets(self):
         """Setup file widgets with filters and titles"""
@@ -143,8 +145,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.openProjectFolder.setEnabled(False)
 
         # Disable input and settings tabs
-        self._set_input_widgets_enabled(False)
-        self._set_settings_widgets_enabled(False)
+        self.set_input_widgets_enabled(False)
+        self.set_settings_widgets_enabled(False)
 
     # Set input main widgets enabled
     def _set_main_widgets_enabled(self, enabled: bool):
@@ -153,7 +155,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.workingDirEdit.setEnabled(enabled)
         self.openProjectFolder.setEnabled(enabled)
 
-    def _set_input_widgets_enabled(self, enabled: bool):
+    def set_input_widgets_enabled(self, enabled: bool):
         """Enable/disable input widgets"""
         self.mastergridFileWidget.setEnabled(enabled)
         self.maskFileWidget.setEnabled(enabled)
@@ -162,7 +164,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.addCovariateButton.setEnabled(enabled)
         self.covariatesTable.setEnabled(enabled)
 
-    def _set_settings_widgets_enabled(self, enabled: bool):
+    def set_settings_widgets_enabled(self, enabled: bool):
         """Enable/disable settings widgets"""
 
         # Logging settings
@@ -172,9 +174,11 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Process settings
         self.enableParallelCheckBox.setEnabled(enabled)
-        self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked() and enabled)
+        self.cpuCoresComboBox.setEnabled(
+            self.enableParallelCheckBox.isChecked() and enabled)
         self.enableBlockProcessingCheckBox.setEnabled(enabled)
-        self.blockSizeComboBox.setEnabled(self.enableBlockProcessingCheckBox.isChecked() and enabled)
+        self.blockSizeComboBox.setEnabled(
+            self.enableBlockProcessingCheckBox.isChecked() and enabled)
 
         # Census settings
         self.popColumnEdit.setEnabled(enabled)
@@ -222,8 +226,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
                 # Enable UI elements
                 self.openProjectFolder.setEnabled(True)
-                self._set_input_widgets_enabled(True)
-                self._set_settings_widgets_enabled(True)
+                self.set_input_widgets_enabled(True)
+                self.set_settings_widgets_enabled(True)
                 self.addToQgisCheckBox.setChecked(True)
 
                 # Load initial settings
@@ -231,7 +235,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
                 # Show next steps
                 self.logger.info("Project initialized successfully!")
-                self.logger.info('<span style="font-weight: bold; font-size: 11pt; color: #050505;">Next steps: &#8628;</span>')
+                self.logger.info(
+                    '<span style="font-weight: bold; font-size: 11pt; color: '
+                    '#050505;">Next steps: &#8628;</span>')
                 self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
                                  '1. Place input files in the data directory'
                                  '</span>')

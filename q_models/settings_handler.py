@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from qgis.PyQt import QtWidgets, QtCore
 
 import yaml
@@ -67,7 +66,7 @@ class SettingsHandler:
 
             self._pending_log_filename = None
 
-    def _apply_census_update(self, dialog):
+    def _apply_census_update(self):
         """Apply census fields changes when editing is finished."""
         if hasattr(self, '_pending_pop_column') and self._pending_pop_column is not None:
             self.config_manager.update_config('census_pop_column', self._pending_pop_column)
@@ -168,42 +167,49 @@ class SettingsHandler:
         Returns:
             bool: True if settings are valid
         """
+        is_valid = True
+        errors = []
+
         try:
             # Validate census columns
             pop_column = dialog.popColumnEdit.text().strip()
             id_column = dialog.idColumnEdit.text().strip()
 
             if not pop_column:
-                self.logger.error("Population column name cannot be empty")
-                return False
+                errors.append("Population column name cannot be empty")
+                is_valid = False
             if not id_column:
-                self.logger.error("ID column name cannot be empty")
-                return False
+                errors.append("ID column name cannot be empty")
+                is_valid = False
 
             # Validate parallel processing
             if dialog.enableParallelCheckBox.isChecked():
                 try:
                     cores = int(dialog.cpuCoresComboBox.currentText())
                     if cores <= 0:
-                        self.logger.error("Number of CPU cores must be positive")
-                        return False
+                        errors.append("Number of CPU cores must be positive")
+                        is_valid = False
                 except ValueError:
-                    self.logger.error("Invalid number of CPU cores")
-                    return False
+                    errors.append("Invalid number of CPU cores")
+                    is_valid = False
 
             # Validate block size
             if dialog.enableBlockProcessingCheckBox.isChecked():
                 try:
                     w, h = map(int, dialog.blockSizeComboBox.currentText().split(','))
                     if w <= 0 or h <= 0:
-                        self.logger.error("Block size dimensions must be positive")
-                        return False
+                        errors.append("Block size dimensions must be positive")
+                        is_valid = False
                 except ValueError:
-                    self.logger.error("Invalid block size format (should be width,height)")
-                    return False
-
-            return True
+                    errors.append("Invalid block size format (should be width,height)")
+                    is_valid = False
 
         except Exception as e:
             self.logger.error(f"Settings validation failed: {str(e)}")
             return False
+
+            # Log all errors
+        for error in errors:
+            self.logger.error(error)
+
+        return is_valid

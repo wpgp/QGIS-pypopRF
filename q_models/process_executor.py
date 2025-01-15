@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
+import shutil
+import traceback
 from pathlib import Path
-from qgis.PyQt.QtCore import QThread, pyqtSignal, QTimer, QCoreApplication
+
 from pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
 from pypoprf.utils.joblib_manager import joblib_resources
-from qgis.core import QgsProject
-
 from pypoprf.utils.raster import remask_layer
+from qgis.PyQt.QtCore import QThread, pyqtSignal
+from qgis.core import QgsProject
 
 
 class ProcessWorker(QThread):
@@ -101,12 +102,12 @@ class ProcessWorker(QThread):
                 self._verify_outputs(settings)
 
                 self.progress.emit(100, "Analysis completed successfully!")
-                self.finished.emit(True, "Prediction and dasymetric mapping completed successfully!")
+                self.finished.emit(True, "Prediction and dasymetric "
+                                         "mapping completed successfully!")
 
             self._cleanup_temp_dir(settings)
 
         except Exception as e:
-            import traceback
             self.logger.error(f"Analysis failed: {str(e)}")
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.finished.emit(False, str(e))
@@ -129,7 +130,6 @@ class ProcessWorker(QThread):
         """Clean up temporary directory"""
         temp_dir = Path(settings.work_dir) / 'output' / 'temp'
         try:
-            import shutil
             if temp_dir.exists():
                 shutil.rmtree(temp_dir)
                 self.logger.debug(f"Cleaned up temporary directory: {temp_dir}")
@@ -231,19 +231,25 @@ class ProcessExecutor:
     def _set_ui_enabled(self, enabled):
         """Enable/disable UI elements during processing"""
         self.dialog.mainStartButton.setEnabled(True)
-        self.dialog._set_input_widgets_enabled(enabled)
+        self.dialog.set_input_widgets_enabled(enabled)
         self.dialog.workingDirEdit.setEnabled(enabled)
         self.dialog.initProjectButton.setEnabled(enabled)
-        self.dialog._set_settings_widgets_enabled(enabled)
+        self.dialog.set_settings_widgets_enabled(enabled)
 
         if enabled:
             self.dialog.mainStartButton.setText("Start")
             self.dialog.mainStartButton.setStyleSheet(
-                "QPushButton { background-color: #4CAF50; color: black; font-weight: bold; font-size: 10pt; }")
+                "QPushButton { background-color: #4CAF50; "
+                "color: black; "
+                "font-weight: bold; "
+                "font-size: 10pt; }")
         else:
             self.dialog.mainStartButton.setText("Stop")
             self.dialog.mainStartButton.setStyleSheet(
-                "QPushButton { background-color: #f44336; color: black; font-weight: bold; font-size: 10pt; }")
+                "QPushButton { background-color: #f44336; "
+                "color: black; "
+                "font-weight: bold; "
+                "font-size: 10pt; }")
 
     def remove_output_layers(self):
         """Remove any previously added output layers from QGIS"""
@@ -302,35 +308,43 @@ class ProcessExecutor:
     def _validate_all(self):
         """Validate all settings and inputs before starting"""
         try:
+            errors = []
+
+            # Validate inputs
             if not self._validate_inputs():
-                return False
+                errors.append("Input validation failed.")
 
+            # Validate population column name
             if not self.dialog.popColumnEdit.text().strip():
-                self.logger.error("Population column name cannot be empty")
-                return False
-            if not self.dialog.idColumnEdit.text().strip():
-                self.logger.error("ID column name cannot be empty")
-                return False
+                errors.append("Population column name cannot be empty.")
 
+            # Validate ID column name
+            if not self.dialog.idColumnEdit.text().strip():
+                errors.append("ID column name cannot be empty.")
+
+            # Validate parallel processing settings
             if self.dialog.enableParallelCheckBox.isChecked():
                 try:
                     cores = int(self.dialog.cpuCoresComboBox.currentText())
                     if cores <= 0:
-                        self.logger.error("Number of CPU cores must be positive")
-                        return False
+                        errors.append("Number of CPU cores must be positive.")
                 except ValueError:
-                    self.logger.error("Invalid number of CPU cores")
-                    return False
+                    errors.append("Invalid number of CPU cores.")
 
+            # Validate block processing settings
             if self.dialog.enableBlockProcessingCheckBox.isChecked():
                 try:
                     w, h = map(int, self.dialog.blockSizeComboBox.currentText().split(','))
                     if w <= 0 or h <= 0:
-                        self.logger.error("Block size dimensions must be positive")
-                        return False
-                except:
-                    self.logger.error("Invalid block size format (should be width,height)")
-                    return False
+                        errors.append("Block size dimensions must be positive.")
+                except ValueError:
+                    errors.append("Invalid block size format (should be width,height).")
+
+            # Log all errors and return final status
+            if errors:
+                for error in errors:
+                    self.logger.error(error)
+                return False
 
             return True
 

@@ -33,11 +33,6 @@ class ConsoleStream(QObject):
         if text:
             self.messageReceived.emit(text)
 
-    def flush(self):
-        """Required for stream interface."""
-        pass
-
-
 class ConsoleHandler:
     """Handler for QGIS plugin console output."""
 

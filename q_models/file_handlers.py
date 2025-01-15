@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import shutil
 import platform
 import subprocess
@@ -58,7 +57,9 @@ class FileHandler:
             self.logger.error(f"Failed to copy file: {str(e)}")
             return None
 
-    def validate_inputs(self, mastergrid_path: str, census_path: str, covariate_count: int) -> bool:
+    def validate_inputs(self, mastergrid_path: str,
+                        census_path: str,
+                        covariate_count: int) -> bool:
         """
         Validate required input files.
 
@@ -94,11 +95,14 @@ class FileHandler:
         if folder_path and Path(folder_path).exists():
             try:
                 if platform.system() == "Windows":
-                    subprocess.run(['explorer', folder_path])
+                    subprocess.run(['explorer', folder_path], check=True)
                 elif platform.system() == "Darwin":  # macOS
-                    subprocess.run(['open', folder_path])
-                else:  # linux
-                    subprocess.run(['xdg-open', folder_path])
+                    subprocess.run(['open', folder_path], check=True)
+                else:  # Linux
+                    subprocess.run(['xdg-open', folder_path], check=True)
+            except subprocess.CalledProcessError as e:
+                self.logger.error(f"Failed to open folder with error code "
+                                  f"{e.returncode}: {str(e)}")
             except Exception as e:
                 self.logger.error(f"Failed to open folder: {str(e)}")
         else:

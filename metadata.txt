@@ -1,9 +1,5 @@
-# This file contains metadata for your plugin.
-
-# This file should be included when you package your plugin.# Mandatory items:
-
 [general]
-name=QGIS pypopRF 
+name=pypopRF
 qgisMinimumVersion=3.0
 description=A plugin for population prediction and dasymetric mapping using machine learning
 version=0.1
@@ -14,33 +10,25 @@ about=The QGIS PyPopRF plugin provides tools for high-resolution population pred
 
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
-# End of mandatory metadata
-
-# Recommended items:
 
 hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
-# changelog=
+changelog=Version 0.1:
+    * Initial release
+    * Basic population modeling functionality
+    * Support for parallel processing
+    * Integration with QGIS layer system
 
-# Tags are comma separated with spaces allowed
+
 tags=population, mapping, dasymetric, machine learning, GIS, Python
-
 homepage=https://wpgp.github.io/QGIS-pypopRF
-category=Plugins
+category=Raster
 icon=icon.png
-# experimental flag
-experimental=True
-
-# deprecated flag (applies to the whole plugin, not just a single version)
+experimental=False
 deprecated=False
 
-# Since QGIS 3.8, a comma separated list of plugins to be installed
-# (or upgraded) can be specified.
-# Check the documentation for more information.
-# plugin_dependencies=
+plugin_dependencies=numpy, pandas, scikit-learn, geopandas, rasterio, fiona, shapely, pyproj, matplotlib, seaborn, joblib, scipy, gdal
 
-Category of the plugin: Raster, Vector, Database or Web
-# category=
+
 
 # If the plugin can run on QGIS Server.
 server=False
