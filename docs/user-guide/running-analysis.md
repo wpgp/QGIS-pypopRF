@@ -5,12 +5,12 @@ This guide explains the process of running population analysis using the pypopRF
 ## Before Running Analysis
 
 ### Pre-run Checklist
-- [x] All required files loaded
-- [x] Settings configured
-- [x] Sufficient disk space
-- [x] Adequate memory available
-- [x] Column names verified
-- [x] CRS consistency checked
+- All required files loaded
+- Settings configured
+- Sufficient disk space
+- Adequate memory available
+- Column names verified
+- CRS consistency checked
 
 ### System Preparation
 1. Close unnecessary applications
@@ -25,18 +25,21 @@ This guide explains the process of running population analysis using the pypopRF
 ### Starting the Process
 
 1. **Verification Phase**
+
    - Input validation
    - Settings check
    - Resource availability check
    - CRS consistency verification
 
 2. **Initialization**
+
    - Project structure check
    - Temporary directory creation
    - Log file preparation
    - Resource allocation
 
 3. **Click Start**
+
    - Green button indicates ready
    - Console shows initialization
    - Progress bar activates
@@ -114,21 +117,25 @@ Example console messages:
 ### Output Files
 
 1. **prediction.tif**
+
    - Population probability surface
    - Float values (0-1)
    - Higher values = higher probability
 
 2. **normalized_census.tif**
+
    - Normalized population values
    - Used in final calculations
    - Preserves population totals
 
 3. **dasymetric.tif**
+
    - Final population distribution
    - Integer values (people)
    - Main analysis result
 
 4. **features.csv**
+
    - Extracted feature values
    - Model inputs
    - Statistical summaries
@@ -172,6 +179,7 @@ Solution: Check input data validity
 ### Recovery Steps
 
 1. **Process Fails**
+
    - Check error message
    - Review log file
    - Adjust settings
@@ -179,6 +187,7 @@ Solution: Check input data validity
    - Restart analysis
 
 2. **System Crashes**
+
    - Close QGIS
    - Clear temporary files
    - Check system resources
@@ -217,3 +226,7 @@ Solution: Check input data validity
 2. Create backups
 3. Document settings used
 4. Save log files
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>

@@ -36,20 +36,24 @@ This tab manages all input data files required for analysis.
 
 ### Raster Inputs
 - **Mastergrid**: Zone definition raster (required)
+
   - Format: GeoTIFF
   - Must contain unique zone IDs
   - Should align with census boundaries
 
 - **Mask** (optional): Water or exclusion mask
+
   - Binary raster (0/1)
   - Used to exclude specific areas
 
 - **Constrain** (optional): Additional constraints
+
   - Used for refining population distribution
   - Must match mastergrid extent
 
 ### Census Data
 - **CSV File**: Population data input
+
   - Must contain zone IDs matching mastergrid
   - Population counts required
   - Additional attributes optional
@@ -58,10 +62,11 @@ This tab manages all input data files required for analysis.
 - List of predictive variables
 - **Add Covariate**: Add new raster files
 - Table columns:
+
   - Name: Covariate identifier
   - Size: File size
   - File Path: Location on disk
-  - Actions: Delete/modify options
+  - Actions: Delete covariate
 
 ## Settings Tab
 
@@ -70,7 +75,8 @@ Configure processing parameters and analysis options.
 ### Logging Settings
 - **Save Logs**: Enable/disable log file creation
 - **Log File Name**: Custom name for log file
-- **Logging Level**: 
+- **Logging Level**:
+
   - INFO: Standard processing information
   - DEBUG: Detailed debugging information
 
@@ -81,10 +87,12 @@ Configure processing parameters and analysis options.
 
 ### Process Settings
 - **Parallel Processing**: Enable multi-core processing
+
   - CPU Cores: Number of parallel workers
   - Recommended: Leave 1-2 cores free for system
 
 - **Block Processing**: For large datasets
+
   - Block Size: Processing chunk dimensions
   - Default: 512x512 pixels
   - Adjust based on available memory
@@ -131,6 +139,7 @@ The lower section of the plugin window shows:
 ## Interface Customization
 
 The interface adapts to your workflow:
+
 - Resizable window
 - Adjustable console area
 - Collapsible sections
@@ -151,3 +160,7 @@ Error messages appear in:
 2. Status bar
 3. Log files
 4. Pop-up notifications when critical
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>

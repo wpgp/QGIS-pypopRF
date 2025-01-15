@@ -11,7 +11,7 @@ A typical workflow consists of these steps:
 3. Running the analysis
 4. Viewing results
 
-Expected time: 15-30 minutes
+Expected time: 15-30 minutes (depending on the size and complexity of your data)
 
 ## Before You Begin
 
@@ -19,6 +19,7 @@ Ensure you have:
 
 - QGIS installed and pypopRF plugin enabled
 - Sample data files:
+
   - Census boundaries with population counts
   - Building footprints or similar covariates
   - Administrative boundaries
@@ -28,6 +29,7 @@ Ensure you have:
 1. Open QGIS
 2. Click the pypopRF icon in the toolbar or find it in `Plugins → pypopRF`
 3. In the plugin window:
+
    - Select the "Main" tab
    - Choose a working directory
    - Click "Initialize New Project"
@@ -58,26 +60,27 @@ my_project/
    - Select your population data CSV
    - Must contain: zone IDs and population counts
 
-   **Covariates:*
+   **Covariates:**
 
    - Click "Add Covariate"
    - Select building/infrastructure rasters
    - Add at least one covariate
-
-
-### Optional Files
-- Water mask to exclude water bodies
-- Constraints for specific areas
+   
+   **Optional Files:**
+   - Water mask to exclude water bodies
+   - Constraints for specific areas
 
 ## Step 3: Configure Settings
 
 In the "Settings" tab:
 
 1. **Census Fields:**
+
    - Set Population Column Name (e.g., "pop")
    - Set ID Column Name (e.g., "id")
 
 2. **Processing Options:**
+
    - Enable parallel processing if needed
    - Set number of CPU cores
    - Adjust block size for large areas
@@ -119,15 +122,18 @@ The main output files are saved in your project's output directory:
 ## Common Issues
 
 1. **Missing Data Error:**
+
    - Ensure all required files are loaded
    - Check file paths in config.yaml
 
 2. **Processing Stops:**
+
    - Reduce number of CPU cores
    - Increase block size
    - Check available memory
 
 3. **Unexpected Results:**
+
    - Verify census data columns
    - Check covariate alignment
    - Review mastergrid zones
@@ -135,6 +141,11 @@ The main output files are saved in your project's output directory:
 ## Getting Help
 - See detailed [User Guide](../user-guide/interface.md)
 - Report issues on [GitHub](https://github.com/wpgp/QGIS-pypopRF/issues)
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>
+
 ---
 
 *Next: [User Interface Guide](../user-guide/interface.md)*

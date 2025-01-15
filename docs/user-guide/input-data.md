@@ -13,7 +13,6 @@ The mastergrid is a raster file defining analysis zones that match your census u
 - Format: GeoTIFF (.tif)
 - Data Type: Integer
 - Values: Unique IDs for each zone
-- No Data Value: Typically -99 or 0
 - CRS: Must match other input rasters
 
 **Important Considerations:**
@@ -38,18 +37,20 @@ Population counts and zone information in tabular format.
 
 - Format: CSV file (.csv)
 - Required Columns:
+
   - Zone ID (matching mastergrid)
   - Population count
+
 - Encoding: UTF-8
 - No special characters in headers
 
 **Example Structure:**
-```csv
-id,population
-1,2500
-2,3200
-3,1800
-```
+
+| id | population |
+|----|------------|
+| 1  | 2500       |
+| 2  | 3200       |
+| 3  | 1800       |
 
 **Data Validation:**
 
@@ -167,15 +168,15 @@ Additional spatial constraints for population distribution.
 
 Before running analysis:
 
-- [x] All required files present
-- [x] Consistent CRS across datasets
-- [x] Matching resolutions
-- [x] Census IDs match mastergrid
-- [x] No missing or invalid values
-- [x] Proper file formats
-- [x] Correct column names
-- [x] Valid value ranges
-- [x] Complete spatial coverage
+- All required files present
+- Consistent CRS across datasets
+- Matching resolutions
+- Census IDs match mastergrid
+- No missing or invalid values
+- Proper file formats
+- Correct column names
+- Valid value ranges
+- Complete spatial coverage
 
 ## File Size Considerations
 
@@ -185,13 +186,10 @@ Recommended maximum file sizes:
 - Census CSV: < 100 MB
 - Total project data: < 20 GB
 
-
-## Additional Resources
-
-- [QGIS Raster Processing Guide](https://docs.qgis.org/latest/en/docs/user_manual/processing/index.html)
-- [Census Data Preparation](https://wpgp.github.io/pypopRF/data-preparation)
-- [Building Data Resources](https://sdi.worldpop.org/resources)
-
 ---
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>
 
 *Next: [Settings Guide](settings.md)*

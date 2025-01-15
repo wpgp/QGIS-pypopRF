@@ -13,16 +13,6 @@ This guide walks you through the process of installing the pypopRF plugin for QG
 - Ubuntu 20.04/22.04 or other Linux distributions
 - macOS 11 (Big Sur) or later
 
-### Hardware Recommendations
-- **Minimum:**
-  - 8 GB RAM
-  - Dual-core processor
-  - 10 GB free disk space
-- **Recommended:**
-  - 16 GB RAM or more
-  - Quad-core processor
-  - 50 GB free disk space for large projects
-
 ## Installation Methods
 
 ### Method 1: Install from QGIS Plugin Repository (Recommended)
@@ -61,15 +51,18 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 ## Post-Installation Steps
 
 1. **Enable the Plugin:**
+
    - Go to `Plugins` → `Manage and Install Plugins`
    - Find "pypopRF Population Mapping" in the list
    - Check the box next to it to enable
 
 2. **Verify Installation:**
+
    - The pypopRF icon should appear in your QGIS toolbar
    - The plugin should be listed under `Plugins` → `pypopRF`
 
 3. **First Launch:**
+
    - Click the pypopRF icon or find it in the Plugins menu
    - The plugin interface should open without errors
 
@@ -78,16 +71,19 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 ### Common Installation Issues
 
 1. **Plugin Not Found in Repository**
+
    - Check your internet connection
    - Verify QGIS Plugin Repository settings
    - Try refreshing the plugin list
 
 2. **Dependencies Installation Failed**
+
    - Open QGIS Python Console (Plugins → Python Console)
    - Check error messages
    - Verify Python package installation permissions
 
 3. **Plugin Not Loading**
+
    - Check QGIS version compatibility
    - Verify Python dependencies
    - Check system permissions
@@ -97,6 +93,7 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 
 - QGIS will automatically notify you of plugin updates
 - To update manually:
+
   1. Go to `Plugins` → `Manage and Install Plugins`
   2. Select `Installed` from the left sidebar
   3. Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`
@@ -109,6 +106,10 @@ To remove the plugin:
 2. Select `Installed` from the left sidebar
 3. Find "pypopRF Population Mapping"
 4. Click `Uninstall Plugin`
+
+<div align="right">
+  <a href="#top">↑ Back to Top</a>
+</div>
 
 ---
 

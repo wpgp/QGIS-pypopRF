@@ -19,6 +19,7 @@
 pypopRF is a powerful tool developed by the WorldPop SDI Team that transforms your input data into detailed population distribution maps. It combines census data, building information, and machine learning to create accurate population estimates.
 
 💡 Technical Foundation: The plugin is built on the [pypopRF Python package](https://github.com/wpgp/pypopRF), which provides the core computational functionality. While the plugin makes these tools accessible through a graphical interface, advanced users can also use the Python package directly for more customized workflows.
+
 ⚠️ Note: For advanced features and detailed technical documentation of the underlying algorithms, please refer to the [pypopRF documentation](https://wpgp.github.io/pypopRF/).
 
 ## How It Works
@@ -53,7 +54,7 @@ graph LR
 4. **Console**: Monitor progress and view logs
 5. **Control Panel**: Start/stop analysis and view progress
 
-💡 **Pro Tip:** Use the tabs to navigate through the workflow in a logical sequence.
+💡 **Tip:** Use the tabs to navigate through the workflow in a logical sequence.
 
 ## Analysis Results
 
