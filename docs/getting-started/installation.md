@@ -94,9 +94,9 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 - QGIS will automatically notify you of plugin updates
 - To update manually:
 
-  1. Go to `Plugins` → `Manage and Install Plugins`
-  2. Select `Installed` from the left sidebar
-  3. Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`
+   1. Go to `Plugins` → `Manage and Install Plugins`
+   2. Select `Installed` from the left sidebar
+   3. Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`
 
 ## Uninstalling
 
