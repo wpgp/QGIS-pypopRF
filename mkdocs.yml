@@ -37,15 +37,14 @@ nav:
   - Development: development.md
 
 markdown_extensions:
-  - pymdownx.highlight:
+  - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-      anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.highlight
   - admonition
   - pymdownx.details
   - attr_list
