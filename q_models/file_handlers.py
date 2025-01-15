@@ -95,11 +95,11 @@ class FileHandler:
         if folder_path and Path(folder_path).exists():
             try:
                 if platform.system() == "Windows":
-                    subprocess.run(['explorer', folder_path], check=True)
+                    subprocess.run(['explorer', folder_path])
                 elif platform.system() == "Darwin":  # macOS
-                    subprocess.run(['open', folder_path], check=True)
+                    subprocess.run(['open', folder_path])
                 else:  # Linux
-                    subprocess.run(['xdg-open', folder_path], check=True)
+                    subprocess.run(['xdg-open', folder_path])
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to open folder with error code "
                                   f"{e.returncode}: {str(e)}")
