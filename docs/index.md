@@ -1,14 +1,10 @@
 # QGIS pypopRF Plugin Documentation
 
 <div align="center">
-  <img src="images/wp_logo.png" alt="WorldPop Logo" width="200"/>
-  <br/>
-  <em>High-Resolution Population Mapping Made Easy</em>
+  <img src="images/wp_logo.png" alt="WorldPop Logo" width="300"/>
+
 </div>
 
-<div align="right">
-  <a href="#top">↑ Back to Top</a>
-</div>
 
 ## Quick Navigation
 - [About pypopRF](#about-pyPoprf)
@@ -88,12 +84,14 @@ The plugin generates three key outputs that show the progression of the analysis
 ## Key Features
 
 ✅ **User-Friendly Interface**
+
 - Visual data management
 - Intuitive configuration
 - Real-time progress tracking
 - Direct QGIS integration
 
 ⚠️ **Important Considerations**
+
 - Ensure consistent coordinate systems
 - Verify input data quality
 - Monitor system resources
@@ -104,16 +102,19 @@ The plugin generates three key outputs that show the progression of the analysis
 The plugin needs three main types of data:
 
 1. **Mastergrid File** (Required)
+
    - Defines analysis zones
    - Matches census boundaries
    - GeoTIFF format
 
 2. **Census Data** (Required)
+
    - Population counts by zone
    - CSV format
    - Matches mastergrid IDs
 
 3. **Covariates** (At least one required)
+
    - Building counts/footprints
    - Infrastructure data
    - Other relevant predictors
@@ -128,6 +129,7 @@ The plugin needs three main types of data:
 ## About WorldPop SDI
 
 The WorldPop Spatial Data Infrastructure (SDI) Team at the University of Southampton specializes in:
+
 - Population mapping
 - Spatial demographics
 - Open-source geospatial tools
