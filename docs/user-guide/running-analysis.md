@@ -118,27 +118,11 @@ Example console messages:
 
 1. **prediction.tif**
 
-   - Population probability surface
-   - Float values (0-1)
-   - Higher values = higher probability
-
 2. **normalized_census.tif**
-
-   - Normalized population values
-   - Used in final calculations
-   - Preserves population totals
 
 3. **dasymetric.tif**
 
-   - Final population distribution
-   - Integer values (people)
-   - Main analysis result
-
 4. **features.csv**
-
-   - Extracted feature values
-   - Model inputs
-   - Statistical summaries
 
 ### Quality Assessment
 
