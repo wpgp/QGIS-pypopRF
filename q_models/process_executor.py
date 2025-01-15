@@ -253,54 +253,32 @@ class ProcessExecutor:
 
     def remove_output_layers(self):
         """Remove any previously added output layers from QGIS"""
-        if not self.iface:
+        if not self.iface or not self.output_layers:
             return
 
-        # Get list of all layers
-        layers = self.iface.mapCanvas().layers()
         project = QgsProject.instance()
-        canvas = self.iface.mapCanvas()
+        for layer in self.output_layers:
+            try:
+                project.removeMapLayer(layer.id())
+            except Exception as e:
+                self.logger.warning(f"Error removing layer: {str(e)}")
 
-        # Names of output layers we want to remove
-        output_names = ['Prediction', 'Normalized Census', 'Population Distribution']
-
-        removed_count = 0
-        for layer in layers:
-            layer_name = layer.name()
-            if layer_name in output_names:
-                try:
-                    project.removeMapLayer(layer.id())
-                    canvas.refresh()
-                    self.logger.info(f"Removed layer: {layer_name}")
-                    removed_count += 1
-                except Exception as e:
-                    self.logger.warning(f"Error removing layer {layer_name}: {str(e)}")
-
-        self.logger.info(f"Total layers removed: {removed_count}")
-        # Clear our tracking list
         self.output_layers.clear()
+        self.iface.mapCanvas().refresh()
 
     def add_output_layers(self):
         """Add all output layers to QGIS"""
         try:
             output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
-            layers = [
-                ('prediction.tif', 'Prediction'),
-                ('normalized_census.tif', 'Normalized Census'),
-                ('dasymetric.tif', 'Population Distribution')
-            ]
+            filenames = ['prediction.tif', 'normalized_census.tif', 'dasymetric.tif']
 
-            for filename, layer_name in layers:
+            for filename in filenames:
                 file_path = output_dir / filename
                 if file_path.exists():
-                    layer = self.iface.addRasterLayer(str(file_path), layer_name)
+                    layer = self.iface.addRasterLayer(str(file_path), '')
                     if layer and layer.isValid():
                         self.output_layers.append(layer)
-                        self.logger.info(f"Added {layer_name} layer to QGIS")
-                    else:
-                        self.logger.warning(f"Failed to add {layer_name} layer")
-                else:
-                    self.logger.warning(f"File not found: {filename}")
+                        self.logger.info(f"Added layer from {filename}")
 
         except Exception as e:
             self.logger.error(f"Failed to add output layers: {str(e)}")

@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""This script uploads a plugin package to the plugin repository.
-        Authors: A. Pasotti, V. Picavet
-        git sha              : $TemplateVCSFormat
-"""
-
 import sys
 import getpass
 import xmlrpc.client
