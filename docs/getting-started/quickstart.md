@@ -122,18 +122,15 @@ The main output files are saved in your project's output directory:
 ## Common Issues
 
 1. **Missing Data Error:**
-
    - Ensure all required files are loaded
    - Check file paths in config.yaml
 
 2. **Processing Stops:**
-
    - Reduce number of CPU cores
    - Increase block size
    - Check available memory
 
 3. **Unexpected Results:**
-
    - Verify census data columns
    - Check covariate alignment
    - Review mastergrid zones
