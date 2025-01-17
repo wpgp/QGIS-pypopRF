@@ -17,7 +17,7 @@ from ..config.settings import Settings
 from ..utils.joblib_manager import joblib_resources
 from ..utils.logger import get_logger
 from ..utils.matplotlib_utils import with_non_interactive_matplotlib
-from ..utils.raster_processing import progress_bar
+from qgis.PyQt.QtCore import QThreadPool, QRunnable
 
 logger = get_logger()
 
@@ -137,6 +137,50 @@ class Model:
                 self._save_model()
 
         logger.info("Model training completed successfully")
+
+    def _save_model(self) -> None:
+        """Save model and scaler to disk."""
+        model_path = self.output_dir / 'model.pkl.gz'
+        scaler_path = self.output_dir / 'scaler.pkl.gz'
+
+        try:
+            joblib.dump(self.model, model_path)
+            logger.debug(f"Model saved to: {model_path}")
+
+            joblib.dump(self.scaler, scaler_path)
+            logger.debug(f"Scaler saved to: {scaler_path}")
+
+            logger.info("Model and scaler saved successfully")
+        except Exception as e:
+            logger.error(f"Failed to save model or scaler: {str(e)}")
+            raise
+
+    def load_model(self,
+                   model_path: str,
+                   scaler_path: str) -> None:
+        """
+        Load saved model and scaler.
+
+        Args:
+            model_path: Path to saved model
+            scaler_path: Path to saved scaler
+        """
+        logger.info("Loading saved model and scaler")
+
+        try:
+            logger.debug(f"Loading model from: {model_path}")
+            self.model = joblib.load(model_path)
+
+            logger.debug(f"Loading scaler from: {scaler_path}")
+            self.scaler = joblib.load(scaler_path)
+
+            self.feature_names = self.scaler.get_feature_names_out()
+            logger.debug(f"Loaded feature names: {self.feature_names.tolist()}")
+
+            logger.info("Model and scaler loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load model or scaler: {str(e)}")
+            raise
 
     def _select_features(self,
                          X: np.ndarray,
@@ -279,30 +323,22 @@ class Model:
             logger.error("Model not trained. Call train() first")
             raise RuntimeError("Model not trained. Call train() first.")
 
-        from concurrent.futures import ThreadPoolExecutor
-        default_executor = ThreadPoolExecutor
 
-        try:
-            from qgis.PyQt.QtCore import QThreadPool, QRunnable
-            class RasterWorker(QRunnable):
-                def __init__(self, window, process_func):
-                    super().__init__()
-                    self.window = window
-                    self.process_func = process_func
-                    self.result = None
+        class RasterWorker(QRunnable):
+            def __init__(self, window, process_func):
+                super().__init__()
+                self.window = window
+                self.process_func = process_func
+                self.result = None
 
-                def run(self):
-                    try:
-                        self.process_func(self.window)
-                    except Exception as e:
-                        logger.error(f"Error in RasterWorker: {str(e)}")
-                        import traceback
-                        logger.error(f"Traceback: {traceback.format_exc()}")
+            def run(self):
+                try:
+                    self.process_func(self.window)
+                except Exception as e:
+                    logger.error(f"Error in RasterWorker: {str(e)}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
 
-            qgis_executor = QThreadPool.globalInstance()
-            IN_QGIS = True
-        except ImportError:
-            IN_QGIS = False
 
         with joblib_resources():
             logger.debug("Opening covariate rasters")
@@ -351,6 +387,7 @@ class Model:
                             dst.write(res, window=window, indexes=1)
 
                     if self.settings.by_block:
+                        qgis_executor = QThreadPool.globalInstance()
                         logger.info("Processing by blocks")
                         try:
                             logger.debug("Getting block windows...")
@@ -363,33 +400,23 @@ class Model:
                                 idx, window = block_window
                                 windows.append(window)
 
-                            if IN_QGIS:
-                                logger.debug(f"Number of workers to create: {len(windows)}")
-                                qgis_executor.setMaxThreadCount(self.settings.max_workers)
-                                workers = []
+                            logger.debug(f"Number of workers to create: {len(windows)}")
+                            qgis_executor.setMaxThreadCount(self.settings.max_workers)
+                            workers = []
 
-                                for i, window in enumerate(windows):
-                                    try:
-                                        worker = RasterWorker(window, process)
-                                        workers.append(worker)
-                                        qgis_executor.start(worker)
-                                    except Exception as e:
-                                        import traceback
-                                        logger.error(f"Full traceback: {traceback.format_exc()}")
-                                        raise
+                            for i, window in enumerate(windows):
+                                try:
+                                    worker = RasterWorker(window, process)
+                                    workers.append(worker)
+                                    qgis_executor.start(worker)
+                                except Exception as e:
+                                    import traceback
+                                    logger.error(f"Full traceback: {traceback.format_exc()}")
+                                    raise
 
-                                logger.debug("Waiting for workers to complete...")
-                                qgis_executor.waitForDone()
-                                logger.debug("All workers completed")
-
-                            else:
-                                with default_executor(max_workers=self.settings.max_workers) as executor:
-                                    list(progress_bar(
-                                        executor.map(process, windows),
-                                        self.settings.show_progress,
-                                        len(windows),
-                                        desc="Prediction"
-                                    ))
+                            logger.debug("Waiting for workers to complete...")
+                            qgis_executor.waitForDone()
+                            logger.debug("All workers completed")
 
                         except Exception as e:
                             logger.error(f"Error in block processing setup: {str(e)}")
@@ -413,46 +440,3 @@ class Model:
         logger.info("Prediction completed successfully")
         return str(outfile)
 
-    def _save_model(self) -> None:
-        """Save model and scaler to disk."""
-        model_path = self.output_dir / 'model.pkl.gz'
-        scaler_path = self.output_dir / 'scaler.pkl.gz'
-
-        try:
-            joblib.dump(self.model, model_path)
-            logger.debug(f"Model saved to: {model_path}")
-
-            joblib.dump(self.scaler, scaler_path)
-            logger.debug(f"Scaler saved to: {scaler_path}")
-
-            logger.info("Model and scaler saved successfully")
-        except Exception as e:
-            logger.error(f"Failed to save model or scaler: {str(e)}")
-            raise
-
-    def load_model(self,
-                   model_path: str,
-                   scaler_path: str) -> None:
-        """
-        Load saved model and scaler.
-
-        Args:
-            model_path: Path to saved model
-            scaler_path: Path to saved scaler
-        """
-        logger.info("Loading saved model and scaler")
-
-        try:
-            logger.debug(f"Loading model from: {model_path}")
-            self.model = joblib.load(model_path)
-
-            logger.debug(f"Loading scaler from: {scaler_path}")
-            self.scaler = joblib.load(scaler_path)
-
-            self.feature_names = self.scaler.get_feature_names_out()
-            logger.debug(f"Loaded feature names: {self.feature_names.tolist()}")
-
-            logger.info("Model and scaler loaded successfully")
-        except Exception as e:
-            logger.error(f"Failed to load model or scaler: {str(e)}")
-            raise

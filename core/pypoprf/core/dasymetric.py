@@ -387,68 +387,6 @@ class DasymetricMapper:
         return merged
 
 
-    def _process_window(self,
-                        window: Window,
-                        prob_ds: rasterio.DatasetReader,
-                        norm_ds: rasterio.DatasetReader,
-                        dst_ds: rasterio.DatasetReader,
-                        nodata: float) -> dict:
-        """Process window with statistics tracking."""
-        stats = {'window': window}
-
-        with self._read_lock:
-            norm_data = norm_ds.read(window=window)
-            pred_data = prob_ds.read(window=window)
-            logger.debug("Window data read successfully")
-
-        # Track input statistics
-        valid_norm = norm_data != norm_ds.nodata
-        valid_pred = pred_data != prob_ds.nodata
-        stats.update({
-            'valid_norm_pixels': np.sum(valid_norm),
-            'valid_pred_pixels': np.sum(valid_pred),
-            'norm_range': [
-                float(np.min(norm_data[valid_norm])) if np.any(valid_norm) else None,
-                float(np.max(norm_data[valid_norm])) if np.any(valid_norm) else None
-            ],
-            'pred_range': [
-                float(np.min(pred_data[valid_pred])) if np.any(valid_pred) else None,
-                float(np.max(pred_data[valid_pred])) if np.any(valid_pred) else None
-            ]
-        })
-
-        # Calculate result
-        result = np.round(norm_data * pred_data).astype('int32')
-
-        # Apply masks
-        mask_invalid = np.logical_or(norm_data == norm_ds.nodata,
-                                     pred_data == prob_ds.nodata)
-        result = np.where(mask_invalid, nodata, result)
-
-        valid_result = result != nodata
-        if np.any(valid_result):
-            stats.update({
-                'valid_output_pixels': int(np.sum(valid_result)),
-                'output_sum': int(np.sum(result[valid_result])),
-                'output_range': [
-                    int(np.min(result[valid_result])),
-                    int(np.max(result[valid_result]))
-                ]
-            })
-            logger.debug(f"Window processed: {stats['valid_output_pixels']} valid pixels")
-        else:
-            stats.update({
-                'valid_output_pixels': 0,
-                'output_sum': 0,
-                'output_range': [None, None]
-            })
-            logger.warning(f"Window {window} produced no valid output pixels")
-
-        with self._write_lock:
-            dst_ds.write(result, window=window)
-            logger.debug("Window result written successfully")
-
-        return stats
 
     @with_non_interactive_matplotlib
     def _create_normalized_raster(self,
@@ -518,8 +456,6 @@ class DasymetricMapper:
                     windows=windows,
                     process_func=process,
                     max_workers=self.settings.max_workers,
-                    show_progress=self.settings.show_progress,
-                    desc="Creating normalized raster"
                 )
             else:
                 logger.info("Processing entire raster at once")
@@ -595,8 +531,6 @@ class DasymetricMapper:
                     windows=windows,
                     process_func=process,
                     max_workers=self.settings.max_workers,
-                    show_progress=self.settings.show_progress,
-                    desc="Creating normalized raster"
                 )
             else:
                 logger.info("Processing entire raster at once")

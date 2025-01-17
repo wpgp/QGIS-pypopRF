@@ -227,8 +227,6 @@ def remask_layer(mastergrid: str,
                     windows=windows,
                     process_func=process,
                     max_workers=max_workers,
-                    show_progress=show_progress,
-                    desc="Remasking mastergrid"
                 )
 
             else:
@@ -291,8 +289,6 @@ def raster_stat(infile: str,
                     windows=windows,
                     process_func=process,
                     max_workers=max_workers,
-                    show_progress=show_progress,
-                    desc="Dasymetric raster statistics"
                 )
 
                 res = pd.concat(df, ignore_index=True)
@@ -365,8 +361,6 @@ def raster_stat_stack(infiles: Dict[str, str],
                         windows=windows,
                         process_func=process,
                         max_workers=max_workers,
-                        show_progress=show_progress,
-                        desc="Feature Extraction"
                     )
                 else:
                     m = mst.read(1)
