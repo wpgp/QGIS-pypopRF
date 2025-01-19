@@ -1,25 +1,24 @@
-# src/pypoprf/core/model.py
+import threading
+from pathlib import Path
+from typing import Tuple, Optional, List, Dict
+
+import joblib
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from pathlib import Path
-import joblib
 import rasterio
-import threading
-import concurrent.futures
-from typing import Tuple, Optional, List, Dict
-from sklearn.preprocessing import RobustScaler
+from qgis.PyQt.QtCore import QThreadPool, QThread
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_validate
 from sklearn.inspection import permutation_importance
+from sklearn.model_selection import cross_validate
+from sklearn.preprocessing import RobustScaler
 
 from ..config.settings import Settings
 from ..utils.joblib_manager import joblib_resources
 from ..utils.logger import get_logger
-from ..utils.matplotlib_utils import with_non_interactive_matplotlib
-from qgis.PyQt.QtCore import QThreadPool, QRunnable
+from ..utils.workers import PredictionWorker
 
 logger = get_logger()
+
 
 class Model:
     """
@@ -50,7 +49,6 @@ class Model:
         self.feature_names = None
         self.target_mean = None
 
-        # Create output directory
         self.output_dir = Path(settings.work_dir) / 'output'
         self.output_dir.mkdir(exist_ok=True)
 
@@ -100,7 +98,6 @@ class Model:
                     raise
 
         if model_path is None:
-            logger.info("Training new model")
             X_scaled = self.scaler.transform(X)
             self.model = RandomForestRegressor(n_estimators=500)
             logger.debug(f"Initialized RandomForestRegressor with {self.model.n_estimators} trees")
@@ -185,8 +182,7 @@ class Model:
     def _select_features(self,
                          X: np.ndarray,
                          y: np.ndarray,
-                         limit: float = 0.05,
-                         plot: bool = True) -> Tuple[pd.DataFrame, np.ndarray]:
+                         limit: float = 0.05) -> Tuple[pd.DataFrame, np.ndarray]:
         """
         Select features based on importance using permutation importance.
         """
@@ -199,27 +195,13 @@ class Model:
         logger.debug("Fitting initial model for feature importance")
         model = self.model.fit(X, y)
 
-        try:
-            from qgis.core import Qgis
-            IN_QGIS = True
-        except ImportError:
-            IN_QGIS = False
-
         logger.info("Calculating permutation importance")
-        if IN_QGIS:
-            result = permutation_importance(
-                model, X, y,
-                n_repeats=10,
-                n_jobs=1,
-                scoring='neg_root_mean_squared_error'
-            )
-        else:
-            result = permutation_importance(
-                model, X, y,
-                n_repeats=10,
-                n_jobs=2,
-                scoring='neg_root_mean_squared_error'
-            )
+        result = permutation_importance(
+            model, X, y,
+            n_repeats=10,
+            n_jobs=1,
+            scoring='neg_root_mean_squared_error'
+        )
 
         sorted_idx = result.importances_mean.argsort()
 
@@ -229,62 +211,23 @@ class Model:
         )
 
         selected = importances.columns.values[importances.mean(axis=0) > limit]
-
-        if plot:
-            logger.debug("Creating feature importance plot")
-            self._plot_feature_importance(importances, limit)
-
-        logger.info(f"Selected {len(selected)} features out of {len(names)} features")
-        logger.debug(f"Selected features: {selected.tolist()}")
-
         return importances, selected
-
-    @with_non_interactive_matplotlib
-    def _plot_feature_importance(self,
-                                 importance_df: pd.DataFrame,
-                                 limit: float) -> None:
-        """
-        Create box plot visualization of feature importances.
-
-        Args:
-            importance_df: DataFrame with feature importances
-            limit: Threshold line to display
-        """
-        logger.info("Creating feature importance plot")
-
-        sy = importance_df.shape[1] * 0.25 + 0.5
-        fig, ax = plt.subplots(1, 1, figsize=(4, sy), dpi=90)
-
-        importance_df.plot.box(
-            vert=False,
-            whis=5,
-            ax=ax,
-            color='k',
-            sym='.k'
-        )
-
-        ax.axvline(x=limit, color='k', linestyle='--', lw=0.5)
-        ax.set_xlabel('Decrease in nRMSE')
-
-        plt.tight_layout()
-        save_path = Path(self.settings.work_dir) / 'output' / 'feature_selection.png'
-        plt.savefig(save_path)
-        plt.close()
-
-        logger.info(f"Feature importance plot saved to: {save_path}")
 
     def _calculate_cv_scores(self,
                              X_scaled: np.ndarray,
                              y: np.ndarray,
-                             cv: int = 10) -> None:
+                             cv: int = 10) -> dict:
         """Calculate and print cross-validation scores."""
 
-        logger.debug(f"CV folds: {cv}")
+        logger.debug(f"Starting {cv}-fold cross-validation")
+        logger.debug(f"Input shapes: X={X_scaled.shape}, y={y.shape}")
 
         scoring = {'r2': (100, 'R2'),
                    'neg_root_mean_squared_error': (-1, 'RMSE'),
                    'neg_mean_absolute_error': (-1, 'MAE')
                    }
+
+        logger.debug(f"Metrics to calculate: {list(scoring.keys())}")
 
         scores = cross_validate(
             self.model, X_scaled, y,
@@ -293,150 +236,154 @@ class Model:
             return_train_score=True,
             n_jobs=1
         )
+        metrics = {}
 
         for k in ['neg_root_mean_squared_error', 'neg_mean_absolute_error']:
             scoring['n' + k] = (-100, 'n' + scoring[k][1])
             scores['test_n' + k] = scores['test_' + k] / self.target_mean
             scores['train_n' + k] = scores['train_' + k] / self.target_mean
 
+        logger.debug(f"Target mean for normalization: {self.target_mean:.4f}")
+
         for k in scoring:
             train = scoring[k][0] * scores[f'train_{k}'].mean()
             test = scoring[k][0] * scores[f'test_{k}'].mean()
             gap = abs(train - test)
 
+            metrics[k] = {
+                'train': train,
+                'test': test,
+                'gap': gap
+            }
+            if k in ['r2', 'neg_root_mean_squared_error', 'neg_mean_absolute_error']:
+                logger.info(f"{scoring[k][1]}: test={test:.2f}")
+            logger.debug(f"{scoring[k][1]}: train={train:.2f}, test={test:.2f}, gap={gap:.2f}")
 
-    @with_non_interactive_matplotlib
+        logger.debug("Cross-validation completed")
+        return metrics
+
+    def _init_prediction(self) -> Tuple[Dict, rasterio.DatasetReader, Dict]:
+        """Initialize resources for prediction."""
+        logger.debug("Opening covariate rasters")
+        src = {}
+
+        for k in self.settings.covariate:
+            src[k] = rasterio.open(self.settings.covariate[k], 'r')
+            logger.debug(f"Opened covariate: {k}")
+
+        mst = rasterio.open(self.settings.mastergrid, 'r')
+        profile = mst.profile.copy()
+        profile.update({
+            'dtype': 'float32',
+            'blockxsize': self.settings.block_size[0],
+            'blockysize': self.settings.block_size[1],
+        })
+        return src, mst, profile
+
+    def _setup_thread_pool(self) -> QThreadPool:
+        """Configure thread pool for parallel processing."""
+        executor = QThreadPool.globalInstance()
+        executor.setMaxThreadCount(self.settings.max_workers)
+        logger.info(f"ThreadPool configuration:")
+        logger.info(f"- Available CPU threads: {QThread.idealThreadCount()}")
+        logger.info(f"- Using threads: {self.settings.max_workers}")
+        return executor
+
+    def _process_windows(self, dst, executor: QThreadPool) -> Tuple[List, List]:
+        """Process raster windows in parallel."""
+        windows = [window[1] for window in dst.block_windows()]
+        workers = []
+
+        logger.info(f"Creating {len(windows)} tasks")
+        PredictionWorker.init_progress(len(windows), logger)
+
+        for i, window in enumerate(windows):
+            worker = PredictionWorker(
+                window,
+                self.settings.covariate,
+                self.feature_names,
+                self.model,
+                self.scaler
+            )
+            worker.idx = i
+            worker.setAutoDelete(False)
+            workers.append(worker)
+            executor.start(worker)
+
+        return windows, workers
+
+    def _write_results(self, dst, windows: List, workers: List) -> int:
+        """Write worker results to output file."""
+        results_count = 0
+        writing_lock = threading.Lock()
+
+        for i, worker in enumerate(workers):
+            if worker.result is not None:
+                with writing_lock:
+                    dst.write(worker.result, window=windows[i], indexes=1)
+                    results_count += 1
+            else:
+                logger.warning(f"No result from worker {i}")
+
+        return results_count
+
+    def _cleanup_resources(self, src: Dict, mst: rasterio.DatasetReader) -> None:
+        """Clean up opened raster resources"""
+        logger.debug("Closing raster files")
+        for s in src:
+            try:
+                src[s].close()
+            except Exception as e:
+                logger.warning(f"Failed to close source {s}: {str(e)}")
+
+        try:
+            mst.close()
+        except Exception as e:
+            logger.warning(f"Failed to close mastergrid: {str(e)}")
+
     def predict(self) -> str:
-        """
-        Generate predictions using trained model.
-
-        Returns:
-            str: Path to output prediction raster file
-
-        Raises:
-            RuntimeError: If model is not trained
-            FileNotFoundError: If input rasters are missing
-        """
-        logger.info("Starting prediction generation")
+        """Main prediction method."""
 
         if self.model is None or self.scaler is None:
             logger.error("Model not trained. Call train() first")
             raise RuntimeError("Model not trained. Call train() first.")
 
-
-        class RasterWorker(QRunnable):
-            def __init__(self, window, process_func):
-                super().__init__()
-                self.window = window
-                self.process_func = process_func
-                self.result = None
-
-            def run(self):
-                try:
-                    self.process_func(self.window)
-                except Exception as e:
-                    logger.error(f"Error in RasterWorker: {str(e)}")
-                    import traceback
-                    logger.error(f"Traceback: {traceback.format_exc()}")
-
+        outfile = Path(self.settings.output_dir) / 'prediction.tif'
 
         with joblib_resources():
-            logger.debug("Opening covariate rasters")
-            src = {}
+            src, mst, profile = self._init_prediction()
             try:
-                for k in self.settings.covariate:
-                    src[k] = rasterio.open(self.settings.covariate[k], 'r')
-                    logger.debug(f"Opened covariate: {k}")
-
-                # Open mastergrid
-                logger.debug("Opening mastergrid")
-                mst = rasterio.open(self.settings.mastergrid, 'r')
-
-                # Get profile from mastergrid
-                profile = mst.profile.copy()
-                profile.update({
-                    'dtype': 'float32',
-                    'blockxsize': self.settings.block_size[0],
-                    'blockysize': self.settings.block_size[1],
-                })
-                logger.debug("Profile created from mastergrid")
-
-                # Setup locks
-                reading_lock = threading.Lock()
-                writing_lock = threading.Lock()
-                names = self.feature_names
-                outfile = Path(self.settings.output_dir) / 'prediction.tif'
-                logger.info(f"Output will be saved to: {outfile}")
-
                 with rasterio.open(outfile, 'w', **profile) as dst:
-                    def process(window):
-                        df = pd.DataFrame()
-                        with reading_lock:
-                            for s in src:
-                                arr = src[s].read(window=window)[0, :, :]
-                                df[s + '_avg'] = arr.flatten()
-
-                        df = df[names]
-
-                        # Make predictions
-                        sx = self.scaler.transform(df)
-                        yp = self.model.predict(sx)
-                        res = yp.reshape(arr.shape)
-
-                        with writing_lock:
-                            dst.write(res, window=window, indexes=1)
-
                     if self.settings.by_block:
-                        qgis_executor = QThreadPool.globalInstance()
-                        logger.info("Processing by blocks")
-                        try:
-                            logger.debug("Getting block windows...")
-                            block_windows = list(dst.block_windows())
-                            logger.debug(f"First block window type: {type(block_windows[0])}")
-                            logger.debug(f"First block window content: {block_windows[0]}")
+                        executor = self._setup_thread_pool()
+                        windows, workers = self._process_windows(dst, executor)
 
-                            windows = []
-                            for block_window in block_windows:
-                                idx, window = block_window
-                                windows.append(window)
+                        executor.waitForDone()
+                        PredictionWorker.progress_bar.finish()
 
-                            logger.debug(f"Number of workers to create: {len(windows)}")
-                            qgis_executor.setMaxThreadCount(self.settings.max_workers)
-                            workers = []
+                        self._write_results(dst, windows, workers)
 
-                            for i, window in enumerate(windows):
-                                try:
-                                    worker = RasterWorker(window, process)
-                                    workers.append(worker)
-                                    qgis_executor.start(worker)
-                                except Exception as e:
-                                    import traceback
-                                    logger.error(f"Full traceback: {traceback.format_exc()}")
-                                    raise
+                        workers.clear()
+                    else:
+                        logger.info("Processing entire raster at once")
+                        window = rasterio.windows.Window(0, 0, dst.width, dst.height)
 
-                            logger.debug("Waiting for workers to complete...")
-                            qgis_executor.waitForDone()
-                            logger.debug("All workers completed")
+                        worker = PredictionWorker(
+                            window,
+                            self.settings.covariate,
+                            self.feature_names,
+                            self.model,
+                            self.scaler
+                        )
 
-                        except Exception as e:
-                            logger.error(f"Error in block processing setup: {str(e)}")
-                            import traceback
-                            logger.error(f"Full traceback: {traceback.format_exc()}")
-                            raise
+                        worker.run()
 
-
+                        if worker.result is not None:
+                            dst.write(worker.result, indexes=1)
+                        else:
+                            logger.error("Failed to process raster")
+                            raise RuntimeError("Failed to process raster")
             finally:
-                logger.debug("Closing mastergrid")
-                for s in src:
-                    try:
-                        s.close()
-                    except Exception:
-                        pass
-                try:
-                    mst.close()
-                except Exception:
-                    pass
+                self._cleanup_resources(src, mst)
 
-        logger.info("Prediction completed successfully")
         return str(outfile)
-

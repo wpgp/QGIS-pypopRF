@@ -19,6 +19,11 @@ class PopRFLogger:
         self.console_handler = None
         self.file_handler = None
 
+    @property
+    def level(self):
+        """Get current logging level."""
+        return self.logger.level
+
     def _get_formatter(self, colored: bool = False) -> logging.Formatter:
         """Get message formatter."""
         if not colored:

@@ -1,15 +1,17 @@
-# src/pypoprf/utils/raster.py
+import threading
+from typing import Dict, List, Tuple, Optional, Any
+
 import numpy as np
 import pandas as pd
 import rasterio
-import threading
-from typing import Dict, List, Tuple, Optional, Any, Callable
+from qgis.PyQt.QtCore import QThreadPool
+from rasterio.windows import Window
 
 from .logger import get_logger
-from .raster_processing import parallel
-from .matplotlib_utils import with_non_interactive_matplotlib
+from .workers import RasterWorker, RasterStackWorker
 
 logger = get_logger()
+
 
 def raster_compare(p1: Dict,
                    p2: Dict) -> List[str]:
@@ -155,9 +157,9 @@ def aggregate_table(df: pd.DataFrame, prefix: str = '', min_count: int = 1) -> p
     return out
 
 
-def get_windows(src, 
-                block_size: Optional[Tuple[int, int]] = (512, 512)
-    ):
+def get_windows(src,
+                block_size: Optional[Tuple[int, int]] = (256, 256)
+                ):
     """
     Get block/window tiles for reading/writing raster
 
@@ -174,7 +176,7 @@ def get_windows(src,
     y0 = np.arange(0, src.height, block_size[1])
     grid = np.meshgrid(x0, y0)
     windows = [rasterio.windows.Window(a, b, block_size[0], block_size[1])
-                for (a, b) in zip(grid[0].flatten(), grid[1].flatten())]
+               for (a, b) in zip(grid[0].flatten(), grid[1].flatten())]
 
     return windows
 
@@ -185,10 +187,8 @@ def remask_layer(mastergrid: str,
                  outfile: Optional[str] = 'remasked_layer.tif',
                  by_block: bool = True,
                  max_workers: int = 4,
-                 block_size: Optional[Tuple[int, int]] = None,
-                 show_progress: bool = False
-    ):
-
+                 block_size: Optional[Tuple[int, int]] = None
+                 ):
     """
     Implement additional masking to the mastergrid, e.g., use water mask.
 
@@ -236,18 +236,16 @@ def remask_layer(mastergrid: str,
                 dst.write(m, 1)
 
             dst.close()
-        
+
     except Exception as e:
         raise RuntimeError(f"Error processing rasters: {str(e)}")
 
 
-@with_non_interactive_matplotlib
 def raster_stat(infile: str,
                 mastergrid: str,
                 by_block: bool = True,
                 max_workers: int = 4,
-                block_size: Optional[Tuple[int, int]] = None,
-                show_progress: bool = True) -> pd.DataFrame:
+                block_size: Optional[Tuple[int, int]] = None) -> pd.DataFrame:
     """
     Calculate zonal statistics for a raster.
 
@@ -257,65 +255,50 @@ def raster_stat(infile: str,
         by_block: Whether to process by blocks
         max_workers: Number of worker processes
         block_size: Size of processing blocks
-        show_progress: Whether to show progress bar
 
     Returns:
         DataFrame with zonal statistics
 
-    Raises:
-        FileNotFoundError: If input files don't exist
-        RuntimeError: If processing fails
     """
-    import time
-    t0 = time.time()
+    with rasterio.open(mastergrid, 'r') as mst, rasterio.open(infile, 'r') as tgt:
 
-    try:
-        with rasterio.open(mastergrid, 'r') as mst, rasterio.open(infile, 'r') as tgt:
-            nodata = tgt.nodata
-            skip = mst.nodata
-            lock = threading.Lock()
+        if by_block:
+            windows = get_windows(mst, block_size)
 
-            def process(window):
-                with lock:
-                    m = mst.read(window=window)
-                    t = tgt.read(window=window)
-                d = get_raster_stats(t, m, nodata=nodata, skip=skip)
-                return d
+            file_paths = {
+                'mastergrid': mastergrid,
+                'target': infile
+            }
 
-            if by_block:
-                windows = get_windows(mst, block_size if block_size else (512, 512))
+            process_params = {
+                'func': get_raster_stats
+            }
 
-                df = parallel(
-                    windows=windows,
-                    process_func=process,
-                    max_workers=max_workers,
-                )
+            df = parallel_raster_processing(
+                windows=windows,
+                file_paths=file_paths,
+                process_params=process_params,
+                max_workers=max_workers,
+                worker_type='single'
+            )
 
-                res = pd.concat(df, ignore_index=True)
-
-            else:
+            res = pd.concat(df, ignore_index=True)
+        else:
+            with rasterio.open(infile, 'r') as tgt:
                 m = mst.read(1)
                 t = tgt.read(1)
-                res = get_raster_stats(t, m, nodata=nodata, skip=skip)
-
-    except Exception as e:
-        raise RuntimeError(f"Error processing rasters: {str(e)}")
+                res = get_raster_stats(t, m, nodata=tgt.nodata, skip=mst.nodata)
 
     out_df = aggregate_table(res)
-    duration = time.time() - t0
-    logger.info(f'Raster statistics is finished in {duration:.2f} sec')
-
 
     return out_df
 
 
-@with_non_interactive_matplotlib
 def raster_stat_stack(infiles: Dict[str, str],
                       mastergrid: str,
                       by_block: bool = True,
                       max_workers: int = 4,
-                      block_size: Optional[Tuple[int, int]] = None,
-                      show_progress: bool = True) -> pd.DataFrame:
+                      block_size: Optional[Tuple[int, int]] = None) -> pd.DataFrame:
     """
     Calculate zonal statistics for multiple rasters.
 
@@ -325,68 +308,99 @@ def raster_stat_stack(infiles: Dict[str, str],
         by_block: Whether to process by blocks
         max_workers: Number of worker processes
         block_size: Size of processing blocks
-        show_progress: Whether to show progress bar
 
     Returns:
         DataFrame with combined statistics
-
-    Raises:
-        RuntimeError: If processing fails
-        FileNotFoundError: If input files don't exist
     """
-    import time
-    t0 = time.time()
+    file_paths = {
+        'mastergrid': mastergrid,
+        **{f'target_{k}': v for k, v in infiles.items()}
+    }
 
-    try:
-        with rasterio.open(mastergrid, 'r') as mst:
-            targets = []
-            try:
-                targets = [rasterio.open(path, 'r') for path in infiles.values()]
-                nodata = [t.nodata for t in targets]
-                skip = mst.nodata
-                lock = threading.Lock()
+    nodata_values = {}
+    with rasterio.open(mastergrid, 'r') as mst:
+        skip = mst.nodata
 
-                def process(window):
-                    with lock:
-                        m = mst.read(window=window)
-                        t = [tgt.read(window=window) for tgt in targets]
-                    d = [get_raster_stats(ta, m, nodata=na, skip=skip)
-                         for (ta, na) in zip(t, nodata)]
-                    return d
+        for key, path in infiles.items():
+            with rasterio.open(path, 'r') as src:
+                nodata_values[key] = src.nodata
 
-                if by_block:
-                    windows = get_windows(mst, block_size if block_size else (512, 512))
+        if by_block:
+            windows = get_windows(mst, block_size)
+            process_params = {
+                'func': get_raster_stats,
+                'skip': skip,
+                'nodata_values': nodata_values,
+                'keys': list(infiles.keys())
+            }
 
-                    df = parallel(
-                        windows=windows,
-                        process_func=process,
-                        max_workers=max_workers,
-                    )
-                else:
-                    m = mst.read(1)
-                    df = [get_raster_stats(t.read(1), m, nodata=na, skip=skip)
-                          for t, na in zip(targets, nodata)]
+            df = parallel_raster_processing(
+                windows=windows,
+                file_paths=file_paths,
+                process_params=process_params,
+                max_workers=max_workers,
+                worker_type='stack'
+            )
+        else:
+            m = mst.read(1)
+            results = []
+            for key, path in infiles.items():
+                with rasterio.open(path, 'r') as src:
+                    t = src.read(1)
+                    results.append(get_raster_stats(t, m, nodata=nodata_values[key], skip=skip))
+            df = [results]
 
-                # Create output DataFrame
-                out_df = pd.DataFrame({'id': []})
-                for i, key in enumerate(infiles):
-                    d = [a[i] for a in df]
-                    res = pd.concat(d, ignore_index=True)
-                    out = aggregate_table(res, prefix=key)
-                    out_df = pd.merge(out, out_df, on='id', how='outer')
-
-            finally:
-                # Close all opened rasters
-                for t in targets:
-                    try:
-                        t.close()
-                    except Exception:
-                        pass  # Ignore errors on closing
-
-    except Exception as e:
-        raise RuntimeError(f"Error processing raster stack: {str(e)}")
-
-    duration = time.time() - t0
-    logger.info(f'Raster statistics is finished in {duration:.2f} sec')
+    out_df = pd.DataFrame({'id': []})
+    for i, key in enumerate(infiles):
+        d = [a[i] for a in df if a is not None]
+        res = pd.concat(d, ignore_index=True)
+        out = aggregate_table(res, prefix=key)
+        out_df = pd.merge(out, out_df, on='id', how='outer')
 
     return out_df
+
+
+def parallel_raster_processing(
+        windows: List[Window],
+        file_paths: Dict[str, str],
+        process_params: Dict[str, Any],
+        max_workers: int,
+        worker_type: str = 'single'
+) -> List[Any]:
+    """
+    Execute raster processing in parallel using QGIS thread pool.
+
+    Args:
+        windows: List of raster windows to process
+        file_paths: Dictionary with paths to input files
+        process_params: Dictionary with processing parameters and functions
+        max_workers: Maximum number of worker threads
+        worker_type: Type of worker to use ('single' or 'stack')
+    """
+    executor = QThreadPool.globalInstance()
+    executor.setMaxThreadCount(max_workers)
+    workers = []
+
+    logger.debug(f"Processing {len(windows)} windows in QGIS environment")
+    logger.debug(f"Starting parallel processing with {max_workers} workers")
+    logger.debug(f"Using worker type: {worker_type}")
+
+    WorkerClass = RasterWorker if worker_type == 'single' else RasterStackWorker
+    WorkerClass.init_progress(len(windows), logger)
+
+    for i, window in enumerate(windows):
+        worker = WorkerClass(
+            window=window,
+            file_paths=file_paths,
+            process_params=process_params,
+            idx=i
+        )
+        worker.setAutoDelete(False)
+        workers.append(worker)
+        executor.start(worker)
+
+    executor.waitForDone()
+    WorkerClass.progress_bar.finish()
+
+    results = [w.result for w in workers if w.result is not None]
+    return results

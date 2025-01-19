@@ -1,12 +1,16 @@
+import os
 import shutil
+import time
 import traceback
 from pathlib import Path
+
+from qgis.PyQt.QtCore import QThread, pyqtSignal
+from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.core import QgsProject
 
 from ..core.pypoprf import Settings, FeatureExtractor, Model, DasymetricMapper
 from ..core.pypoprf.utils.joblib_manager import joblib_resources
 from ..core.pypoprf.utils.raster import remask_layer
-from qgis.PyQt.QtCore import QThread, pyqtSignal
-from qgis.core import QgsProject
 
 
 class ProcessWorker(QThread):
@@ -17,12 +21,15 @@ class ProcessWorker(QThread):
     ui_state = pyqtSignal(bool)
     layer_created = pyqtSignal(str, str)
     final_layers_ready = pyqtSignal(str, str)
+    model_choice_needed = pyqtSignal()
+    model_choice_result = None
 
     def __init__(self, config_path, logger):
         super().__init__()
         self.config_path = config_path
         self.logger = logger
         self._is_running = True
+        self.start_time = time.time()
 
     def stop(self):
         """Stop the analysis process"""
@@ -41,6 +48,19 @@ class ProcessWorker(QThread):
             settings = Settings.from_file(self.config_path)
             temp_dir = Path(settings.work_dir) / 'output' / 'temp'
             temp_dir.mkdir(exist_ok=True)
+
+            model_path = Path(settings.work_dir) / 'output' / 'model.pkl.gz'
+            scaler_path = Path(settings.work_dir) / 'output' / 'scaler.pkl.gz'
+
+            if model_path.exists() and scaler_path.exists():
+                self.model_choice_needed.emit()
+                while self.model_choice_result is None:
+                    QThread.msleep(100)
+
+                use_existing = self.model_choice_result
+                self.model_choice_result = None
+            else:
+                use_existing = False
 
             # Re-mask mastergrid if requested
             if settings.mask:
@@ -78,15 +98,25 @@ class ProcessWorker(QThread):
                 # Model training
                 if not self._is_running:
                     return
-                self.progress.emit(40, "Training model...")
+
                 model = Model(settings)
-                model.train(features)
+
+                if use_existing:
+                    self.progress.emit(40, "Loading existing model...")
+                    model.load_model(str(model_path), str(scaler_path))
+                else:
+                    self.progress.emit(40, "Training new model...")
+                    model.train(features)
 
                 # Making predictions
                 if not self._is_running:
                     return
                 self.progress.emit(60, "Making predictions...")
                 predictions = model.predict()
+
+                # predictions = Path(settings.work_dir) / 'output' / 'prediction.tif'
+                # if not predictions.exists():
+                #     raise FileNotFoundError("Prediction file not found in output directory")
 
                 # Dasymetric mapping
                 if not self._is_running:
@@ -101,7 +131,10 @@ class ProcessWorker(QThread):
                 self.progress.emit(95, "Verifying outputs...")
                 self._verify_outputs(settings)
 
-                self.progress.emit(100, "Analysis completed successfully!")
+                duration = time.time() - self.start_time
+                self.logger.info(f'All Process compute in {self.format_time(duration)}')
+
+                self.progress.emit(100, "Completed successfully!")
                 self.finished.emit(True, "Prediction and dasymetric "
                                          "mapping completed successfully!")
 
@@ -111,6 +144,14 @@ class ProcessWorker(QThread):
             self.logger.error(f"Analysis failed: {str(e)}")
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.finished.emit(False, str(e))
+
+    def format_time(self, seconds: float) -> str:
+        """Convert seconds to minutes and seconds format."""
+        minutes = int(seconds // 60)
+        seconds = seconds % 60
+        if minutes > 0:
+            return f"{minutes}m {seconds:.0f}s"
+        return f"{seconds:.0f}s"
 
     def _verify_outputs(self, settings):
         """Verify that all required output files exist"""
@@ -161,8 +202,10 @@ class ProcessExecutor:
         if not self._validate_all():
             return
 
-        # Clear any existing output layers before starting
-        self.remove_output_layers()
+        # Check output files
+        output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
+        if not self._check_and_clear_outputs(output_dir):
+            return
 
         # Clear console and reset progress
         self.dialog.console_handler.clear()
@@ -179,6 +222,7 @@ class ProcessExecutor:
             )
 
             # Connect signals
+            self.worker.model_choice_needed.connect(self._handle_model_choice)
             self.worker.progress.connect(self.update_progress)
             self.worker.finished.connect(self.analysis_finished)
 
@@ -201,6 +245,26 @@ class ProcessExecutor:
             self.dialog.mainProgressBar.setFormat("Stopped by user")
 
             self._set_ui_enabled(True)
+
+    def _handle_model_choice(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Question)
+        msg.setText("Previous model found")
+        msg.setInformativeText(
+            "A previously trained model was found in the output directory.\n\n"
+            "Would you like to:\n"
+            "• Use the existing model (faster)\n"
+            "• Train a new model (may give better results)"
+        )
+        msg.setWindowTitle("Model Selection")
+
+        use_existing = msg.addButton("Use Existing", QMessageBox.AcceptRole)
+        train_new = msg.addButton("Train New", QMessageBox.RejectRole)
+        msg.setDefaultButton(use_existing)
+
+        msg.exec()
+
+        self.worker.model_choice_result = (msg.clickedButton() == use_existing)
 
     def update_progress(self, value, message):
         """Update progress bar and log message"""
@@ -251,21 +315,6 @@ class ProcessExecutor:
                 "font-weight: bold; "
                 "font-size: 10pt; }")
 
-    def remove_output_layers(self):
-        """Remove any previously added output layers from QGIS"""
-        if not self.iface or not self.output_layers:
-            return
-
-        project = QgsProject.instance()
-        for layer in self.output_layers:
-            try:
-                project.removeMapLayer(layer.id())
-            except Exception as e:
-                self.logger.warning(f"Error removing layer: {str(e)}")
-
-        self.output_layers.clear()
-        self.iface.mapCanvas().refresh()
-
     def add_output_layers(self):
         """Add all output layers to QGIS"""
         try:
@@ -300,15 +349,6 @@ class ProcessExecutor:
             if not self.dialog.idColumnEdit.text().strip():
                 errors.append("ID column name cannot be empty.")
 
-            # Validate parallel processing settings
-            if self.dialog.enableParallelCheckBox.isChecked():
-                try:
-                    cores = int(self.dialog.cpuCoresComboBox.currentText())
-                    if cores <= 0:
-                        errors.append("Number of CPU cores must be positive.")
-                except ValueError:
-                    errors.append("Invalid number of CPU cores.")
-
             # Validate block processing settings
             if self.dialog.enableBlockProcessingCheckBox.isChecked():
                 try:
@@ -329,3 +369,98 @@ class ProcessExecutor:
         except Exception as e:
             self.logger.error(f"Validation failed: {str(e)}")
             return False
+
+    def _check_and_clear_outputs(self, output_dir):
+        """
+        Check for existing output files and ask user confirmation for deletion.
+
+        Args:
+            output_dir: Path to output directory
+
+        Returns:
+            bool: True if files were deleted or don't exist, False if deletion cancelled or failed
+        """
+        output_files = [
+            'prediction.tif',
+            'normalized_census.tif',
+            'dasymetric.tif',
+            'features.csv'
+        ]
+
+        output_path = Path(output_dir)
+        if not output_path.exists():
+            return True
+
+        # Check which files exist
+        existing_files = []
+        for filename in output_files:
+            file_path = output_path / filename
+            if file_path.exists():
+                existing_files.append(file_path)
+
+        if not existing_files:
+            return True
+
+        # Ask user confirmation
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Question)
+        msg.setText("Previous analysis outputs found in working directory")
+        existing_names = [f"• {file_path.name}" for file_path in existing_files]
+        work_dir = str(output_path.parent)
+
+        msg.setInformativeText(
+            f"Found {len(existing_files)} output files in:\n"
+            f"{work_dir}\n\n"
+            "Files to be deleted:\n"
+            f"{chr(10).join(existing_names)}\n\n"
+            "Do you want to delete these files and start new analysis?"
+        )
+        msg.setWindowTitle("Confirm Delete Outputs")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+
+        if msg.exec() == QMessageBox.No:
+            self.logger.info("Analysis cancelled by user - keeping existing outputs")
+            return False
+
+        if self.iface:
+            project = QgsProject.instance()
+            layers_to_remove = []
+
+            for layer in project.mapLayers().values():
+                layer_path = Path(layer.source()).resolve()
+                if any(file_path.resolve() == layer_path for file_path in existing_files):
+                    layers_to_remove.append(layer.id())
+
+            if layers_to_remove:
+                project.removeMapLayers(layers_to_remove)
+                self.logger.info(f"Removed {len(layers_to_remove)} layers from QGIS")
+
+        # Delete files
+        failed_deletes = []
+        for file_path in existing_files:
+            try:
+                os.remove(file_path)
+                self.logger.debug(f"Deleted: {file_path.name}")
+            except Exception as e:
+                failed_deletes.append(file_path.name)
+                self.logger.error(f"Failed to delete {file_path.name}: {str(e)}")
+
+        if failed_deletes:
+            error_msg = QMessageBox()
+            error_msg.setIcon(QMessageBox.Critical)
+            error_msg.setText("Cannot delete some output files")
+            error_msg.setInformativeText(
+                f"The following files in:\n{work_dir}\ncannot be deleted:\n"
+                f"{chr(10).join('• ' + name for name in failed_deletes)}\n\n"
+                "This usually happens when files are:\n"
+                "• Open in QGIS or other GIS software\n"
+                "• Being used by another program\n"
+                "• Opened in a text editor\n\n"
+                "Please close any programs that might be using these files and try again."
+            )
+            error_msg.setWindowTitle("Delete Error")
+            error_msg.exec()
+            return False
+
+        return True

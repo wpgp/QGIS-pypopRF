@@ -1,15 +1,16 @@
-# src/pypoprf/core/feature_extraction.py
 from pathlib import Path
-from typing import Dict, Optional, List, Tuple, Any
+from typing import Optional, List, Tuple
+
+import geopandas as gpd
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 
+from ..config.settings import Settings
 from ..utils.logger import get_logger
 from ..utils.raster import raster_stat_stack
-from ..config.settings import Settings
 
 logger = get_logger()
+
 
 class FeatureExtractor:
     """Extract and process features for population modeling."""
@@ -121,8 +122,6 @@ class FeatureExtractor:
                 logger.error(f"Unsupported file format: {ext}")
                 raise ValueError(f'Unsupported file format: {ext}')
 
-            logger.info(f"Table successfully saved to {path}")
-
         except Exception as e:
             logger.error(f"Failed to save file: {str(e)}")
             raise ValueError(f"Failed to save file: {str(e)}")
@@ -137,7 +136,6 @@ class FeatureExtractor:
         pop_column = self.settings.census['pop_column']
         id_column = self.settings.census['id_column']
 
-        logger.debug(f"Available columns: {cols.tolist()}")
         logger.debug(f"Required columns: pop={pop_column}, id={id_column}")
 
         if id_column not in cols:
@@ -158,7 +156,6 @@ class FeatureExtractor:
 
         logger.info("Census data validation completed successfully")
         return census, id_column, pop_column
-
 
     def extract(self,
                 save: Optional[str] = None,
@@ -195,7 +192,6 @@ class FeatureExtractor:
 
         # Load and validate census data
         try:
-            logger.info("Loading census data")
             census = self.load_table(self.settings.census['path'])
             census, id_column, pop_column = self.validate_census(census, simple=True)
             logger.debug(f"Census data loaded: {len(census)} rows")
@@ -259,7 +255,7 @@ class FeatureExtractor:
             save_path = Path(self.settings.work_dir) / save
             self.dump_table(res, str(save_path))
 
-        logger.info(f"Feature extraction completed. Extracted features: {res.columns.values.tolist()}")
+        logger.info(f"Extracted features: {res.columns.values.tolist()}")
 
         self.features = res
         return res

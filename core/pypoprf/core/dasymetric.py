@@ -1,20 +1,19 @@
-# src/pypoprf/core/dasymetric.py
-import time
+from pathlib import Path
+from typing import Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import rasterio
-import threading
-from typing import Optional, Tuple, TypedDict, List
+from qgis.PyQt.QtCore import QThreadPool
 from rasterio.windows import Window
 
 from ..config.settings import Settings
 from ..utils.logger import get_logger
-from ..utils.matplotlib_utils import with_non_interactive_matplotlib
 from ..utils.raster import raster_stat
-from ..utils.raster_processing import parallel
+from ..utils.workers import NormalizationWorker, DasymetricWorker
 
 logger = get_logger()
+
 
 class DasymetricMapper:
     """
@@ -34,13 +33,6 @@ class DasymetricMapper:
         self.settings = settings
         self.output_dir = Path(settings.work_dir) / 'output'
         self.output_dir.mkdir(exist_ok=True)
-        logger.debug(f"Output directory set to: {self.output_dir}")
-
-        self._read_lock = threading.Lock()
-        self._write_lock = threading.Lock()
-        self._norm_read_lock = threading.Lock()
-        self._pred_read_lock = threading.Lock()
-        logger.debug("Thread locks initialized")
 
     @staticmethod
     def _validate_census(census: pd.DataFrame,
@@ -150,7 +142,6 @@ class DasymetricMapper:
         """
         logger.info("Starting input validation")
 
-        # Check file existence
         input_files = {
             'Prediction': prediction_path,
             'Mastergrid': mastergrid_path
@@ -192,7 +183,6 @@ class DasymetricMapper:
             mst_data = mst.read(1)
             mst_nodata = mst.nodata
 
-            # Check compatibility
             self._check_compatibility(mst_profile, pred_profile, labels=('mastergrid', 'prediction'))
 
             # Analyze mastergrid content
@@ -294,7 +284,6 @@ class DasymetricMapper:
 
         return census, id_column, pop_column
 
-    @with_non_interactive_matplotlib
     def _calculate_normalization(self,
                                  census: pd.DataFrame,
                                  prediction_path: str,
@@ -302,9 +291,8 @@ class DasymetricMapper:
                                  pop_column: str) -> pd.DataFrame:
         """Calculate normalization factors with detailed diagnostics."""
 
-        logger.info("Calculating normalization factors...")
+        logger.info("Calculating normalization factors")
 
-        # Calculate zonal statistics
         sum_prob = raster_stat(prediction_path,
                                self.settings.constrain,
                                by_block=self.settings.by_block,
@@ -377,7 +365,7 @@ class DasymetricMapper:
         logger.info(f"Valid normalizations: {valid.sum()} of {len(merged)} zones")
         logger.info(f"Zones with zero sums: {len(merged[merged['sum'] == 0])}")
 
-        if abs(total_pop_check - pre_merge_pop) / pre_merge_pop > 0.01:  # 1% threshold
+        if abs(total_pop_check - pre_merge_pop) / pre_merge_pop > 0.01:
             logger.warning("Population difference after normalization exceeds 1%")
 
         invalid_norms = len(merged[merged['norm'].isna()])
@@ -386,9 +374,6 @@ class DasymetricMapper:
 
         return merged
 
-
-
-    @with_non_interactive_matplotlib
     def _create_normalized_raster(self,
                                   normalized_data: pd.DataFrame) -> str:
         """
@@ -400,9 +385,14 @@ class DasymetricMapper:
         Returns:
             Path to normalized raster
         """
-        logger.info("Creating normalized census raster...")
+        logger.info("Creating normalized census raster")
 
-        # Prepare output path
+        norm_mapping = {
+            row['id']: row['norm']
+            for _, row in normalized_data.iterrows()
+            if not np.isnan(row['norm'])
+        }
+
         output_path = self.output_dir / 'normalized_census.tif'
         logger.debug(f"Output path set to: {output_path}")
 
@@ -412,135 +402,129 @@ class DasymetricMapper:
             profile.update({
                 'dtype': 'float32',
                 'nodata': -99,
-                'blockxsize': self.settings.block_size[0],
-                'blockysize': self.settings.block_size[1],
+                'blockxsize': 256,
+                'blockysize': 256,
             })
             logger.debug("Raster profile created from mastergrid")
 
-        # Create normalized raster
-        with rasterio.open(self.settings.mastergrid) as mst, \
-                rasterio.open(str(output_path), 'w', **profile) as dst:
-
-            def process(window):
-                # Read mastergrid data for window
-                with self._read_lock:
-                    mst_data = mst.read(1, window=window)
-
-                # Create output array
-                output = np.full_like(mst_data, profile['nodata'], dtype='float32')
-
-                # Map normalization factors to zones
-                valid_mappings = 0
-                for idx, row in normalized_data.iterrows():
-                    zone_id = row['id']
-                    norm_factor = row['norm']
-                    if not np.isnan(norm_factor):
-                        mask = mst_data == zone_id
-                        output[mask] = norm_factor
-                        valid_mappings += 1
-                # Write window
-                with self._write_lock:
-                    dst.write(output[np.newaxis, :, :], window=window)
-
-                return valid_mappings
-
+        with rasterio.open(str(output_path), 'w', **profile) as dst:
             if self.settings.by_block:
-                logger.info("Processing by blocks")
-                block_windows = list(dst.block_windows())
-                windows = []
-                for block_window in block_windows:
-                    idx, window = block_window
-                    windows.append(window)
 
-                parallel(
-                    windows=windows,
-                    process_func=process,
-                    max_workers=self.settings.max_workers,
-                )
+                windows = [window[1] for window in dst.block_windows()]
+
+                executor = QThreadPool.globalInstance()
+                executor.setMaxThreadCount(self.settings.max_workers)
+
+                workers = []
+                NormalizationWorker.init_progress(len(windows), logger)
+
+                for i, window in enumerate(windows):
+                    worker = NormalizationWorker(
+                        window=window,
+                        mastergrid_path=self.settings.mastergrid,
+                        norm_mapping=norm_mapping,
+                        profile=profile,
+                        idx=i
+                    )
+                    worker.setAutoDelete(False)
+                    workers.append(worker)
+                    executor.start(worker)
+
+                executor.waitForDone()
+
+                total_mappings = 0
+                for i, worker in enumerate(workers):
+                    if worker.result is not None:
+                        dst.write(worker.result, window=windows[i])
+                        total_mappings += worker.valid_mappings
+
+                logger.info(f"\nNormalization summary:")
+                logger.info(f"- Total windows processed: {len(workers)}")
+                logger.info(f"- Total valid mappings: {total_mappings}")
+
+                workers.clear()
             else:
                 logger.info("Processing entire raster at once")
-                process(rasterio.windows.Window(0, 0, mst.width, mst.height))
+                window = Window(0, 0, dst.width, dst.height)
+                worker = NormalizationWorker(
+                    window=window,
+                    mastergrid_path=self.settings.mastergrid,
+                    norm_mapping=norm_mapping,
+                    profile=profile
+                )
+                worker.run()
+                if worker.result is not None:
+                    dst.write(worker.result)
 
         logger.info(f"Normalized census raster created successfully: {output_path}")
         return str(output_path)
 
-    @with_non_interactive_matplotlib
-    def _create_dasymetric_raster(self,
-                                  prediction_path: str,
-                                  norm_raster_path: str) -> str:
-        """
-        Create final dasymetric population raster.
+    def _create_dasymetric_raster(self, prediction_path: str, norm_raster_path: str) -> Path:
+        """Create final dasymetric population raster."""
+        logger.info("Creating final dasymetric population raster")
 
-        Args:
-            prediction_path: Path to prediction raster
-            norm_raster_path: Path to normalization raster
-
-        Returns:
-            Path to final dasymetric raster
-        """
-        logger.info("Creating final dasymetric population raster...")
-
-        # Prepare output path
         output_path = self.output_dir / 'dasymetric.tif'
         logger.debug(f"Output path set to: {output_path}")
 
-        # Get profile from prediction raster
         with rasterio.open(prediction_path) as src:
             profile = src.profile.copy()
             profile.update({
-                'dtype': 'int32',  # Population counts should be integers
+                'dtype': 'int32',
                 'nodata': -99,
-                'blockxsize': self.settings.block_size[0],
-                'blockysize': self.settings.block_size[1],
+                'blockxsize': 256,
+                'blockysize': 256,
             })
-            logger.debug("Raster profile created from prediction raster")
 
-        # Create dasymetric raster
-        with rasterio.open(prediction_path) as pred, \
-                rasterio.open(norm_raster_path) as norm, \
-                rasterio.open(str(output_path), 'w', **profile) as dst:
-
-            def process(window):
-                # Read input data for window
-                with self._pred_read_lock:
-                    pred_data = pred.read(1, window=window)
-                with self._norm_read_lock:
-                    norm_data = norm.read(1, window=window)
-
-                # Calculate population
-                # Multiply prediction by normalization factor and round to integers
-                population = np.round(pred_data * norm_data).astype('int32')
-
-                # Handle nodata
-                nodata_mask = (pred_data == pred.nodata) | (norm_data == profile['nodata'])
-                population[nodata_mask] = profile['nodata']
-
-                # Write window
-                with self._write_lock:
-                    dst.write(population[np.newaxis, :, :], window=window)
-
+        with rasterio.open(str(output_path), 'w', **profile) as dst:
             if self.settings.by_block:
-                logger.info("Processing by blocks")
-                block_windows = list(dst.block_windows())
-                windows = []
-                for block_window in block_windows:
-                    idx, window = block_window
-                    windows.append(window)
+                windows = [window[1] for window in dst.block_windows()]
 
-                parallel(
-                    windows=windows,
-                    process_func=process,
-                    max_workers=self.settings.max_workers,
-                )
+                file_paths = {
+                    'prediction': prediction_path,
+                    'normalization': norm_raster_path
+                }
+
+                executor = QThreadPool.globalInstance()
+                executor.setMaxThreadCount(self.settings.max_workers)
+
+                workers = []
+                DasymetricWorker.init_progress(len(windows), logger)
+
+                for i, window in enumerate(windows):
+                    worker = DasymetricWorker(
+                        window=window,
+                        file_paths=file_paths,
+                        profile=profile,
+                        idx=i
+                    )
+                    worker.setAutoDelete(False)
+                    workers.append(worker)
+                    executor.start(worker)
+
+                executor.waitForDone()
+
+                for i, worker in enumerate(workers):
+                    if worker.result is not None:
+                        dst.write(worker.result, window=windows[i])
+
+                workers.clear()
+
             else:
                 logger.info("Processing entire raster at once")
-                process(rasterio.windows.Window(0, 0, pred.width, pred.height))
+                window = Window(0, 0, dst.width, dst.height)
+                worker = DasymetricWorker(
+                    window=window,
+                    file_paths={'prediction': prediction_path, 'normalization': norm_raster_path},
+                    profile=profile
+                )
+                worker.run()
+                if worker.result is not None:
+                    dst.write(worker.result)
 
         logger.info(f"Dasymetric population raster created successfully: {output_path}")
-        return str(output_path)
+        return output_path
 
-    def map(self,
-            prediction_path: str) -> str:
+    def map(self, prediction_path: str) -> Path:
         """
         Perform dasymetric mapping using prediction raster and census data.
 
@@ -551,18 +535,14 @@ class DasymetricMapper:
             Path to final dasymetric population raster
         """
 
-        t0 = time.time()
-
         # Load and validate inputs
         self._validate_inputs(prediction_path, self.settings.mastergrid, self.settings.constrain)
 
-        # Load census data
         census, id_column, pop_column = self._load_census(
             self.settings.census['path'],
             **self.settings.census
         )
 
-        # Calculate normalization factors
         normalized_data = self._calculate_normalization(
             census,
             prediction_path,
@@ -570,17 +550,11 @@ class DasymetricMapper:
             pop_column
         )
 
-        # Create normalized raster
         norm_raster_path = self._create_normalized_raster(normalized_data)
 
-        # Create final dasymetric raster
         final_raster_path = self._create_dasymetric_raster(
             prediction_path,
             norm_raster_path
         )
-
-        duration = time.time() - t0
-        logger.info(f'Dasymetric mapping completed in {duration:.2f} seconds')
-        logger.info(f'Output saved to: {final_raster_path}')
 
         return final_raster_path

@@ -26,6 +26,7 @@ import os
 import sys
 
 from qgis.PyQt import uic, QtWidgets
+from qgis.PyQt.QtCore import QThread
 
 from .q_models.config_manager import ConfigManager
 from .q_models.console_handler import ConsoleHandler
@@ -44,11 +45,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         """Constructor."""
         super(PyPopRFDialog, self).__init__(parent)
         self.iface = iface
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
         # Initialize handlers
@@ -132,6 +128,32 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # Census
         self.censusFileWidget.setDialogTitle("Select Census CSV File")
         self.censusFileWidget.setFilter("CSV files (*.csv)")
+
+        # Setup CPU cores combo box
+        self._setup_cpu_cores_combo()
+
+    def _setup_cpu_cores_combo(self):
+        """Setup CPU cores combo box based on system's available cores"""
+        self.cpuCoresComboBox.clear()
+
+        max_cores = QThread.idealThreadCount()
+        self.logger.debug(f"System has {max_cores} logical processors available")
+
+        core_counts = list(range(2, max_cores + 1, 2))
+
+        # Add items to combo box
+        for count in core_counts:
+            self.cpuCoresComboBox.addItem(str(count))
+
+        default_cores = min(max_cores, (max_cores // 2) + 2)
+        if default_cores % 2 != 0:
+            default_cores -= 1
+
+        default_index = core_counts.index(default_cores) if default_cores in core_counts else 0
+        self.cpuCoresComboBox.setCurrentIndex(default_index)
+
+        self.logger.debug(f"CPU cores combo box initialized with values: {core_counts}")
+        self.logger.debug(f"Default value set to: {default_cores} cores")
 
     def _set_initial_state(self):
         """Set initial state of UI widgets"""

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>934</width>
-    <height>924</height>
+    <width>1163</width>
+    <height>1008</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -435,6 +435,11 @@ p, li { white-space: pre-wrap; }
                 </item>
                 <item>
                  <property name="text">
+                  <string>12</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>4</string>
                  </property>
                 </item>
@@ -485,16 +490,16 @@ p, li { white-space: pre-wrap; }
                  <bool>true</bool>
                 </property>
                 <property name="currentText">
-                 <string>512, 512</string>
+                 <string>256, 256</string>
                 </property>
                 <item>
                  <property name="text">
-                  <string>512, 512</string>
+                  <string>256, 256</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>256, 256</string>
+                  <string>512, 512</string>
                  </property>
                 </item>
                </widget>
@@ -533,8 +538,8 @@ p, li { white-space: pre-wrap; }
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>894</width>
-           <height>367</height>
+           <width>1123</width>
+           <height>428</height>
           </rect>
          </property>
         </widget>

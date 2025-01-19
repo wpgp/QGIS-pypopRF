@@ -161,7 +161,7 @@ class Settings:
             FileNotFoundError: If required files don't exist
         """
 
-        logger.info("Validating settings...")
+        logger.info("Validating settings!")
 
         if not self.census['path']:
             logger.error("Census data path is required")
@@ -198,7 +198,7 @@ class Settings:
                 logger.warning(f"Constraining file not found: {self.constrain}, proceeding without constrain")
                 self.constrain = None
 
-        logger.info("Validating covariates...")
+        logger.info("Validating covariates")
         for name, path in self.covariate.items():
             if not Path(path).is_file():
                 logger.error(f"Covariate file not found: {path} ({name})")
@@ -217,7 +217,7 @@ class Settings:
                     if src.height != template_profile['height']:
                         logger.warning(f"Covariate {name}: Height mismatch")
 
-        logger.info("Validating census data...")
+        logger.info("Validating census data")
         census_path = Path(self.census['path'])
         if not census_path.is_file():
             logger.error(f"Census file not found: {census_path}")

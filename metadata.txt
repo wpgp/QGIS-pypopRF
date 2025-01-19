@@ -16,5 +16,5 @@ category=Raster
 icon=icon.png
 experimental=False
 deprecated=False
-plugin_dependencies=numpy, pandas, geopandas, rasterio, scikit-learn, matplotlib, joblib
+plugin_dependencies=numpy, pandas, geopandas, rasterio, scikit-learn, joblib
 server=False
