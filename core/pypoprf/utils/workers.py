@@ -79,11 +79,11 @@ class PredictionWorker(QRunnable):
     progress_bar = None
     lock = threading.Lock()
 
-    def __init__(self, window, covariates, feature_names, model, scaler):
+    def __init__(self, window, covariates, selected_features, model, scaler):
         super().__init__()
         self.window = window
         self.covariates = covariates
-        self.feature_names = feature_names
+        self.selected_features = selected_features
         self.model = model
         self.scaler = scaler
         self.result = None
@@ -102,7 +102,7 @@ class PredictionWorker(QRunnable):
                     arr = src_file.read(window=self.window)[0, :, :]
                     df[k + '_avg'] = arr.flatten()
 
-            df = df[self.feature_names]
+            df = df[self.selected_features]
             sx = self.scaler.transform(df)
             yp = self.model.predict(sx)
             self.result = yp.reshape(arr.shape)

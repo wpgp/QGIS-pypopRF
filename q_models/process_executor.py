@@ -4,6 +4,7 @@ import time
 import traceback
 from pathlib import Path
 
+import pandas as pd
 from qgis.PyQt.QtCore import QThread, pyqtSignal
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsProject
@@ -21,15 +22,14 @@ class ProcessWorker(QThread):
     ui_state = pyqtSignal(bool)
     layer_created = pyqtSignal(str, str)
     final_layers_ready = pyqtSignal(str, str)
-    model_choice_needed = pyqtSignal()
-    model_choice_result = None
 
-    def __init__(self, config_path, logger):
+    def __init__(self, config_path, logger, use_existing_model=False):
         super().__init__()
         self.config_path = config_path
         self.logger = logger
         self._is_running = True
         self.start_time = time.time()
+        self.use_existing_model = use_existing_model
 
     def stop(self):
         """Stop the analysis process"""
@@ -51,16 +51,6 @@ class ProcessWorker(QThread):
 
             model_path = Path(settings.work_dir) / 'output' / 'model.pkl.gz'
             scaler_path = Path(settings.work_dir) / 'output' / 'scaler.pkl.gz'
-
-            if model_path.exists() and scaler_path.exists():
-                self.model_choice_needed.emit()
-                while self.model_choice_result is None:
-                    QThread.msleep(100)
-
-                use_existing = self.model_choice_result
-                self.model_choice_result = None
-            else:
-                use_existing = False
 
             # Re-mask mastergrid if requested
             if settings.mask:
@@ -101,12 +91,14 @@ class ProcessWorker(QThread):
 
                 model = Model(settings)
 
-                if use_existing:
+                if self.use_existing_model:
                     self.progress.emit(40, "Loading existing model...")
                     model.load_model(str(model_path), str(scaler_path))
                 else:
                     self.progress.emit(40, "Training new model...")
                     model.train(features)
+
+                self._print_feature_importance(settings)
 
                 # Making predictions
                 if not self._is_running:
@@ -177,6 +169,59 @@ class ProcessWorker(QThread):
         except Exception as e:
             self.logger.warning(f"Failed to cleanup temp directory: {str(e)}")
 
+    def _print_feature_importance(self, settings):
+        """
+        Print simple and clear feature importance information with aligned columns.
+
+        Args:
+            settings: Settings instance for paths
+        """
+        feature_importance_path = Path(settings.work_dir) / 'output' / 'feature_importance.csv'
+
+        if not feature_importance_path.exists():
+            self.logger.warning("Feature importance file not found")
+            return
+
+        importance_df = pd.read_csv(feature_importance_path)
+        max_importance = importance_df['importance'].max()
+        importance_df['importance_normalized'] = importance_df['importance'] / max_importance
+        sorted_importance = importance_df.sort_values('importance', ascending=False)
+
+        name_width = 25
+        self.logger.info("=" * 60)
+        self.logger.info("Most influential features for population prediction:")
+        self.logger.info(f"Total features analyzed: {len(sorted_importance)}")
+
+        def get_importance_color(importance_pct):
+            """Return color based on importance percentage."""
+            if importance_pct >= 70:
+                return "#960303"
+            elif importance_pct >= 30:
+                return "#1307ed"
+            elif importance_pct >= 10:
+                return "#666666"
+            else:
+                return "#999999"
+
+        for _, row in sorted_importance.iterrows():
+            feature = row['feature'].replace('_avg', '')
+            importance_rel = row['importance_normalized'] * 100
+            std = row['std'] * 100
+
+            if len(feature) > name_width - 3:
+                feature = feature[:name_width - 3] + "..."
+
+            formatted_name = f"{feature:<{name_width}}"
+            formatted_values = f"{importance_rel:5.1f}% (±{std:4.1f}%)"
+
+            color = get_importance_color(importance_rel)
+
+            self.logger.info(
+                f"<span style='color: #463ede'>{formatted_name}</span><span style='color: {color}'>{formatted_values}</span>"
+            )
+
+        self.logger.info("=" * 60)
+
 
 class ProcessExecutor:
     """Manager for running population analysis process"""
@@ -207,6 +252,11 @@ class ProcessExecutor:
         if not self._check_and_clear_outputs(output_dir):
             return
 
+        # Check existing model and get user choice
+        proceed, use_existing_model = self._check_existing_model(output_dir)
+        if not proceed:
+            return
+
         # Clear console and reset progress
         self.dialog.console_handler.clear()
         self.dialog.mainProgressBar.setValue(0)
@@ -218,11 +268,11 @@ class ProcessExecutor:
             # Create and start worker thread
             self.worker = ProcessWorker(
                 self.dialog.config_manager.config_path,
-                self.logger
+                self.logger,
+                use_existing_model=use_existing_model
             )
 
             # Connect signals
-            self.worker.model_choice_needed.connect(self._handle_model_choice)
             self.worker.progress.connect(self.update_progress)
             self.worker.finished.connect(self.analysis_finished)
 
@@ -246,25 +296,46 @@ class ProcessExecutor:
 
             self._set_ui_enabled(True)
 
-    def _handle_model_choice(self):
+    def _check_existing_model(self, output_dir):
+        """
+        Check for existing model and get user choice.
+
+        Returns:
+            Tuple[bool, bool]: (proceed_with_analysis, use_existing_model)
+        """
+        model_path = Path(output_dir) / 'model.pkl.gz'
+        scaler_path = Path(output_dir) / 'scaler.pkl.gz'
+
+        if not (model_path.exists() and scaler_path.exists()):
+            return True, False
+
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Question)
         msg.setText("Previous model found")
         msg.setInformativeText(
             "A previously trained model was found in the output directory.\n\n"
+            "IMPORTANT: If you have changed any input data (covariates, mastergrid, census),\n"
+            "you should train a new model to ensure correct results.\n\n"
             "Would you like to:\n"
-            "• Use the existing model (faster)\n"
-            "• Train a new model (may give better results)"
+            "• Use the existing model (faster but may give incorrect results if inputs changed)\n"
+            "• Train a new model (slower but ensures results match current inputs)\n"
+            "• Cancel the operation"
         )
         msg.setWindowTitle("Model Selection")
 
         use_existing = msg.addButton("Use Existing", QMessageBox.AcceptRole)
-        train_new = msg.addButton("Train New", QMessageBox.RejectRole)
-        msg.setDefaultButton(use_existing)
+        train_new = msg.addButton("Train New", QMessageBox.ActionRole)
+        cancel = msg.addButton("Cancel", QMessageBox.RejectRole)
+        msg.setDefaultButton(train_new)
 
-        msg.exec()
+        result = msg.exec()
+        clicked = msg.clickedButton()
 
-        self.worker.model_choice_result = (msg.clickedButton() == use_existing)
+        if clicked == cancel:
+            self.logger.info("Analysis cancelled by user")
+            return False, False
+
+        return True, (clicked == use_existing)
 
     def update_progress(self, value, message):
         """Update progress bar and log message"""

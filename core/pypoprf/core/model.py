@@ -47,7 +47,9 @@ class Model:
         self.model = None
         self.scaler = None
         self.feature_names = None
+        self.selected_features = None
         self.target_mean = None
+        self.feature_importances = None
 
         self.output_dir = Path(settings.work_dir) / 'output'
         self.output_dir.mkdir(exist_ok=True)
@@ -120,6 +122,7 @@ class Model:
                 try:
                     self.model = joblib.load(model_path)
                     logger.debug("Model loaded successfully")
+                    self.selected_features = self.feature_names
                 except Exception as e:
                     logger.error(f"Failed to load model: {str(e)}")
                     raise
@@ -172,6 +175,7 @@ class Model:
             self.scaler = joblib.load(scaler_path)
 
             self.feature_names = self.scaler.get_feature_names_out()
+            self.selected_features = self.feature_names
             logger.debug(f"Loaded feature names: {self.feature_names.tolist()}")
 
             logger.info("Model and scaler loaded successfully")
@@ -204,13 +208,22 @@ class Model:
         )
 
         sorted_idx = result.importances_mean.argsort()
-
         importances = pd.DataFrame(
             result.importances[sorted_idx].T / ymean,
             columns=names,
         )
 
+        self.feature_importances = pd.DataFrame({
+            'feature': names,
+            'importance': result.importances_mean / ymean,
+            'std': result.importances_std / ymean
+        }).sort_values('importance', ascending=False)
+
+        importance_path = Path(self.settings.work_dir) / 'output' / 'feature_importance.csv'
+        self.feature_importances.to_csv(importance_path, index=False)
+
         selected = importances.columns.values[importances.mean(axis=0) > limit]
+        self.selected_features = selected
         return importances, selected
 
     def _calculate_cv_scores(self,
@@ -301,7 +314,7 @@ class Model:
             worker = PredictionWorker(
                 window,
                 self.settings.covariate,
-                self.feature_names,
+                self.selected_features,
                 self.model,
                 self.scaler
             )

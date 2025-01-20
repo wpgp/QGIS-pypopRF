@@ -23,7 +23,6 @@
 """
 
 import os
-import sys
 
 from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt.QtCore import QThread
