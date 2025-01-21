@@ -1,15 +1,25 @@
 [general]
-name=qgis_pypoprf
+name=pypopRF
 qgisMinimumVersion=3.0
 description=A plugin for population prediction and dasymetric mapping using machine learning
 version=0.1
-author=WorldPop SDI Team
+author=WorldPop SDI Team:
+    Borys Nosatiuk (Project Lead),
+    Rhorom Priyatikanto,
+    Maksym Bondarenko,
+    Wenbin Zhang,
+    Tom McKeen,
+    Elena Vataga
 email=b.nosatiuk@soton.ac.uk
 about=The QGIS PyPopRF plugin provides tools for high-resolution population prediction and dasymetric mapping. Using machine learning techniques, it processes geospatial data to generate accurate population distribution models. It is ideal for researchers and planners working with population and spatial data.
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
 hasProcessingProvider=no
-changelog=Version 0.1:* Initial release* Basic population modeling functionality* Support for parallel processing* Integration with QGIS layer system
+changelog=Version 0.1:
+    * Initial release
+    * Basic population modeling functionality
+    * Support for parallel processing
+    * Integration with QGIS layer system
 tags=population, mapping, dasymetric, machine learning, GIS, Python
 homepage=https://wpgp.github.io/QGIS-pypopRF
 category=Raster
