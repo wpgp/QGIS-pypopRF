@@ -13,7 +13,7 @@ logger = get_logger()
 
 
 class ProgressBar:
-    def __init__(self, total, width=50, logger=None, update_frequency=None):
+    def __init__(self, total, width=20, logger=None, update_frequency=None):
         self.total = total
         self.width = width
         self.current = 0
