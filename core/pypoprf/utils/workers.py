@@ -276,8 +276,7 @@ class DasymetricWorker(QRunnable):
     completed_workers = 0
     progress_bar = None
     lock = threading.Lock()
-    total_process_time = 0
-    total_workers = 0
+    final_stats = {'min': float('inf'), 'max': float('-inf'), 'sum': 0, 'count': 0}
 
     def __init__(self, window, file_paths, profile, idx=None):
         super().__init__()
@@ -291,9 +290,8 @@ class DasymetricWorker(QRunnable):
     def init_progress(cls, total_workers, logger):
         cls.completed_workers = 0
         cls.progress_bar = ProgressBar(total_workers, logger=logger)
-        cls.total_process_time = 0
-        cls.total_workers = 0
 
+        cls.final_stats = {'min': float('inf'), 'max': float('-inf'), 'sum': 0, 'count': 0}
 
     def run(self):
         try:
@@ -302,14 +300,35 @@ class DasymetricWorker(QRunnable):
 
                 pred_data = pred.read(1, window=self.window)
                 norm_data = norm.read(1, window=self.window)
-                pred_nodata = pred.nodata
 
-            population = np.round(pred_data * norm_data).astype('int32')
+                invalid_mask = (pred_data == pred.nodata) | (norm_data == self.profile['nodata'])
 
-            nodata_mask = (pred_data == pred_nodata) | (norm_data == self.profile['nodata'])
-            population[nodata_mask] = self.profile['nodata']
+                pred_data = np.where(invalid_mask, 0, pred_data)
+                norm_data = np.where(invalid_mask, 0, norm_data)
 
-            self.result = population[np.newaxis, :, :]
+                population = np.round(np.maximum(0, pred_data * norm_data)).astype('int32')
+
+                valid_values = population[~invalid_mask]
+                if len(valid_values) > 0:
+                    logger.debug(
+                        f"Window group {self.idx // 50}: "
+                        f"valid pixels={len(valid_values)}, "
+                        f"range=[{valid_values.min()}, {valid_values.max()}], "
+                        f"mean={valid_values.mean():.2f}"
+                    )
+
+                population[invalid_mask] = self.profile['nodata']
+
+                final_valid = population[~invalid_mask]
+                if len(final_valid) > 0:
+                    with self.lock:
+                        stats = self.__class__.final_stats
+                        stats['min'] = min(stats['min'], final_valid.min())
+                        stats['max'] = max(stats['max'], final_valid.max())
+                        stats['sum'] += final_valid.sum()
+                        stats['count'] += len(final_valid)
+
+                self.result = population[np.newaxis, :, :]
 
             with self.lock:
                 self.__class__.completed_workers += 1

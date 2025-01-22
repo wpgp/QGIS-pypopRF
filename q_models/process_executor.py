@@ -107,8 +107,6 @@ class ProcessWorker(QThread):
                 predictions = model.predict()
 
                 # predictions = Path(settings.work_dir) / 'output' / 'prediction.tif'
-                # if not predictions.exists():
-                #     raise FileNotFoundError("Prediction file not found in output directory")
 
                 # Dasymetric mapping
                 if not self._is_running:
@@ -121,7 +119,7 @@ class ProcessWorker(QThread):
                 if not self._is_running:
                     return
                 self.progress.emit(95, "Verifying outputs...")
-                self._verify_outputs(settings)
+                self.verify_outputs(settings)
 
                 duration = time.time() - self.start_time
                 self.logger.info(f'All Process compute in {self.format_time(duration)}')
@@ -137,7 +135,8 @@ class ProcessWorker(QThread):
             self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.finished.emit(False, str(e))
 
-    def format_time(self, seconds: float) -> str:
+    @staticmethod
+    def format_time(seconds: float) -> str:
         """Convert seconds to minutes and seconds format."""
         minutes = int(seconds // 60)
         seconds = seconds % 60
@@ -145,7 +144,8 @@ class ProcessWorker(QThread):
             return f"{minutes}m {seconds:.0f}s"
         return f"{seconds:.0f}s"
 
-    def _verify_outputs(self, settings):
+    @staticmethod
+    def verify_outputs(settings):
         """Verify that all required output files exist"""
         output_dir = Path(settings.work_dir) / 'output'
         required_files = [
@@ -328,7 +328,7 @@ class ProcessExecutor:
         cancel = msg.addButton("Cancel", QMessageBox.RejectRole)
         msg.setDefaultButton(train_new)
 
-        result = msg.exec()
+        msg.exec()
         clicked = msg.clickedButton()
 
         if clicked == cancel:

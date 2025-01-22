@@ -325,18 +325,8 @@ class DasymetricMapper:
         unmatched_census = merged[merged['sum'].isna()]
         unmatched_stats = merged[merged[pop_column].isna()]
 
-        merge_summary = f"""
-            Initial Population: {pre_merge_pop:,}
-            Census Rows: {len(census)}
-            Statistics Rows: {len(sum_prob)}
-            Merged Rows: {len(merged)}
-
-            Unmatched Data:
-            - Census zones: {len(unmatched_census)} {unmatched_census['id'].tolist()}
-            - Statistics zones: {len(unmatched_stats)} {unmatched_stats['id'].tolist()}
-            """
-        logger.debug(merge_summary)
-        logger.info(f"Initial total population: {pre_merge_pop:,.0f}")
+        logger.info(f"Census zones: {len(unmatched_census)} {unmatched_census['id'].tolist()}")
+        logger.info(f"Statistics zones: {len(unmatched_stats)} {unmatched_stats['id'].tolist()}")
         logger.info(f"Census rows: {len(census)}, Statistics rows: {len(sum_prob)}, Merged rows: {len(merged)}")
 
         # Normalization Results
@@ -347,21 +337,18 @@ class DasymetricMapper:
                                    out=np.full_like(merged['sum'], np.nan))
         total_pop_check = (merged['sum'] * merged['norm']).sum()
 
-        norm_summary = f"""
-            Factor Statistics:
-            {merged['norm'].describe().to_string()}
+        logger.info("Normalization factors summary:")
+        logger.info(f"- Range: [{merged['norm'].min():.4f}, {merged['norm'].max():.4f}]")
+        logger.info(f"- Mean: {merged['norm'].mean():.4f}")
+        logger.info(f"- Median: {merged['norm'].median():.4f}")
+        logger.info(f"- Std: {merged['norm'].std():.4f}")
 
-            Quality Check:
-            - Valid normalizations: {valid.sum()}
-            - Zero sums: {len(merged[merged['sum'] == 0])}
-            - Invalid norms: {len(merged[merged['norm'].isna()])}
+        logger.info(f"Population Verification:")
+        logger.info(f"Original: {pre_merge_pop:,}")
+        logger.info(f"After normalization: {total_pop_check:,.0f}")
+        logger.info(f"Difference: {abs(total_pop_check - pre_merge_pop):,} "
+                    f"({abs(total_pop_check - pre_merge_pop) / pre_merge_pop:.2%})")
 
-            Population Verification:
-            - Original: {pre_merge_pop:,}
-            - After normalization: {total_pop_check:,.0f}
-            - Difference: {abs(total_pop_check - pre_merge_pop):,} ({abs(total_pop_check - pre_merge_pop) / pre_merge_pop:.2%})
-            """
-        logger.debug(norm_summary)
         logger.info(f"Valid normalizations: {valid.sum()} of {len(merged)} zones")
         logger.info(f"Zones with zero sums: {len(merged[merged['sum'] == 0])}")
 
@@ -477,6 +464,9 @@ class DasymetricMapper:
 
         with rasterio.open(str(output_path), 'w', **profile) as dst:
             if self.settings.by_block:
+                output_data = np.full((dst.height, dst.width),
+                                      profile['nodata'],
+                                      dtype=profile['dtype'])
                 windows = [window[1] for window in dst.block_windows()]
 
                 file_paths = {
@@ -486,8 +476,8 @@ class DasymetricMapper:
 
                 executor = QThreadPool.globalInstance()
                 executor.setMaxThreadCount(self.settings.max_workers)
-
                 workers = []
+
                 DasymetricWorker.init_progress(len(windows), logger)
 
                 for i, window in enumerate(windows):
@@ -505,8 +495,20 @@ class DasymetricMapper:
 
                 for i, worker in enumerate(workers):
                     if worker.result is not None:
-                        dst.write(worker.result, window=windows[i])
+                        window = windows[i]
+                        result_data = worker.result[0]
+                        output_data[window.row_off:window.row_off + window.height,
+                        window.col_off:window.col_off + window.width] = result_data
 
+                valid_mask = output_data != profile['nodata']
+                if np.any(valid_mask):
+                    logger.info("Final data statistics before writing:")
+                    logger.info(f"- Range: [{output_data[valid_mask].min():.2f}, "
+                                f"{output_data[valid_mask].max():.2f}]")
+                    logger.info(f"- Mean: {output_data[valid_mask].mean():.2f}")
+                    logger.info(f"- Valid pixels: {np.sum(valid_mask)}")
+
+                dst.write(output_data, indexes=1)
                 workers.clear()
 
             else:
