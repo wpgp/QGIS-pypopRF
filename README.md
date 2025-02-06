@@ -91,8 +91,6 @@ Additional outputs:
 Interested in contributing? Check our [documentation](https://wpgp.github.io/QGIS-pypopRF/developers/) for:
 - Project structure
 - Development setup
-- Contributing guidelines
-- API reference
 
 ## License
 
