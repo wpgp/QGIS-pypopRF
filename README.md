@@ -16,17 +16,18 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
 ## Requirements
 
 - QGIS 3.0 or later
-- Python packages (installed automatically):
-  - numpy, pandas, scikit-learn
-  - geopandas, rasterio
-  - Other dependencies handled by plugin installer
+- Python 3.9 - 3.12
+- Plugin dependencies will be installed automatically during installation
 
 ## Installation
 
-1. Open QGIS
-2. Go to "Plugins" → "Manage and Install Plugins"
-3. Search for "pypopRF"
-4. Click "Install Plugin"
+1. Download the plugin ZIP file from the [GitHub repository](https://github.com/wpgp/QGIS-pypopRF/releases)
+2. In QGIS, go to "Plugins" → "Manage and Install Plugins" → "Install from ZIP"
+3. Select the downloaded ZIP file
+4. During installation, a console window will open showing the automatic installation of required Python packages. Please do not interrupt this process as it may take several minutes.
+
+Note: Installation through the official QGIS Plugin Repository will be available soon.
+
 
 ## Quick Start
 
@@ -36,10 +37,10 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
    - Click "Initialize New Project"
 
 2. **Configure Inputs**
-   - Add mastergrid (zone definitions)
-   - Add census data (population counts)
-   - Add building covariates (counts, footprints, heights)
-   - Optional: Add water mask or constraints
+   - Add mastergrid
+   - Add census data
+   - Add covariates
+   - Optional: Add water mask and/or constraints
 
 3. **Adjust Settings**
    - Set processing parameters
@@ -64,12 +65,20 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
 
 ## Outputs
 
-The plugin generates several files in your project's output directory:
+The plugin generates the following files in your project's output directory:
 
-- **Final Map**: High-resolution population distribution (dasymetric.tif)
-- **Intermediate**: Probability surface and normalized values
-- **Analysis**: Feature importance plots and statistics
+### When running without constraints:
+- **dasymetric_unconstrained.tif**: Final high-resolution population distribution
+
+### When running with constraints:
+- **dasymetric_unconstrained.tif**: Population distribution without constraints applied
+- **dasymetric_constrained.tif**: Population distribution with constraints applied
+
+Additional outputs:
+- **prediction.tif**: Probability surface
+- **normalized_census.tif**: Normalized values
 - **Logs**: Detailed processing information
+
 
 ## Getting Help
 
@@ -95,4 +104,6 @@ Developed by the WorldPop SDI Team at the University of Southampton:
 - Borys Nosatiuk (b.nosatiuk@soton.ac.uk)
 - Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
 - Maksym Bondarenko (m.bondarenko@soton.ac.uk)
-- Andrew Tatem (a.j.tatem@soton.ac.uk)
+- Wenbin Zhang (wb.zhang@soton.ac.uk)
+- Tom McKeen (t.l.mckeen@soton.ac.uk)
+- Elena Vataga (e.vataga@soton.ac.uk)
