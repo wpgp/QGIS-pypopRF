@@ -22,53 +22,33 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+import importlib
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 
-# noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
     """Load PyPopRF class from file PyPopRF.
 
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    try:
-        # Try importing core dependencies
-        import numpy
-        import pandas
-        import geopandas
-        import rasterio
-        import sklearn
-    except ImportError as e:
-        # If imports fail, try installing dependencies
-        from qgis.PyQt.QtWidgets import QMessageBox
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setText("Installing required packages...")
-        msg.setInformativeText("This may take a few minutes. Please wait.")
-        msg.setWindowTitle("pypopRF Plugin")
-        msg.show()
 
-        try:
-            from .plugin_setup import install_dependencies
-            success = install_dependencies()
-            if not success:
-                error_msg = QMessageBox()
-                error_msg.setIcon(QMessageBox.Critical)
-                error_msg.setText("Failed to install dependencies")
-                error_msg.setInformativeText("Please check your internet connection and try again.")
-                error_msg.setWindowTitle("PyPopRF Plugin")
-                error_msg.exec_()
-                raise ImportError("Failed to install required dependencies")
-            msg.close()
-        except Exception as setup_error:
-            msg.close()
-            error_msg = QMessageBox()
-            error_msg.setIcon(QMessageBox.Critical)
-            error_msg.setText("Error during dependency installation")
-            error_msg.setInformativeText(str(setup_error))
-            error_msg.setWindowTitle("pypopRF Plugin")
-            error_msg.exec_()
-            raise
+    plugin_dir = Path(__file__).parent
+    deps_path = os.path.join(plugin_dir, "deps")
+
+    if not os.path.exists(deps_path):
+        requirements_path = os.path.join(plugin_dir, "requirements.txt")
+        python_exe = os.path.join(os.environ.get('PYTHONHOME'), 'python.exe')
+        subprocess.check_call([python_exe, '-m', 'pip', 'install', '-r', requirements_path,
+                               '--platform', 'win_amd64', '--only-binary=:all:',
+                               f'--target={deps_path}'])
+
+    if deps_path not in sys.path:
+        sys.path.insert(1, deps_path)
+        importlib.invalidate_caches()
 
     from .qgis_pypoprf import PyPopRF
     return PyPopRF(iface)

@@ -26,5 +26,4 @@ category=Raster
 icon=icon.png
 experimental=False
 deprecated=False
-plugin_dependencies=numpy, pandas, geopandas, rasterio, scikit-learn
 server=False

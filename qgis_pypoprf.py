@@ -61,7 +61,7 @@ class PyPopRF:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&QGIS pypopRF ')
+        self.menu = self.tr(u'&QGIS pypopRF')
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -160,7 +160,7 @@ class PyPopRF:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/qgis_pypoprf/icon.png'
+        icon_path = ':/plugins/pypopRF/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Run Population Modeling'),
@@ -175,7 +175,7 @@ class PyPopRF:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&QGIS pypopRF '),
+                self.tr(u'&QGIS pypopRF'),
                 action)
             self.iface.removeToolBarIcon(action)
 
