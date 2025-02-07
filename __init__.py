@@ -27,6 +27,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+import platform
 
 
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -41,10 +42,49 @@ def classFactory(iface):  # pylint: disable=invalid-name
 
     if not os.path.exists(deps_path):
         requirements_path = os.path.join(plugin_dir, "requirements.txt")
-        python_exe = os.path.join(os.environ.get('PYTHONHOME'), 'python.exe')
-        subprocess.check_call([python_exe, '-m', 'pip', 'install', '-r', requirements_path,
-                               '--platform', 'win_amd64', '--only-binary=:all:',
-                               f'--target={deps_path}'])
+
+        # Determine OS and Python executable
+        system = platform.system().lower()
+        if system == 'windows':
+            python = os.path.join(os.environ.get('PYTHONHOME'), 'python.exe')
+            platform_tag = 'win_amd64'
+        elif system == 'linux':
+            python = 'python3'
+            platform_tag = 'manylinux2014_x86_64'
+        elif system == 'darwin':
+            python = 'python3'
+            platform_tag = 'macosx_10_14_x86_64'
+        else:
+            raise OSError(f"Unsupported operating system: {system}")
+
+        try:
+            # First attempt: with platform-specific wheels
+            subprocess.check_call([
+                python,
+                '-m',
+                'pip',
+                'install',
+                '-r',
+                requirements_path,
+                '--platform',
+                platform_tag,
+                '--only-binary=:all:',
+                f'--target={deps_path}'
+            ])
+        except subprocess.CalledProcessError as e:
+            try:
+                # Second attempt: without platform specifications
+                subprocess.check_call([
+                    python,
+                    '-m',
+                    'pip',
+                    'install',
+                    '-r',
+                    requirements_path,
+                    f'--target={deps_path}'
+                ])
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"Failed to install dependencies for {system} ({platform_tag}). Error: {str(e)}")
 
     if deps_path not in sys.path:
         sys.path.insert(1, deps_path)
