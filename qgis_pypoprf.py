@@ -21,43 +21,41 @@
  *                                                                         *
  ***************************************************************************/
 """
+import os
+
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-# Initialize Qt resources from file resources.py
-from .resources import *
-# Import the code for the dialog
 from .qgis_pypoprf_dialog import PyPopRFDialog
-import os.path
 
 
 class PyPopRF:
-    """QGIS Plugin Implementation."""
+    """QGIS Plugin Implementation for Population Modeling.
+
+    A plugin for high-resolution population mapping using machine learning
+    and dasymetric techniques. Creates detailed population distribution maps
+    by combining census data with geospatial covariates.
+
+    Attributes:
+        iface: QGIS interface instance
+        plugin_dir: Plugin's root directory path
+        actions: List of plugin actions in QGIS interface
+        menu: Plugin menu entry name
+        first_start: Flag indicating first plugin start in session
+    """
 
     def __init__(self, iface):
-        """Constructor.
+        """Initialize the plugin.
 
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
+        Args:
+            iface: QGIS interface instance for manipulating the application
         """
+
         # Save reference to the QGIS interface
         self.iface = iface
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
-        # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'PyPopRF_{}.qm'.format(locale))
-
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
         self.actions = []
@@ -82,18 +80,17 @@ class PyPopRF:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('PyPopRF', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -158,41 +155,57 @@ class PyPopRF:
         return action
 
     def initGui(self):
-        """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        """Create menu entries and toolbar icons in the QGIS GUI.
+
+        Initializes the plugin's visual components and connects them
+        to their respective actions.
+        """
 
         icon_path = ':/plugins/pypopRF/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Run Population Modeling'),
             callback=self.run,
-            parent=self.iface.mainWindow())
-
-        # will be set False in run()
+            parent=self.iface.mainWindow(),
+            status_tip=self.tr('Start population modeling process')
+        )
         self.first_start = True
 
-
     def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
+        """Removes plugin components from QGIS GUI.
+
+        Cleans up all plugin UI elements and references when plugin
+        is being unloaded.
+        """
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&QGIS pypopRF'),
                 action)
             self.iface.removeToolBarIcon(action)
 
+        # Clear references
+        self.actions = []
 
-    def run(self):
-        """Run method that performs all the real work"""
+    def run(self) -> None:
+        """Run the main plugin functionality.
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        Creates and shows the main plugin dialog. Dialog is created only
+        once per QGIS session to improve performance.
+        """
+        if self.first_start:
             self.first_start = False
             self.dlg = PyPopRFDialog(iface=self.iface)
 
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            pass
+        try:
+            self.dlg.show()
+            result = self.dlg.exec_()
+            if result:
+                # Handle any post-execution tasks if needed
+                pass
+
+        except Exception as e:
+            # Log error and show user-friendly message
+            self.iface.messageBar().pushCritical(
+                'PyPopRF Error',
+                f'An error occurred: {str(e)}'
+            )

@@ -23,6 +23,7 @@
 """
 
 import os
+from typing import Optional, Any
 
 from qgis.PyQt import uic, QtWidgets
 from qgis.PyQt.QtCore import QThread
@@ -34,14 +35,35 @@ from .q_models.file_handlers import FileHandler
 from .q_models.process_executor import ProcessExecutor
 from .q_models.settings_handler import SettingsHandler
 
-# This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qgis_pypoprf_dialog_base.ui'))
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, parent=None, iface=None):
-        """Constructor."""
+    """Main dialog for the PyPopRF plugin.
+
+    This class handles the user interface and coordinates communication between
+    different components of the plugin. It manages user input, file handling,
+    settings configuration, and analysis execution.
+
+    Attributes:
+        iface: QGIS interface instance
+        logger: Logger instance for output messages
+        config_manager: Handler for configuration management
+        covariate_handler: Handler for covariate management
+        file_handler: Handler for file operations
+        settings_handler: Handler for settings management
+        process_executor: Handler for analysis execution
+    """
+
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None,
+                 iface: Optional[Any] = None) -> None:
+        """Initialize the dialog.
+
+        Args:
+            parent: Parent widget
+            iface: QGIS interface instance
+        """
         super(PyPopRFDialog, self).__init__(parent)
         self.iface = iface
         self.setupUi(self)
@@ -69,7 +91,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._set_initial_state()
 
     def _connect_signals(self):
-        """Connect all UI signals"""
+        """Connect all UI signals to their respective handlers."""
         # Button signals
         self.initProjectButton.clicked.connect(self.init_project)
         self.openProjectFolder.clicked.connect(self.open_project_folder)
@@ -111,7 +133,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.mainStartButton.clicked.connect(self._handle_start_button)
 
     def _setup_file_widgets(self):
-        """Setup file widgets with filters and titles"""
+        """Configure file widgets with appropriate filters and titles."""
+
         # Mastergrid
         self.mastergridFileWidget.setDialogTitle("Select Mastergrid File (Required)")
         self.mastergridFileWidget.setFilter("GeoTIFF files (*.tif *.tiff)")
@@ -132,7 +155,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._setup_cpu_cores_combo()
 
     def _setup_cpu_cores_combo(self):
-        """Setup CPU cores combo box based on system's available cores"""
+        """Configure CPU cores combo box based on available system resources.
+
+        Sets up the combo box with values from 2 to max available cores in steps of 2.
+        Default value is set to half of available cores + 2.
+        """
+
         self.cpuCoresComboBox.clear()
 
         max_cores = QThread.idealThreadCount()
@@ -155,7 +183,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.logger.debug(f"Default value set to: {default_cores} cores")
 
     def _set_initial_state(self):
-        """Set initial state of UI widgets"""
+        """Set initial state of UI widgets before project initialization."""
+
         self.initProjectButton.setEnabled(False)
         self.mainStartButton.setEnabled(False)
         self.openProjectFolder.setEnabled(False)
@@ -204,7 +233,13 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.addToQgisCheckBox.setEnabled(enabled)
 
     def _handle_file_change(self, file_type: str, path: str):
-        """Handle file selection changes"""
+        """Handle file selection changes for input files.
+
+        Args:
+            file_type: Type of file being changed ('mastergrid', 'mask', etc.)
+            path: New file path
+        """
+
         if path:
             filename = self.file_handler.copy_to_data_dir(path, file_type)
             if filename:
@@ -226,7 +261,15 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.initProjectButton.setEnabled(bool(path))
 
     def init_project(self):
-        """Initialize new pypopRF project"""
+        """Initialize new pypopRF project.
+
+        Creates project directory structure, initializes configuration,
+        and enables UI elements for further setup.
+
+        Raises:
+            Exception: If project initialization fails
+        """
+
         self.console_handler.clear()
         self.mainProgressBar.setValue(0)
 
@@ -268,7 +311,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             self.logger.error(f"Error initializing project: {str(e)}")
 
     def add_covariate(self):
-        """Open file dialog and add selected covariates"""
+        """Add new covariate files to the project.
+
+        Opens file dialog for selecting covariate files and adds them
+        to the project data directory.
+        """
+
         file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
             self,
             "Select Covariate Files",
@@ -288,7 +336,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.file_handler.open_folder(self.workingDirEdit.filePath())
 
     def _update_logging_settings(self):
-        """Update logging settings based on UI state"""
+        """Update logging configuration based on current UI state.
+
+        Updates both config file and logger instance with new settings.
+        """
 
         self.config_manager.update_config('logging', {
             'level': self.comboBox.currentText(),
@@ -304,7 +355,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         )
 
     def _handle_cpu_cores_changed(self, text):
-        """Handle CPU cores value change"""
+        """Handle changes to CPU core count setting.
+
+        Args:
+            text: New CPU core count value
+        """
+
         if self.enableParallelCheckBox.isChecked():
             try:
                 cores = int(text)
@@ -314,7 +370,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.logger.warning(f"Invalid CPU cores value: {text}")
 
     def _handle_block_size_changed(self, text):
-        """Handle block size value change"""
+        """Handle changes to processing block size.
+
+        Args:
+            text: New block size value in format "width, height"
+        """
+
         if self.enableBlockProcessingCheckBox.isChecked():
             try:
                 w, h = map(int, text.replace(' ', '').split(','))

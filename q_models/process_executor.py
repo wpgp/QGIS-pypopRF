@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 import traceback
+from logging import Logger
 from pathlib import Path
 
 import pandas as pd
@@ -15,7 +16,21 @@ from ..core.pypoprf.utils.raster import remask_layer
 
 
 class ProcessWorker(QThread):
-    """Worker thread for running population analysis"""
+    """Worker thread for population analysis.
+
+    Handles the heavy computation processes including:
+    - Feature extraction
+    - Model training/loading
+    - Predictions
+    - Dasymetric mapping
+
+    Signals:
+        progress: Emits progress percentage and status message
+        finished: Emits success status and completion message
+        ui_state: Emits UI enable/disable signal
+        layer_created: Emits when new layer is created
+        final_layers_ready: Emits when all layers are ready
+    """
 
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str)
@@ -23,7 +38,20 @@ class ProcessWorker(QThread):
     layer_created = pyqtSignal(str, str)
     final_layers_ready = pyqtSignal(str, str)
 
-    def __init__(self, config_path, logger, use_existing_model=False):
+    def __init__(self,
+                 config_path: Path,
+                 logger: Logger,
+                 use_existing_model: bool = False) -> None:
+        """Initialize worker thread.
+
+        Args:
+            config_path: Path to configuration file
+            logger: Logger instance
+            use_existing_model: Whether to use existing trained model
+
+        Raises:
+            ProcessError: If initialization fails
+        """
         super().__init__()
         self.config_path = config_path
         self.logger = logger
@@ -225,16 +253,31 @@ class ProcessWorker(QThread):
 
 
 class ProcessExecutor:
-    """Manager for running population analysis process"""
+    """Manager for running population analysis process.
+
+    Handles the execution of analysis processes including:
+    - Input validation
+    - Output management
+    - UI state management
+    - QGIS layer management
+
+    Attributes:
+        dialog: Main dialog instance
+        logger: Logger instance
+        iface: QGIS interface instance
+        worker: Current process worker instance
+        output_layers: List of created output layers
+    """
+
     progress = pyqtSignal(int, str)
 
     def __init__(self, dialog, logger, iface=None):
-        """
-        Initialize ProcessExecutor.
+        """Initialize ProcessExecutor.
 
         Args:
             dialog: Main dialog instance
             logger: Logger instance
+            iface: Optional QGIS interface instance
         """
         self.dialog = dialog
         self.logger = logger
@@ -242,8 +285,20 @@ class ProcessExecutor:
         self.worker = None
         self.output_layers = []
 
+    @property
+    def is_running(self) -> bool:
+        """Check if analysis is currently running."""
+        return bool(self.worker and self.worker.isRunning())
+
     def start_analysis(self):
-        """Start the analysis process"""
+        """Start the analysis process.
+
+        Validates inputs, checks outputs, and initializes worker thread.
+
+        Raises:
+            ProcessError: If analysis startup fails
+        """
+
         # Validate inputs
         if not self._validate_all():
             return
@@ -298,12 +353,17 @@ class ProcessExecutor:
             self._set_ui_enabled(True)
 
     def _check_existing_model(self, output_dir):
-        """
-        Check for existing model and get user choice.
+        """Check for existing model and get user choice.
+
+        Args:
+            output_dir: Path to output directory
 
         Returns:
-            Tuple[bool, bool]: (proceed_with_analysis, use_existing_model)
+            Tuple containing:
+                - Whether to proceed with analysis
+                - Whether to use existing model
         """
+
         model_path = Path(output_dir) / 'model.pkl.gz'
         scaler_path = Path(output_dir) / 'scaler.pkl.gz'
 
@@ -339,14 +399,26 @@ class ProcessExecutor:
         return True, (clicked == use_existing)
 
     def update_progress(self, value, message):
-        """Update progress bar and log message"""
+        """Update progress bar and log message.
+
+        Args:
+            value: Progress percentage (0-100)
+            message: Status message to display
+        """
+
         self.dialog.mainProgressBar.setValue(value)
         self.dialog.mainProgressBar.setFormat(f"{message} ({value}%)")
         if message:
             self.logger.info(message)
 
     def analysis_finished(self, success, message):
-        """Handle analysis completion"""
+        """Handle analysis completion.
+
+        Args:
+            success: Whether analysis completed successfully
+            message: Completion or error message
+        """
+
         self._set_ui_enabled(True)
 
         if success:
@@ -357,7 +429,12 @@ class ProcessExecutor:
             self.logger.error(f"Analysis failed: {message}")
 
     def _validate_inputs(self):
-        """Validate all required inputs"""
+        """Validate all required inputs.
+
+        Returns:
+            bool: True if all inputs are valid
+        """
+
         return self.dialog.file_handler.validate_inputs(
             self.dialog.mastergridFileWidget.filePath(),
             self.dialog.censusFileWidget.filePath(),
@@ -365,7 +442,12 @@ class ProcessExecutor:
         )
 
     def _set_ui_enabled(self, enabled):
-        """Enable/disable UI elements during processing"""
+        """Enable/disable UI elements during processing.
+
+        Args:
+            enabled: Whether to enable UI elements
+        """
+
         self.dialog.mainStartButton.setEnabled(True)
         self.dialog.set_input_widgets_enabled(enabled)
         self.dialog.workingDirEdit.setEnabled(enabled)
@@ -388,7 +470,11 @@ class ProcessExecutor:
                 "font-size: 10pt; }")
 
     def add_output_layers(self):
-        """Add all output layers to QGIS"""
+        """Add all output layers to QGIS.
+
+        Raises:
+            ProcessError: If adding layers fails
+        """
         try:
             output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
             filenames = ['prediction.tif', 'normalized_census.tif', 'dasymetric.tif']
@@ -405,7 +491,11 @@ class ProcessExecutor:
             self.logger.error(f"Failed to add output layers: {str(e)}")
 
     def _validate_all(self):
-        """Validate all settings and inputs before starting"""
+        """Validate all settings and inputs before starting.
+
+        Returns:
+            bool: True if all validations pass
+        """
         try:
             errors = []
 
@@ -536,3 +626,4 @@ class ProcessExecutor:
             return False
 
         return True
+

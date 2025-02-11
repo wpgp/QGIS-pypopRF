@@ -1,30 +1,53 @@
+from logging import Logger
+from typing import Any, Optional
+
 import yaml
 
 
-class SettingsHandler:
-    """Handler for processing settings in QGIS plugin"""
+class SettingsError(Exception):
+    """Custom exception for settings-related errors."""
+    pass
 
-    def __init__(self, config_manager, logger):
-        """
-        Initialize SettingsHandler.
+
+class SettingsHandler:
+    """Handler for processing settings in QGIS plugin.
+
+    Manages loading, saving, and validation of plugin settings,
+    including logging configuration and processing parameters.
+
+    Attributes:
+        config_manager: ConfigManager instance
+        logger: Logger instance
+        _pending_log_filename: Temporary storage for log filename changes
+        _pending_pop_column: Temporary storage for population column changes
+        _pending_id_column: Temporary storage for ID column changes
+    """
+
+    def __init__(self, config_manager: Any, logger: Logger) -> None:
+        """Initialize SettingsHandler.
 
         Args:
             config_manager: ConfigManager instance
-            logger: Logger instance for output messages
+            logger: Logger instance
+
+        Raises:
+            SettingsError: If initialization fails
         """
         self.config_manager = config_manager
         self.logger = logger
-        self._pending_log_filename = None
-        self._pending_pop_column = None
-        self._pending_id_column = None
+        self._pending_log_filename: Optional[str] = None
+        self._pending_pop_column: Optional[str] = None
+        self._pending_id_column: Optional[str] = None
 
+    def connect_log_filename_signals(self, dialog) -> None:
+        """Connect signals for log filename input.
 
-    def connect_log_filename_signals(self, dialog):
-        """Connect signals for log filename input."""
+        Args:
+            dialog: Main dialog instance
+        """
         dialog.logsColumnEdit.textChanged.connect(
             lambda text: setattr(self, '_pending_log_filename', text)
         )
-
         dialog.logsColumnEdit.editingFinished.connect(
             lambda: self._apply_log_filename_update(dialog)
         )
@@ -36,7 +59,7 @@ class SettingsHandler:
             lambda text: setattr(self, '_pending_pop_column', text)
         )
         dialog.popColumnEdit.editingFinished.connect(
-            lambda: self._apply_census_update(dialog)
+            lambda: self._apply_census_update()
         )
 
         # Для поля id
@@ -44,25 +67,35 @@ class SettingsHandler:
             lambda text: setattr(self, '_pending_id_column', text)
         )
         dialog.idColumnEdit.editingFinished.connect(
-            lambda: self._apply_census_update(dialog)
+            lambda: self._apply_census_update()
         )
 
-    def _apply_log_filename_update(self, dialog):
-        """Apply log filename changes when editing is finished."""
-        if self._pending_log_filename is not None:
-            self.config_manager.update_config('logging', {
-                'level': dialog.comboBox.currentText(),
-                'file': self._pending_log_filename
-            })
+    def _apply_log_filename_update(self, dialog) -> None:
+        """Apply log filename changes when editing is finished.
 
-            dialog.console_handler.update_logging_settings(
-                level=dialog.comboBox.currentText(),
-                save_log=dialog.saveLogCheckBox.isChecked(),
-                work_dir=dialog.workingDirEdit.filePath(),
-                filename=self._pending_log_filename
-            )
+        Args:
+            dialog: Main dialog instance
 
-            self._pending_log_filename = None
+        Raises:
+            SettingsError: If update fails
+        """
+        try:
+            if self._pending_log_filename is not None:
+                self.config_manager.update_config('logging', {
+                    'level': dialog.comboBox.currentText(),
+                    'file': self._pending_log_filename
+                })
+
+                dialog.console_handler.update_logging_settings(
+                    level=dialog.comboBox.currentText(),
+                    save_log=dialog.saveLogCheckBox.isChecked(),
+                    work_dir=dialog.workingDirEdit.filePath(),
+                    filename=self._pending_log_filename
+                )
+
+                self._pending_log_filename = None
+        except Exception as e:
+            raise SettingsError(f"Failed to update log filename: {str(e)}")
 
     def _apply_census_update(self):
         """Apply census fields changes when editing is finished."""
@@ -73,7 +106,6 @@ class SettingsHandler:
         if hasattr(self, '_pending_id_column') and self._pending_id_column is not None:
             self.config_manager.update_config('census_id_column', self._pending_id_column)
             self._pending_id_column = None
-
 
     def load_settings(self, dialog):
         """
@@ -156,15 +188,18 @@ class SettingsHandler:
             return False
 
     def validate_settings(self, dialog) -> bool:
-        """
-        Validate current settings.
+        """Validate current settings.
 
         Args:
             dialog: Main dialog instance
 
         Returns:
             bool: True if settings are valid
+
+        Raises:
+            SettingsError: If validation fails
         """
+
         is_valid = True
         errors = []
 

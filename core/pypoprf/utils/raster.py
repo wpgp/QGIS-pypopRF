@@ -12,41 +12,6 @@ from .workers import RasterWorker, RasterStackWorker
 
 logger = get_logger()
 
-
-def raster_compare(p1: Dict,
-                   p2: Dict) -> List[str]:
-    """
-    Compare two raster profiles for compatibility.
-
-    Args:
-        p1: First raster profile
-        p2: Second raster profile
-
-    Returns:
-        List of required processing steps
-    """
-    process = {
-        'crs': 'reprojection',
-        'width': 'clipping',
-        'height': 'clipping'
-    }
-
-    required = []
-    for p in ['crs', 'width', 'height']:
-        if p1[p] != p2[p]:
-            logger.info(f'Rasters have different [{p}]')
-            logger.info(f'Required process: {process[p]}')
-            required.append(process[p])
-
-    if p1['transform'][0] != p2['transform'][0]:
-        logger.info('Rasters have different resolutions')
-        logger.info('Required process: resampling')
-
-        required.append('resampling')
-
-    return required
-
-
 def get_raster_stats(t: np.ndarray,
                      m: np.ndarray,
                      nodata: Optional[float] = None,

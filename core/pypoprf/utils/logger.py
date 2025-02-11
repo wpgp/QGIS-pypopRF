@@ -1,4 +1,3 @@
-# src/pypoprf/utils/logger.py
 import logging
 import sys
 from typing import Optional, TextIO
