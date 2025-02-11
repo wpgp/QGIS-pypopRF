@@ -311,7 +311,8 @@ class DasymetricMapper:
         logger.debug(stats_summary)
         logger.info(f"Number of zones found: {len(sum_prob)}")
         logger.info(
-            f"Sample zones (top 5) - ID: {sum_prob['id'].head().tolist()}, Sum: {sum_prob['sum'].head().round(2).tolist()}")
+            f"Sample zones (top 5) - ID: {sum_prob['id'].head().tolist()}, "
+            f"Sum: {sum_prob['sum'].head().round(2).tolist()}")
 
         # Merge Results
         pre_merge_pop = census[pop_column].sum()
@@ -469,11 +470,6 @@ class DasymetricMapper:
                                       dtype=profile['dtype'])
                 windows = [window[1] for window in dst.block_windows()]
 
-                file_paths = {
-                    'prediction': prediction_path,
-                    'normalization': norm_raster_path
-                }
-
                 executor = QThreadPool.globalInstance()
                 executor.setMaxThreadCount(self.settings.max_workers)
                 workers = []
@@ -483,7 +479,7 @@ class DasymetricMapper:
                 for i, window in enumerate(windows):
                     worker = DasymetricWorker(
                         window=window,
-                        file_paths=file_paths,
+                        file_paths={'prediction': prediction_path, 'normalization': norm_raster_path},
                         profile=profile,
                         idx=i
                     )

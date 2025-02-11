@@ -217,7 +217,8 @@ class ProcessWorker(QThread):
             color = get_importance_color(importance_rel)
 
             self.logger.info(
-                f"<span style='color: #463ede'>{formatted_name}</span><span style='color: {color}'>{formatted_values}</span>"
+                f"<span style='color: #463ede'>{formatted_name}</span>"
+                f"<span style='color: {color}'>{formatted_values}</span>"
             )
 
         self.logger.info("=" * 60)
