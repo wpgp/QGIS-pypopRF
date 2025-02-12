@@ -79,21 +79,27 @@ graph TD
 
 ### Key Components:
 
-1. **Project Tab**: Initialize project and manage settings
-2. **Input Data Tab**: Configure required and optional data files:
-   - Census data (required)
-   - Mastergrid (required)
-   - Covariates (required)
-   - Water mask (optional)
-   - Constraints (optional)
-   - Age-sex structure data (optional)
-3. **Settings Tab**: Adjust processing parameters:
-   - Parallel processing options
-   - Block processing settings
-   - Census field mappings
-   - Output preferences
-4. **Console**: Monitor progress and view detailed logs
-5. **Control Panel**: Start/stop analysis and track progress
+**Project Tab**: Initialize project and manage settings
+
+**Input Data Tab**: Configure required and optional data files:
+
+- Census data (required)
+- Mastergrid (required)
+- Covariates (required)
+- Water mask (optional)
+- Constraints (optional)
+- Age-sex structure data (optional)
+- 
+**Settings Tab**: Adjust processing parameters:
+
+- Parallel processing options
+- Block processing settings
+- Census field mappings
+- Output preferences
+- 
+**Console**: Monitor progress and view detailed logs
+
+**Control Panel**: Start/stop analysis and track progress
 
 ## Analysis Results
 
