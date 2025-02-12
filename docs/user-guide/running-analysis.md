@@ -5,12 +5,13 @@ This guide explains how to run population analysis using the pypopRF plugin and 
 ## Before Starting
 
 ### Quick Checklist
-✓ All required files loaded
-✓ Optional files prepared (if using)
-✓ Settings configured
-✓ Sufficient disk space (3-4x input data size)
-✓ Adequate memory available
-✓ Column names verified
+
+- ✓ All required files loaded
+- ✓ Optional files prepared (if using)
+- ✓ Settings configured
+- ✓ Sufficient disk space (3-4x input data size)
+- ✓ Adequate memory available
+- ✓ Column names verified
 
 ### Data Verification
 - Census data columns match settings
@@ -26,6 +27,7 @@ This guide explains how to run population analysis using the pypopRF plugin and 
 ### 1. Starting the Process
 
 The Start button will be enabled when:
+
 - All required files are loaded
 - Settings are properly configured
 - Project is initialized
@@ -65,6 +67,7 @@ The analysis runs through several stages:
 
 ### Console Output
 The console shows:
+
 - Current processing stage
 - Progress information
 - Warnings or errors
@@ -84,26 +87,28 @@ The console shows:
 
 ### Main Outputs
 1. **normalized_census.tif**
-   - Census values adjusted to raster format
-   - Shows population distribution zones
+    - Census values adjusted to raster format
+    - Shows population distribution zones
 
 2. **population_unconstrained.tif**
-   - Basic population distribution
-   - Without spatial constraints
+    - Basic population distribution
+    - Without spatial constraints
 
 3. **population_constrained.tif**
-   - Population distribution with constraints
-   - Only if constraints enabled
+    - Population distribution with constraints
+    - Only if constraints enabled
 
 ### Additional Outputs
-- **Age-sex maps** (if enabled)
-  - Separate maps for each age-sex group
-  - Located in 'agesex' folder
+**Age-sex maps** (if enabled)
 
-- **Model files**
-  - model.pkl.gz: Trained model
-  - scaler.pkl.gz: Data scaler
-  - features.csv: Feature importance
+   - Separate maps for each age-sex group
+   - Located in 'agesex' folder
+
+**Model files**
+
+   - model.pkl.gz: Trained model
+   - scaler.pkl.gz: Data scaler
+   - features.csv: Feature importance
 
 ---
 
