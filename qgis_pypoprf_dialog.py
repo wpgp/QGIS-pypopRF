@@ -105,8 +105,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             lambda x: self._handle_file_change('mask', x))
         self.constrainFileWidget.fileChanged.connect(
             lambda x: self._handle_file_change('constrain', x))
-        self.censusFileWidget.fileChanged.connect(
+        self.populationCensusFileWidget.fileChanged.connect(
             lambda x: self._handle_file_change('census_data', x))
+        self.agesexCensusFileWidget.fileChanged.connect(
+            lambda x: self._handle_file_change('agesex_data', x))
 
         # Settings tab signals
         self.enableParallelCheckBox.stateChanged.connect(
@@ -121,7 +123,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             self._handle_block_size_changed)
 
         # Logging signals
-        self.saveLogCheckBox.stateChanged.connect(self._update_logging_settings)
         self.comboBox.currentTextChanged.connect(self._update_logging_settings)
 
         self.settings_handler.connect_census_fields_signals(self)
@@ -147,12 +148,13 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.constrainFileWidget.setDialogTitle("Select Constrain File (Optional)")
         self.constrainFileWidget.setFilter("GeoTIFF files (*.tif *.tiff)")
 
-        # Census
-        self.censusFileWidget.setDialogTitle("Select Census CSV File")
-        self.censusFileWidget.setFilter("CSV files (*.csv)")
+        # Population Census
+        self.populationCensusFileWidget.setDialogTitle("Select Population Census CSV File")
+        self.populationCensusFileWidget.setFilter("CSV files (*.csv)")
 
-        # Setup CPU cores combo box
-        self._setup_cpu_cores_combo()
+        # Age-Sex Census
+        self.agesexCensusFileWidget.setDialogTitle("Select Age-Sex Census CSV File (Optional)")
+        self.agesexCensusFileWidget.setFilter("CSV files (*.csv)")
 
     def _setup_cpu_cores_combo(self):
         """Configure CPU cores combo box based on available system resources.
@@ -160,11 +162,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         Sets up the combo box with values from 2 to max available cores in steps of 2.
         Default value is set to half of available cores + 2.
         """
-
         self.cpuCoresComboBox.clear()
 
         max_cores = QThread.idealThreadCount()
-        self.logger.debug(f"System has {max_cores} logical processors available")
+        self.logger.info(f"System has {max_cores} logical processors available")
 
         core_counts = list(range(2, max_cores + 1, 2))
 
@@ -179,8 +180,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         default_index = core_counts.index(default_cores) if default_cores in core_counts else 0
         self.cpuCoresComboBox.setCurrentIndex(default_index)
 
-        self.logger.debug(f"CPU cores combo box initialized with values: {core_counts}")
-        self.logger.debug(f"Default value set to: {default_cores} cores")
+        self.logger.info(f"Default processors value set to: {default_cores} cores")
 
     def _set_initial_state(self):
         """Set initial state of UI widgets before project initialization."""
@@ -205,7 +205,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.mastergridFileWidget.setEnabled(enabled)
         self.maskFileWidget.setEnabled(enabled)
         self.constrainFileWidget.setEnabled(enabled)
-        self.censusFileWidget.setEnabled(enabled)
+        self.populationCensusFileWidget.setEnabled(enabled)
+        self.agesexCensusFileWidget.setEnabled(enabled)
         self.addCovariateButton.setEnabled(enabled)
         self.covariatesTable.setEnabled(enabled)
 
@@ -213,7 +214,6 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         """Enable/disable settings widgets"""
 
         # Logging settings
-        self.saveLogCheckBox.setEnabled(enabled)
         self.logsColumnEdit.setEnabled(enabled)
         self.comboBox.setEnabled(enabled)
 
@@ -247,12 +247,14 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         else:
             self.config_manager.clear_config_value(file_type)
 
-        has_mastergrid = bool(self.mastergridFileWidget.filePath())
-        has_census = bool(self.censusFileWidget.filePath())
+        has_required = all([
+            self.mastergridFileWidget.filePath(),
+            self.populationCensusFileWidget.filePath(),
+            self.covariatesTable.rowCount() > 0
+        ])
 
-        # Enable start button if all files are loaded
-        self.mainStartButton.setEnabled(all([has_mastergrid, has_census]))
-        if all([has_mastergrid, has_census]):
+        self.mainStartButton.setEnabled(has_required)
+        if has_required:
             self.mainStartButton.setStyleSheet(
                 "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
 
@@ -288,6 +290,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.set_input_widgets_enabled(True)
                 self.set_settings_widgets_enabled(True)
                 self.addToQgisCheckBox.setChecked(True)
+
+                self._setup_cpu_cores_combo()
 
                 # Load initial settings
                 self.settings_handler.load_settings(self)
@@ -349,25 +353,26 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # Then update logger
         self.console_handler.update_logging_settings(
             level=self.comboBox.currentText(),
-            save_log=self.saveLogCheckBox.isChecked(),
+            save_log=True,
             work_dir=self.workingDirEdit.filePath(),
             filename=self.logsColumnEdit.text()
         )
 
-    def _handle_cpu_cores_changed(self, text):
+    def _handle_cpu_cores_changed(self, i_cores):
         """Handle changes to CPU core count setting.
 
         Args:
-            text: New CPU core count value
+            i_cores: New CPU core count value
         """
 
         if self.enableParallelCheckBox.isChecked():
             try:
-                cores = int(text)
+                cores = int(i_cores) if i_cores else 0
                 if cores > 0:
                     self.config_manager.update_config('max_workers', cores)
+                    self.logger.debug(f"CPU cores set to {cores}")
             except ValueError:
-                self.logger.warning(f"Invalid CPU cores value: {text}")
+                self.logger.warning(f"Invalid CPU cores value: {i_cores}")
 
     def _handle_block_size_changed(self, text):
         """Handle changes to processing block size.
@@ -386,7 +391,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def _handle_start_button(self):
         """Handle start/stop button click"""
-        if self.mainStartButton.text() == "Start":
-            self.process_executor.start_analysis()
-        else:
-            self.process_executor.stop_analysis()
+        try:
+            if not self.process_executor.is_running:
+                self.process_executor.start_analysis()
+            else:
+                self.process_executor.stop_analysis()
+        except Exception as e:
+            self.logger.error(f"Failed to {self.mainStartButton.text().lower()} analysis: {str(e)}")

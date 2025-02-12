@@ -12,6 +12,7 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
 - User-friendly interface integrated into QGIS
 - Parallel processing support for large datasets
 - Real-time progress monitoring and logging
+- Support for age-sex population structure mapping
 
 ## Requirements
 
@@ -28,30 +29,6 @@ A QGIS plugin for high-resolution population mapping using machine learning and 
 
 Note: Installation through the official QGIS Plugin Repository will be available soon.
 
-
-## Quick Start
-
-1. **Initialize Project**
-   - Open pypopRF from the QGIS plugins menu
-   - Choose a working directory
-   - Click "Initialize New Project"
-
-2. **Configure Inputs**
-   - Add mastergrid
-   - Add census data
-   - Add covariates
-   - Optional: Add water mask and/or constraints
-
-3. **Adjust Settings**
-   - Set processing parameters
-   - Configure census column names
-   - Enable/disable parallel processing
-
-4. **Run Analysis**
-   - Click "Start"
-   - Monitor progress in the console
-   - Results automatically load in QGIS
-
 ## Input Data Requirements
 
 ### Required Files:
@@ -60,6 +37,7 @@ Note: Installation through the official QGIS Plugin Repository will be available
 - **Covariates**: One or more GeoTIFF files (e.g., building data)
 
 ### Optional Files:
+- **Age-Sex Data**: CSV file with age-sex population structure
 - **Water Mask**: For excluding water bodies
 - **Constraints**: Additional spatial constraints
 
@@ -67,18 +45,19 @@ Note: Installation through the official QGIS Plugin Repository will be available
 
 The plugin generates the following files in your project's output directory:
 
-### When running without constraints:
-- **dasymetric_unconstrained.tif**: Final high-resolution population distribution
+### Population Distribution:
+- **normalized_census.tif**: Normalized census values
+- **population_unconstrained.tif**: Default population distribution output
+- **population_constrained.tif**: Distribution with constraints (when provided)
 
-### When running with constraints:
-- **dasymetric_unconstrained.tif**: Population distribution without constraints applied
-- **dasymetric_constrained.tif**: Population distribution with constraints applied
+### Machine Learning:
+- **model.pkl.gz**: Trained Random Forest model
+- **scaler.pkl.gz**: Feature scaler
+- **features.csv**: Extracted features with importance metrics
 
-Additional outputs:
-- **prediction.tif**: Probability surface
-- **normalized_census.tif**: Normalized values
-- **Logs**: Detailed processing information
-
+### Additional Outputs:
+- **agesex/**: Age-sex structure outputs (when age-sex data provided)
+- Detailed processing logs
 
 ## Getting Help
 
@@ -86,22 +65,18 @@ Additional outputs:
 - Issues & Support: https://github.com/wpgp/QGIS-pypopRF/issues
 - WorldPop SDI: https://sdi.worldpop.org
 
-## For Developers
-
-Interested in contributing? Check our [documentation](https://wpgp.github.io/QGIS-pypopRF/developers/) for:
-- Project structure
-- Development setup
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgements
+## Development Team
 
-Developed by the WorldPop SDI Team at the University of Southampton:
-- Borys Nosatiuk (b.nosatiuk@soton.ac.uk)
+Developed by the WorldPop SDI Team:
+- Borys Nosatiuk (b.nosatiuk@soton.ac.uk) - Project Lead
 - Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
 - Maksym Bondarenko (m.bondarenko@soton.ac.uk)
 - Wenbin Zhang (wb.zhang@soton.ac.uk)
 - Tom McKeen (t.l.mckeen@soton.ac.uk)
 - Elena Vataga (e.vataga@soton.ac.uk)
+- Natalia Tejedor Garavito (n.tejedor-garavito@soton.ac.uk)

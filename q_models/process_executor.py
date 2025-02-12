@@ -61,21 +61,27 @@ class ProcessWorker(QThread):
 
     def stop(self):
         """Stop the analysis process"""
+        settings = Settings.from_file(self.config_path)
         self._is_running = False
+        self._cleanup_temp_dirs(settings)
 
     def run(self):
         """Run the analysis process"""
-
+        settings = Settings.from_file(self.config_path)
         try:
             if not self._is_running:
+                self._cleanup_temp_dirs(settings)
                 return
 
             self.ui_state.emit(False)
 
             self.progress.emit(0, "Loading settings...")
-            settings = Settings.from_file(self.config_path)
             temp_dir = Path(settings.work_dir) / 'output' / 'temp'
             temp_dir.mkdir(exist_ok=True)
+
+            if settings.agesex_data:
+                agesex_dir = Path(settings.work_dir) / 'output' / 'agesex'
+                agesex_dir.mkdir(parents=True, exist_ok=True)
 
             model_path = Path(settings.work_dir) / 'output' / 'model.pkl.gz'
             scaler_path = Path(settings.work_dir) / 'output' / 'scaler.pkl.gz'
@@ -85,24 +91,23 @@ class ProcessWorker(QThread):
                 self.progress.emit(10, "Remasking mastergrid...")
                 outfile = settings.mask.replace('.tif', '_remasked.tif')
                 remask_layer(settings.mastergrid,
-                             settings.mask,
-                             1,
-                             outfile=outfile,
-                             block_size=settings.block_size)
-                settings.mask = outfile
+                            settings.mask,
+                            1,
+                            outfile=outfile,
+                            block_size=settings.block_size)
+                settings.mastergrid = outfile
+
 
             # Constraining mastergrid if requested
             if settings.constrain:
                 self.progress.emit(15, "Constraining mastergrid...")
                 outfile = settings.constrain.replace('.tif', '_constrained.tif')
                 remask_layer(settings.mastergrid,
-                             settings.constrain,
-                             0,
-                             outfile=outfile,
-                             block_size=settings.block_size)
+                            settings.constrain,
+                            0,
+                            outfile=outfile,
+                            block_size=settings.block_size)
                 settings.constrain = outfile
-            else:
-                settings.constrain = settings.mastergrid
 
             # Feature extraction
             if not self._is_running:
@@ -139,24 +144,38 @@ class ProcessWorker(QThread):
                 # Dasymetric mapping
                 if not self._is_running:
                     return
-                self.progress.emit(80, "Performing dasymetric mapping...")
+                self.progress.emit(75, "Performing dasymetric mapping...")
                 mapper = DasymetricMapper(settings)
                 mapper.map(predictions)
+
+                if settings.agesex_data:
+                    self.progress.emit(85, "Performing age-sex dasymetric mapping...")
+                    mapper.map_agesex(predictions, settings.agesex_data)
 
                 # Verification and cleanup
                 if not self._is_running:
                     return
                 self.progress.emit(95, "Verifying outputs...")
-                self.verify_outputs(settings)
 
                 duration = time.time() - self.start_time
-                self.logger.info(f'All Process compute in {self.format_time(duration)}')
+                self.logger.info(
+                    f'<span style="'
+                    f'color: #4CAF50; '
+                    f'font-size: 12pt; '
+                    f'font-weight: bold; '
+                    f'font-family: Consolas, monospace; '
+                    f'padding: 2px 6px; '
+                    f'border-radius: 3px; '
+                    f'">'
+                    f'✨ All Process completed in {self.format_time(duration)} ✨'
+                    f'</span>'
+                )
 
                 self.progress.emit(100, "Completed successfully!")
                 self.finished.emit(True, "Prediction and dasymetric "
                                          "mapping completed successfully!")
 
-            self._cleanup_temp_dir(settings)
+            self._cleanup_temp_dirs(settings)
 
         except Exception as e:
             self.logger.error(f"Analysis failed: {str(e)}")
@@ -172,30 +191,44 @@ class ProcessWorker(QThread):
             return f"{minutes}m {seconds:.0f}s"
         return f"{seconds:.0f}s"
 
-    @staticmethod
-    def verify_outputs(settings):
-        """Verify that all required output files exist"""
-        output_dir = Path(settings.work_dir) / 'output'
-        required_files = [
-            output_dir / 'prediction.tif',
-            output_dir / 'normalized_census.tif',
-            output_dir / 'dasymetric.tif',
-            output_dir / 'features.csv'
+    def _cleanup_temp_dirs(self, settings):
+        """Clean up temporary directories after processing.
+
+        Args:
+            settings: Settings instance containing paths
+
+        Note:
+            Handles cleanup of:
+            - Main temp directory
+            - Age-sex additional files directory
+        """
+        dirs_to_clean = [
+            os.path.join(settings.work_dir, 'output', 'temp'),
+            os.path.join(settings.work_dir, 'output', 'agesex', 'additional_files')
         ]
 
-        missing_files = [f for f in required_files if not f.exists()]
-        if missing_files:
-            raise FileNotFoundError(f"Missing output files: {missing_files}")
+        for dir_path in dirs_to_clean:
+            try:
+                if os.path.exists(dir_path):
+                    if not os.access(dir_path, os.W_OK):
+                        self.logger.warning(f"No write permission for directory: {dir_path}")
+                        continue
 
-    def _cleanup_temp_dir(self, settings):
-        """Clean up temporary directory"""
-        temp_dir = Path(settings.work_dir) / 'output' / 'temp'
-        try:
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir)
-                self.logger.debug(f"Cleaned up temporary directory: {temp_dir}")
-        except Exception as e:
-            self.logger.warning(f"Failed to cleanup temp directory: {str(e)}")
+                    if not os.path.isdir(dir_path):
+                        self.logger.warning(f"Path is not a directory: {dir_path}")
+                        continue
+
+                    shutil.rmtree(dir_path)
+                    self.logger.debug(f"Cleaned up directory: {dir_path}")
+                else:
+                    self.logger.debug(f"Directory does not exist, skipping: {dir_path}")
+
+            except PermissionError as e:
+                self.logger.warning(f"Permission denied when cleaning directory {dir_path}: {str(e)}")
+            except OSError as e:
+                self.logger.warning(f"OS error when cleaning directory {dir_path}: {str(e)}")
+            except Exception as e:
+                self.logger.warning(f"Failed to cleanup directory {dir_path}: {str(e)}")
 
     def _print_feature_importance(self, settings):
         """
@@ -437,7 +470,7 @@ class ProcessExecutor:
 
         return self.dialog.file_handler.validate_inputs(
             self.dialog.mastergridFileWidget.filePath(),
-            self.dialog.censusFileWidget.filePath(),
+            self.dialog.populationCensusFileWidget.filePath(),
             self.dialog.covariatesTable.rowCount()
         )
 
@@ -477,7 +510,11 @@ class ProcessExecutor:
         """
         try:
             output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
-            filenames = ['prediction.tif', 'normalized_census.tif', 'dasymetric.tif']
+            constrain_enabled = self.dialog.constrainFileWidget.filePath() is not None
+
+            filenames = ['normalized_census.tif', 'population_unconstrained.tif']
+            if constrain_enabled:
+                filenames.append('population_constrained.tif')
 
             for filename in filenames:
                 file_path = output_dir / filename
@@ -485,7 +522,7 @@ class ProcessExecutor:
                     layer = self.iface.addRasterLayer(str(file_path), '')
                     if layer and layer.isValid():
                         self.output_layers.append(layer)
-                        self.logger.info(f"Added layer from {filename}")
+                        self.logger.info(f"Added layer {filename}")
 
         except Exception as e:
             self.logger.error(f"Failed to add output layers: {str(e)}")
@@ -545,13 +582,19 @@ class ProcessExecutor:
         output_files = [
             'prediction.tif',
             'normalized_census.tif',
-            'dasymetric.tif',
+            'population_unconstrained.tif',
+            'population_constrained.tif',
             'features.csv'
         ]
+
 
         output_path = Path(output_dir)
         if not output_path.exists():
             return True
+
+        agesex_dir = output_path / 'agesex'
+        if agesex_dir.exists():
+            shutil.rmtree(agesex_dir)
 
         # Check which files exist
         existing_files = []

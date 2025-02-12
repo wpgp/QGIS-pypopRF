@@ -1,5 +1,5 @@
-import shutil
 import platform
+import shutil
 import subprocess
 from logging import Logger
 from pathlib import Path
@@ -39,7 +39,7 @@ class FileHandler:
         """Validate logger instance has required methods."""
         required_methods = ['info', 'error', 'debug', 'warning']
         missing_methods = [method for method in required_methods
-                         if not hasattr(self.logger, method)]
+                           if not hasattr(self.logger, method)]
         if missing_methods:
             raise FileHandlerError(
                 f"Logger missing required methods: {', '.join(missing_methods)}"
@@ -102,10 +102,16 @@ class FileHandler:
 
     def validate_inputs(self, mastergrid_path: str,
                         census_path: str,
-                        covariate_count: int) -> bool:
+                        covariate_count: int,
+                        mask_path: Optional[str] = None,
+                        constrain_path: Optional[str] = None,
+                        agesex_path: Optional[str] = None) -> bool:
         """Validate required input files.
 
         Args:
+            agesex_path: Path to agesex cencus file
+            constrain_path: Path to constrain file
+            mask_path: Path to watermask file
             mastergrid_path: Path to mastergrid file
             census_path: Path to census file
             covariate_count: Number of covariates
@@ -131,6 +137,15 @@ class FileHandler:
 
             if covariate_count == 0:
                 validation_errors.append("At least one covariate is required")
+
+            if mask_path and not Path(mask_path).exists():
+                validation_errors.append(f"Water mask file not found: {mask_path}")
+
+            if constrain_path and not Path(constrain_path).exists():
+                validation_errors.append(f"Constrain file not found: {constrain_path}")
+
+            if agesex_path and not Path(agesex_path).exists():
+                validation_errors.append(f"Age-sex census file not found: {agesex_path}")
 
             if validation_errors:
                 for error in validation_errors:

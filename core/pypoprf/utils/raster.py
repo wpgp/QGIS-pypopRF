@@ -1,4 +1,3 @@
-import threading
 from typing import Dict, List, Tuple, Optional, Any
 
 import numpy as np
@@ -8,9 +7,10 @@ from qgis.PyQt.QtCore import QThreadPool
 from rasterio.windows import Window
 
 from .logger import get_logger
-from .workers import RasterWorker, RasterStackWorker
+from .workers import RasterWorker, RasterStackWorker, MaskWorker
 
 logger = get_logger()
+
 
 def get_raster_stats(t: np.ndarray,
                      m: np.ndarray,
@@ -122,11 +122,9 @@ def aggregate_table(df: pd.DataFrame, prefix: str = '', min_count: int = 1) -> p
     return out
 
 
-def get_windows(src,
-                block_size: Optional[Tuple[int, int]] = (256, 256)
-                ):
+def get_windows(src, block_size: Optional[Tuple[int, int]] = (256, 256)):
     """
-    Get block/window tiles for reading/writing raster
+    Get block/window tiles for reading/writing raster, ensuring windows do not exceed raster dimensions.
 
     Args:
         src: rasterio.open
@@ -134,76 +132,78 @@ def get_windows(src,
 
     Returns:
         List of windows
-
     """
-
-    x0 = np.arange(0, src.width, block_size[0])
-    y0 = np.arange(0, src.height, block_size[1])
-    grid = np.meshgrid(x0, y0)
-    windows = [rasterio.windows.Window(a, b, block_size[0], block_size[1])
-               for (a, b) in zip(grid[0].flatten(), grid[1].flatten())]
-
+    windows = []
+    for y in range(0, src.height, block_size[1]):
+        for x in range(0, src.width, block_size[0]):
+            width = min(block_size[0], src.width - x)
+            height = min(block_size[1], src.height - y)
+            windows.append(rasterio.windows.Window(x, y, width, height))
     return windows
 
 
 def remask_layer(mastergrid: str,
                  mask: str,
-                 mask_value: int | float,
+                 mask_value: int,
                  outfile: Optional[str] = 'remasked_layer.tif',
                  by_block: bool = True,
                  max_workers: int = 4,
-                 block_size: Optional[Tuple[int, int]] = None
-                 ):
+                 block_size: Optional[Tuple[int, int]] = (512, 512)
+                 ) -> str:
     """
-    Implement additional masking to the mastergrid, e.g., use water mask.
+    Implement additional masking to the mastergrid.
 
     Args:
         mastergrid: Path to mastergrid file
         mask: Path to mask file
         mask_value: value to be masked out
-        outfile: Path to the output file (remasked mastergrid)
+        outfile: Path to the output file
+        by_block: Whether to process by blocks
+        max_workers: Number of worker processes
+        block_size: Size of processing blocks
 
     Returns:
-        nothing
-
-    Raises:
-        FileNotFoundError: If input files don't exist
-        RuntimeError: If processing fails
+        str: Path to created masked file
     """
-    try:
-        with rasterio.open(mastergrid, 'r') as mst, rasterio.open(mask, 'r') as msk:
-            nodata = mst.nodata
-            dst = rasterio.open(outfile, 'w', **mst.profile)
-            reading_lock = threading.Lock()
-            writing_lock = threading.Lock()
+    with rasterio.open(mastergrid, 'r') as mst, rasterio.open(mask, 'r') as msk:
+        nodata = mst.nodata
+        dst = rasterio.open(outfile, 'w', **mst.profile)
 
-            def process(window):
-                with reading_lock:
-                    m = mst.read(window=window)
-                    n = msk.read(window=window)
+        if by_block:
+            windows = get_windows(mst, block_size)
+            executor = QThreadPool.globalInstance()
+            executor.setMaxThreadCount(max_workers)
+            workers = []
 
-                m[n == mask_value] = nodata
-                with writing_lock:
-                    dst.write(m, 1, window=window)
+            MaskWorker.init_progress(len(windows), logger)
 
-            if by_block:
-                windows = get_windows(mst, block_size if block_size else (512, 512))
-                parallel(
-                    windows=windows,
-                    process_func=process,
-                    max_workers=max_workers,
+            for i, window in enumerate(windows):
+                worker = MaskWorker(
+                    window=window,
+                    mst=mst,
+                    msk=msk,
+                    mask_value=mask_value,
+                    nodata=nodata,
+                    idx=i
                 )
+                worker.setAutoDelete(False)
+                workers.append(worker)
+                executor.start(worker)
 
-            else:
-                m = mst.read(1)
-                n = msk.read(1)
-                m[n == mask_value] = nodata
-                dst.write(m, 1)
+            executor.waitForDone()
 
-            dst.close()
+            for i, worker in enumerate(workers):
+                if worker.result is not None:
+                    dst.write(worker.result, window=windows[i])
 
-    except Exception as e:
-        raise RuntimeError(f"Error processing rasters: {str(e)}")
+        else:
+            m = mst.read()
+            n = msk.read()
+            m[n == mask_value] = nodata
+            dst.write(m)
+
+        dst.close()
+        return outfile
 
 
 def raster_stat(infile: str,
@@ -352,20 +352,22 @@ def parallel_raster_processing(
 
     WorkerClass = RasterWorker if worker_type == 'single' else RasterStackWorker
     WorkerClass.init_progress(len(windows), logger)
+    try:
+        for i, window in enumerate(windows):
+            worker = WorkerClass(
+                window=window,
+                file_paths=file_paths,
+                process_params=process_params,
+                idx=i
+            )
+            worker.setAutoDelete(False)
+            workers.append(worker)
+            executor.start(worker)
 
-    for i, window in enumerate(windows):
-        worker = WorkerClass(
-            window=window,
-            file_paths=file_paths,
-            process_params=process_params,
-            idx=i
-        )
-        worker.setAutoDelete(False)
-        workers.append(worker)
-        executor.start(worker)
+        executor.waitForDone()
+        WorkerClass.progress_bar.finish()
 
-    executor.waitForDone()
-    WorkerClass.progress_bar.finish()
-
-    results = [w.result for w in workers if w.result is not None]
-    return results
+        results = [w.result for w in workers if w.result is not None]
+        return results
+    finally:
+        workers.clear()

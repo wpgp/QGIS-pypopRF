@@ -88,7 +88,7 @@ class SettingsHandler:
 
                 dialog.console_handler.update_logging_settings(
                     level=dialog.comboBox.currentText(),
-                    save_log=dialog.saveLogCheckBox.isChecked(),
+                    save_log=True,
                     work_dir=dialog.workingDirEdit.filePath(),
                     filename=self._pending_log_filename
                 )
@@ -120,7 +120,6 @@ class SettingsHandler:
 
             # Load logging settings
             if 'logging' in config:
-                dialog.saveLogCheckBox.setChecked(bool(config['logging'].get('file')))
                 if config['logging'].get('file'):
                     dialog.logsColumnEdit.setText(config['logging']['file'])
                 if 'level' in config['logging']:
@@ -129,8 +128,7 @@ class SettingsHandler:
                         dialog.comboBox.setCurrentIndex(index)
 
             # Load processing settings
-            dialog.enableParallelCheckBox.setChecked(config['max_workers'] > 0)
-            dialog.cpuCoresComboBox.setCurrentText(str(config['max_workers']))
+            dialog.enableParallelCheckBox.setChecked(True)
 
             dialog.enableBlockProcessingCheckBox.setChecked(config.get('by_block', True))
             block_size = f"{config['block_size'][0]},{config['block_size'][1]}"

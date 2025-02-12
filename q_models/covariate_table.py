@@ -131,38 +131,15 @@ class CovariateTableHandler:
         # Update config
         self.config_manager.update_config(f'covariate_{name}', filename)
 
-    def _create_delete_button(self, row: int, button: QtWidgets.QPushButton):
-        """Create delete button with proper connection"""
+    def _create_delete_button(self, row: int, button: QtWidgets.QPushButton) -> None:
+        """Create delete button with proper connection.
 
-        def delete_handler(row=row):
-            self.remove_covariate(row)
-
-        button.clicked.connect(delete_handler)
-
-    # def remove_covariate(self, row: int):
-    #     """
-    #     Remove covariate from table and config based on row index.
-    #
-    #     Args:
-    #         row: Row index to remove
-    #     """
-    #     try:
-    #         if 0 <= row < self.table.rowCount():
-    #             name = self.table.item(row, 0).text()
-    #             self.logger.info(f"Removing covariate '{name}' from row {row}")
-    #             self.table.removeRow(row)
-    #             self.config_manager.clear_config_value(f'covariate_{name}')
-    #             self.logger.info(f"Successfully removed covariate: {name}")
-    #
-    #             # Update delete buttons for remaining rows
-    #             for i in range(row, self.table.rowCount()):
-    #                 delete_button = QtWidgets.QPushButton("Delete")
-    #                 delete_button.setToolTip("Delete this covariate")
-    #                 self._create_delete_button(i, delete_button)
-    #                 self.table.setCellWidget(i, 3, delete_button)
-    #                 self.logger.debug(f"Updated delete button for row {i}")
-    #     except Exception as e:
-    #         self.logger.error(f"Failed to remove covariate at row {row}: {str(e)}")
+        Args:
+            row: Row index for button
+            button: Button widget to configure
+        """
+        button.row = row
+        button.clicked.connect(lambda checked, r=row: self.remove_covariate(r))
 
     def remove_covariate(self, row: int) -> None:
         """Remove covariate from table and config.
@@ -178,10 +155,10 @@ class CovariateTableHandler:
                 raise ValueError(f"Invalid row index: {row}")
 
             name = self.table.item(row, 0).text()
-            self.logger.info(f"Removing covariate '{name}' from row {row}")
+            self.logger.debug(f"Removing covariate '{name}' from row {row}")
 
-            self.table.removeRow(row)
             self.config_manager.clear_config_value(f'covariate_{name}')
+            self.table.removeRow(row)
 
             self._update_delete_buttons(row)
             self.logger.info(f"Successfully removed covariate: {name}")
@@ -243,17 +220,6 @@ class CovariateTableHandler:
         else:
             QTableWidget.keyPressEvent(self.table, event)
 
-    # def handle_table_keypress(self, event):
-    #     """
-    #     Handle keypress events in covariates table.
-    #
-    #     Args:
-    #         event: QKeyEvent instance
-    #     """
-    #     if event.key() == QtCore.Qt.Key_Delete:
-    #         self.remove_selected_covariates()
-    #     else:
-    #         QtWidgets.QTableWidget.keyPressEvent(self.table, event)
 
     @staticmethod
     def format_size(size: int) -> str:

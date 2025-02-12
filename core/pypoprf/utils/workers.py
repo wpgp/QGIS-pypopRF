@@ -1,6 +1,7 @@
 import threading
 import time
 import traceback
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -306,7 +307,7 @@ class DasymetricWorker(QRunnable):
                 pred_data = np.where(invalid_mask, 0, pred_data)
                 norm_data = np.where(invalid_mask, 0, norm_data)
 
-                population = np.round(np.maximum(0, pred_data * norm_data)).astype('int32')
+                population = pred_data * norm_data
 
                 valid_values = population[~invalid_mask]
                 if len(valid_values) > 0:
@@ -334,6 +335,81 @@ class DasymetricWorker(QRunnable):
                 self.__class__.completed_workers += 1
                 if self.__class__.progress_bar:
                     self.__class__.progress_bar.update(self.__class__.completed_workers)
+
+        except Exception as e:
+            logger.error(f"Error in worker {self.idx}: {str(e)}")
+            logger.error(traceback.format_exc())
+
+
+class MaskWorker(QRunnable):
+    completed_workers = 0
+    progress_bar = None
+    lock = threading.Lock()
+    reading_lock = threading.Lock()
+
+    def __init__(self, window, mst, msk, mask_value: int, nodata: float, idx: Optional[int] = None):
+        super().__init__()
+        self.window = window
+        self.mst = mst
+        self.msk = msk
+        self.mask_value = mask_value
+        self.nodata = nodata
+        self.idx = idx
+        self.result = None
+
+    @classmethod
+    def init_progress(cls, total_workers, logger):
+        cls.completed_workers = 0
+        cls.progress_bar = ProgressBar(total_workers, logger=logger)
+
+    def run(self):
+        try:
+            with self.reading_lock:
+                m = self.mst.read(window=self.window)
+                n = self.msk.read(window=self.window)
+
+            m[n == self.mask_value] = self.nodata
+            self.result = m
+            with self.lock:
+                self.__class__.completed_workers += 1
+                if self.__class__.progress_bar:
+                    self.__class__.progress_bar.update(self.__class__.completed_workers)
+
+        except Exception as e:
+            logger.error(f"Error in mask worker {self.idx}: {str(e)}")
+            logger.error(traceback.format_exc())
+
+
+class ScaledRasterWorker(QRunnable):
+    def __init__(self, window, norm_raster_path, scale_factors, profile, idx=None):
+        super().__init__()
+        self.window = window
+        self.norm_raster_path = norm_raster_path
+        self.scale_factors = scale_factors
+        self.profile = profile
+        self.idx = idx
+        self.result = None
+
+    def run(self):
+        try:
+            with rasterio.open(self.norm_raster_path) as src:
+                norm_data = src.read(1, window=self.window)
+                nodata = src.nodata
+
+            # Create output array
+            output = np.full_like(norm_data, self.profile['nodata'], dtype='float32')
+
+            # Scale the normalized data
+            valid_data = norm_data != nodata
+            unique_zones = np.unique(norm_data[valid_data])
+
+            for zone_id in unique_zones:
+                if zone_id < len(self.scale_factors):
+                    mask = norm_data == zone_id
+                    output[mask] = norm_data[mask] * self.scale_factors[zone_id]
+
+            output[~valid_data] = self.profile['nodata']
+            self.result = output[np.newaxis, :, :]
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")

@@ -1,4 +1,3 @@
-# src/pypoprf/config/settings.py
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
@@ -11,29 +10,26 @@ from ..utils.logger import get_logger
 logger = get_logger()
 
 class Settings:
-    """
-    Configuration settings manager for pypopRF.
+    """Configuration settings manager for pypopRF.
 
-    This class handles all configuration settings for population modeling,
+    This class handles configuration settings for population modeling,
     including file paths, processing parameters, and validation of inputs.
 
     Attributes:
         work_dir (Path): Working directory path
         data_dir (Path): Data directory path
-        mastergrid (str): Path to mastergrid file or 'create'
-        mask (str): Path to (water) mask file
-        constrain (str): Path to raster for constraining population distribution
+        mastergrid (str): Path to mastergrid file
+        mask (str): Path to water mask file (optional)
+        constrain (str): Path to constraining raster (optional)
         covariate (dict): Dictionary of covariate names and paths
-        census (dict): Census configuration including path and column names
+        census (dict): Census data configuration
+        agesex_data (str): Path to age-sex structure CSV file (optional)
         output_dir (Path): Output directory path
         by_block (bool): Whether to process by blocks
-        block_size (tuple): Size of processing blocks (width, height)
-        max_workers (int): Maximum number of parallel workers
-        show_progress (bool): Whether to show progress bars
+        block_size (tuple): Size of processing blocks
+        max_workers (int): Maximum parallel workers
+        show_progress (bool): Show progress bars
 
-    Raises:
-        ValueError: If required settings are missing or invalid
-        FileNotFoundError: If required files don't exist
     """
     def __init__(self,
                  work_dir: str = ".",
@@ -45,6 +41,7 @@ class Settings:
                  census_data: Optional[str] = None,
                  census_pop_column: Optional[str] = None,
                  census_id_column: Optional[str] = None,
+                 agesex_data: Optional[str] = None,
                  output_dir: Optional[str] = None,
                  by_block: bool = True,
                  block_size: Tuple[int, int] = (512, 512),
@@ -52,72 +49,62 @@ class Settings:
                  show_progress: bool = True,
                  logging: Optional[Dict] = None):
 
-        """
-        Initialize Settings with configuration parameters.
+        """Initialize Settings.
 
         Args:
-            work_dir: Root directory for the project
-            data_dir: Directory containing input data files
-            mastergrid: Path to mastergrid file or 'create'
-            mask (str): Path to (water) mask file
-            constrain (str): Path to raster for constraining population distribution
+            work_dir: Root directory for project
+            data_dir: Directory for input files
+            mastergrid: Path to mastergrid file
+            mask: Path to water mask file (optional)
+            constrain: Path to constraining raster (optional)
             covariates: Dictionary mapping covariate names to file paths
-            census_data: Path to census data file
-            census_pop_column: Name of population column in census data
-            census_id_column: Name of ID column in census data
-            output_dir: Directory for output files
-            by_block: Whether to process by blocks
-            block_size: Tuple of (width, height) for processing blocks
-            max_workers: Number of parallel processing workers
-            show_progress: Whether to display progress bars
+            census_data: Path to census CSV file
+            census_pop_column: Name of population column
+            census_id_column: Name of ID column
+            agesex_data: Path to age-sex CSV file (optional)
+            output_dir: Directory for outputs
+            by_block: Process by blocks
+            block_size: Block dimensions (width, height)
+            max_workers: Max parallel workers
+            show_progress: Show progress bars
+            logging: Logging configuration
 
         Raises:
-            ValueError: If required parameters are missing or invalid
+            ValueError: If required settings are invalid
+            FileNotFoundError: If required files don't exist
         """
         logger.info("Initializing pypopRF settings")
 
-        # Convert working directory to absolute path
+        # Initialize paths
+        self._init_paths(work_dir, data_dir, output_dir)
+
+        # Handle input files
+        self._init_input_files(mastergrid, mask, constrain)
+
+        # Handle covariates
+        self._init_covariates(covariates)
+
+        # Handle census data
+        self._init_census(census_data, census_pop_column, census_id_column, agesex_data)
+
+        # Processing settings
+        self.by_block = by_block
+        self.block_size = tuple(block_size)
+        self.max_workers = max_workers
+        self.show_progress = show_progress
+
+        # Logging settings
+        self._init_logging(logging)
+
+        # Validate settings
+        self._validate_settings()
+        logger.info("Settings initialization completed")
+
+    def _init_paths(self, work_dir: str, data_dir: str, output_dir: Optional[str]) -> None:
+        """Initialize directory paths."""
         self.work_dir = Path(work_dir).resolve()
         self.data_dir = self.work_dir / data_dir
 
-        # Handle mastergrid path
-        self.mastergrid = str(Path(mastergrid)) if mastergrid else None
-        if self.mastergrid and self.mastergrid != 'create':
-            if not Path(self.mastergrid).is_absolute():
-                self.mastergrid = str(self.data_dir / mastergrid)
-
-        # Handle (water) mask path
-        self.mask = str(Path(mask)) if mask else None
-        if self.mask:
-            if not Path(self.mask).is_absolute():
-                self.mask = str(self.data_dir / mask)
-
-        # Handle constrain path
-        self.constrain = str(Path(constrain)) if constrain else None
-        if self.constrain:
-            if not Path(self.constrain).is_absolute():
-                self.constrain = str(self.data_dir / constrain)
-
-        # Process covariate paths
-        self.covariate = {}
-        if covariates:
-            for key, path in covariates.items():
-                if not Path(path).is_absolute():
-                    path = str(self.data_dir / path)
-                self.covariate[key] = path
-
-        if not self.covariate:
-            raise ValueError("At least one covariate is required")
-
-        # Process census path
-        census_path = Path(census_data) if census_data else None
-        self.census = {
-            'path': str(self.data_dir / census_data) if census_data and not census_path.is_absolute() else census_data,
-            'pop_column': census_pop_column,
-            'id_column': census_id_column
-        }
-
-        # Set output directory
         if output_dir:
             self.output_dir = Path(output_dir)
             if not self.output_dir.is_absolute():
@@ -125,12 +112,38 @@ class Settings:
         else:
             self.output_dir = self.work_dir / 'output'
 
-        # Set processing parameters
-        self.by_block = by_block
-        self.block_size = tuple(block_size)
-        self.max_workers = max_workers
-        self.show_progress = show_progress
+    def _init_input_files(self, mastergrid: Optional[str], mask: Optional[str],
+                          constrain: Optional[str]) -> None:
+        """Initialize input file paths."""
+        # Process paths relative to data directory
+        self.mastergrid = self._resolve_path(mastergrid)
+        self.mask = self._resolve_path(mask)
+        self.constrain = self._resolve_path(constrain)
 
+    def _init_covariates(self, covariates: Optional[Dict[str, str]]) -> None:
+        """Initialize covariate paths."""
+        self.covariate = {}
+        if covariates:
+            self.covariate = {
+                key: self._resolve_path(path)
+                for key, path in covariates.items()
+            }
+
+        if not self.covariate:
+            raise ValueError("At least one covariate is required")
+
+    def _init_census(self, census_data: Optional[str], pop_column: Optional[str],
+                     id_column: Optional[str], agesex_data: Optional[str]) -> None:
+        """Initialize census data settings."""
+        self.census = {
+            'path': self._resolve_path(census_data),
+            'pop_column': pop_column,
+            'id_column': id_column
+        }
+        self.agesex_data = self._resolve_path(agesex_data)
+
+    def _init_logging(self, logging: Optional[Dict]) -> None:
+        """Initialize logging settings."""
         self.logging = {
             'level': 'INFO',
             'file': 'pypoprf.log'
@@ -142,9 +155,15 @@ class Settings:
             self.logging['file'] = str(self.output_dir / self.logging['file'])
         logger.set_level(self.logging['level'])
 
-        # Validate all settings
-        self._validate_settings()
-        logger.info("Settings initialization completed")
+    def _resolve_path(self, path: Optional[str]) -> Optional[str]:
+        """Resolve path relative to data directory."""
+        if not path:
+            return None
+
+        p = Path(path)
+        if not p.is_absolute():
+            return str(self.data_dir / path)
+        return str(p)
 
     def _validate_settings(self) -> None:
         """
@@ -227,6 +246,17 @@ class Settings:
             logger.error("Census file must be CSV format")
             raise ValueError("Census file must be CSV format")
 
+        # Validate agesex data if provided
+        if self.agesex_data is not None:
+            agesex_path = Path(self.agesex_data)
+            if not agesex_path.is_file():
+                logger.warning(
+                    f"Age-sex census file not found: {self.agesex_data}, proceeding without age-sex structure")
+                self.agesex_data = None
+            elif agesex_path.suffix.lower() != '.csv':
+                logger.error("Age-sex census file must be CSV format")
+                raise ValueError("Age-sex census file must be CSV format")
+
         try:
             df = pd.read_csv(census_path, nrows=1)
             missing_cols = []
@@ -277,7 +307,7 @@ class Settings:
         logger.info("Configuration file validation successful")
 
     @classmethod
-    def from_file(cls, config_path: str) -> 'Settings':
+    def from_file(cls, config_path: Path) -> 'Settings':
         """
         Create Settings instance from configuration file.
 
@@ -304,7 +334,6 @@ class Settings:
         elif not Path(config['work_dir']).is_absolute():
             config['work_dir'] = str(config_dir / config['work_dir'])
 
-        logger.info("Settings loaded successfully")
         return cls(**config)
 
     def __str__(self) -> str:
@@ -328,6 +357,7 @@ class Settings:
             f"    Path: {self.census['path']}\n"
             f"    Pop Column: {self.census['pop_column']}\n"
             f"    ID Column: {self.census['id_column']}\n"
+            f"  Age-Sex Data: {self.agesex_data}\n"
             f"  Processing:\n"
             f"    By Block: {self.by_block}\n"
             f"    Block Size: {self.block_size}\n"

@@ -6,54 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>804</width>
-    <height>737</height>
+    <width>910</width>
+    <height>855</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>pypopRF</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_10">
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBoxConsol">
-     <property name="title">
-      <string>Console</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="1">
-       <widget class="QPushButton" name="mainStartButton">
-        <property name="text">
-         <string>Start</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QProgressBar" name="mainProgressBar">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QScrollArea" name="mainConsole">
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>764</width>
-           <height>180</height>
-          </rect>
-         </property>
-        </widget>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="mainTabWidget">
      <property name="currentIndex">
@@ -73,14 +33,24 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:11pt; font-weight:600; color:#2c3e50;&quot;&gt;Quick Start Guide&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Steps to Get Started&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;1.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Initialize Project&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Choose working folder and set up project structure&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;2.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Configure Data&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Add input files and set up covariates&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;3.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Adjust Settings&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Configure processing parameters&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;4.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Run Analysis&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Execute population modeling&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;1.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Initialize Project&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Select working directory and create project structure&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;2.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Configure Data&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Upload required files and configure covariates:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Mastergrid (required)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Population census (required)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Covariates (at least one)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Optional: Water mask, Constrain layer, Age-sex data&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;3.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Adjust Settings&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Configure processing options:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;CPU cores and parallel processing&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Block size for large datasets&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Census column names&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;4.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Run Analysis&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Start population modeling and monitor progress&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Processing Tips&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Use multi-threading for faster processing&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Enable block processing for large datasets&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Review logs for detailed progress&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:4px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Enable parallel processing with multiple CPU cores for faster analysis&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Use block processing for large areas or high-resolution data&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Monitor progress and check logs for detailed information&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Output layers are automatically added to QGIS when processing completes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -92,9 +62,13 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Need Help?&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Documentation: &lt;/span&gt;&lt;a href=&quot;https://wpgp.github.io/QGIS-pypopRF/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;wpgp.github.io/QGIS-pypopRF/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Report issues: &lt;/span&gt;&lt;a href=&quot;https://github.com/wpgp/QGIS-pypopRF/issues&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;github.com/wpgp/QGIS-pypopRF/issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Support portal: &lt;/span&gt;&lt;a href=&quot;https://sdi.worldpop.org/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;sdi.worldpop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Here are resources to help you get started:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ Documentation&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Comprehensive user guide and tutorials: &lt;/span&gt;&lt;a href=&quot;https://wpgp.github.io/QGIS-pypopRF/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;wpgp.github.io/QGIS-pypopRF/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ Technical Support&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Report bugs and request features: &lt;/span&gt;&lt;a href=&quot;https://github.com/wpgp/QGIS-pypopRF/issues&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;github.com/wpgp/QGIS-pypopRF/issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ WorldPop SDI Portal&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Access data and additional resources: &lt;/span&gt;&lt;a href=&quot;https://sdi.worldpop.org/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;sdi.worldpop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -161,7 +135,7 @@ p, li { white-space: pre-wrap; }
       <attribute name="title">
        <string>Input Data</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_6">
+      <layout class="QGridLayout" name="gridLayout_7">
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBoxRasters">
          <property name="title">
@@ -227,19 +201,36 @@ p, li { white-space: pre-wrap; }
          <property name="title">
           <string>Census File</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_7">
+         <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0">
            <widget class="QLabel" name="label_census">
             <property name="text">
-             <string>CSV file:</string>
+             <string>Population CSV:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QgsFileWidget" name="censusFileWidget"/>
+           <widget class="QgsFileWidget" name="populationCensusFileWidget"/>
           </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_browse_5">
+            <property name="text">
+             <string>Browse</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_census_2">
+            <property name="text">
+             <string>Age&amp;Sex CSV (optional):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QgsFileWidget" name="agesexCensusFileWidget"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_browse_6">
             <property name="text">
              <string>Browse</string>
             </property>
@@ -306,35 +297,7 @@ p, li { white-space: pre-wrap; }
             <string>Logging Settings</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="saveLogCheckBox">
-              <property name="text">
-               <string>Save logs</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Log File name:</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="logsColumnEdit">
-              <property name="text">
-               <string>logs_pypoprf.log</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_logging">
-              <property name="text">
-               <string>Logging Level:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
              <widget class="QComboBox" name="comboBox">
               <item>
                <property name="text">
@@ -348,13 +311,34 @@ p, li { white-space: pre-wrap; }
               </item>
              </widget>
             </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="logsColumnEdit">
+              <property name="text">
+               <string>logs_pypoprf.log</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_logging">
+              <property name="text">
+               <string>Logging Level:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Log File name:</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="title">
-            <string>Census File Column Settings</string>
+            <string>Population CSV File Column Settings</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
             <item row="0" column="0">
@@ -479,17 +463,14 @@ p, li { white-space: pre-wrap; }
                 <property name="editable">
                  <bool>true</bool>
                 </property>
-                <property name="currentText">
-                 <string>256, 256</string>
-                </property>
                 <item>
                  <property name="text">
-                  <string>256, 256</string>
+                  <string>512, 512</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>512, 512</string>
+                  <string>256, 256</string>
                  </property>
                 </item>
                </widget>
@@ -554,28 +535,36 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:9pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:9pt; color:#34495e;&quot;&gt;Tool for high-resolution population mapping that combines machine learning with dasymetric techniques to generate detailed population distribution maps.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Key Features:&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:1; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; High-performance multi-threaded processing&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:1; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Interactive visualization and real-time progress tracking&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:1; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Memory-efficient block-based processing for large datasets&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:1; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Automated model validation and accuracy assessment&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; High-performance multi-threaded processing&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Interactive visualization and real-time progress tracking&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Memory-efficient block-based processing for large datasets&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Automated model validation and accuracy assessment&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Age-sex structure mapping capabilities&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Processing Components:&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Mastergrid:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Zone definitions for analysis&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Census Data:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Population counts by zone&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Covariates:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Predictive variables like:&lt;/span&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ Building counts&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ Building footprints&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ Building heights/volumes&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Optional Inputs:&lt;/span&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ Water mask: To exclude water bodies&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ Constrain layer: For restricted population distribution&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Mastergrid:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Zone definitions for analysis&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Census Data:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Required - Population counts by zon&lt;/span&gt;&lt;/li&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Population CSV file with zone IDs&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Optional - Age-sex structure data&lt;/span&gt;&lt;/p&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Covariates:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Predictive variables like:&lt;/span&gt;&lt;/li&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building counts&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building footprints&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building heights/volumes&lt;/span&gt;&lt;/p&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:8px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Optional Inputs:&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;p style=&quot; margin-top:8px; margin-bottom:8px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Water mask: To exclude water bodies&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:8px; margin-bottom:8px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Constrain layer: For restricted population distribution&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Output Files:&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;prediction.tif:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Population probability surface&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;dasymetric outputs:&lt;/span&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 2;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ dasymetric_unconstrained.tif (default output)&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;◆ dasymetric_constrained.tif (when constrain layer provided)&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;normalized_census.tif:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Normalized values&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;features.csv:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Extracted features&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;Processing logs and visualizations&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;normalized_census.tif:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Normalized census values&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Population Distribution:&lt;/span&gt;&lt;/li&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ population_unconstrained.tif (default output)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ population_constrained.tif (when constrain layer provided)&lt;/span&gt;&lt;/p&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Machine Learning:&lt;/span&gt;&lt;/li&gt;
+&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ model.pkl.gz - Trained Random Forest model&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ scaler.pkl.gz - Feature scaler&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ features.csv - Extracted covariate features with importance&lt;/span&gt;&lt;/p&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Age-Sex Structure:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Additional outputs in agesex/ directory (when age-sex data provided)&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;Detailed processing logs&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:12px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#34495e;&quot;&gt;The plugin provides a user-friendly interface integrated into QGIS, making it easy to generate high-resolution population maps from census data using machine learning and dasymetric mapping techniques. It supports parallel processing and block-based operations for efficient handling of large datasets, along with extensive validation and logging capabilities.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -592,13 +581,13 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹ &lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Maksym Bondarenko &lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Wenbin Zhang&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Tom McKeen&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Elena Vataga&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Elena Vataga&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Natalia Tejedor Garavit&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Organization&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:9pt;&quot;&gt;WorldPop&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot;&gt;, Geography and Env. Science, University of Southampton&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Project Information&lt;/span&gt;&lt;/p&gt;
 &lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Version:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; 0.1&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Released:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; January 2025&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Released:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; February 2025&lt;/span&gt;&lt;/li&gt;
 &lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;License:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; GNU GPL v2&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Documentation &amp;amp; Support&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Documentation: &lt;/span&gt;&lt;a href=&quot;https://wpgp.github.io/QGIS-pypopRF/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;wpgp.github.io/QGIS-pypopRF/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
@@ -609,6 +598,46 @@ p, li { white-space: pre-wrap; }
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBoxConsol">
+     <property name="title">
+      <string>Console</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <widget class="QPushButton" name="mainStartButton">
+        <property name="text">
+         <string>Start</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QProgressBar" name="mainProgressBar">
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QScrollArea" name="mainConsole">
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>870</width>
+           <height>272</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
