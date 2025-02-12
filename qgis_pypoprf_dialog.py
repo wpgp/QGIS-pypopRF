@@ -247,14 +247,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         else:
             self.config_manager.clear_config_value(file_type)
 
-        has_required = all([
-            self.mastergridFileWidget.filePath(),
-            self.populationCensusFileWidget.filePath(),
-            self.covariatesTable.rowCount() > 0
-        ])
+        has_mastergrid = bool(self.mastergridFileWidget.filePath())
+        has_census = bool(self.populationCensusFileWidget.filePath())
 
-        self.mainStartButton.setEnabled(has_required)
-        if has_required:
+        # Enable start button if all files are loaded
+        self.mainStartButton.setEnabled(all([has_mastergrid, has_census]))
+        if all([has_mastergrid, has_census]):
             self.mainStartButton.setStyleSheet(
                 "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
 
@@ -391,10 +389,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def _handle_start_button(self):
         """Handle start/stop button click"""
-        try:
-            if not self.process_executor.is_running:
-                self.process_executor.start_analysis()
-            else:
-                self.process_executor.stop_analysis()
-        except Exception as e:
-            self.logger.error(f"Failed to {self.mainStartButton.text().lower()} analysis: {str(e)}")
+        if self.mainStartButton.text() == "Start":
+            self.process_executor.start_analysis()
+        else:
+            self.process_executor.stop_analysis()

@@ -1,17 +1,24 @@
 # Installing QGIS pypopRF Plugin
 
-This guide walks you through the process of installing the pypopRF plugin for QGIS.
+This guide walks you through the process of installing the pypopRF plugin for QGIS. The plugin provides advanced population mapping capabilities with support for age-sex structure analysis, water masking, and spatial constraints.
 
 ## System Requirements
 
 ### QGIS Version
-- QGIS 3.0 or later (recommended: QGIS 3.28 or later)
+- QGIS 3.10 or later (recommended: QGIS 3.28 or later)
 - Both Long Term Release (LTR) and latest versions are supported
+- Python 3.9 - 3.12 compatibility
 
 ### Operating Systems
-- Windows 10/11
+- Windows 10/11 (64-bit)
 - Ubuntu 20.04/22.04 or other Linux distributions
 - macOS 11 (Big Sur) or later
+
+### Hardware Requirements
+- Minimum 8GB RAM (16GB recommended for large datasets)
+- Multi-core processor recommended for parallel processing
+- SSD storage recommended for better performance
+- Sufficient free disk space for analysis outputs
 
 ## Installation Methods
 
@@ -24,14 +31,14 @@ This guide walks you through the process of installing the pypopRF plugin for QG
    - Type "pypopRF" in the search bar
    - Find "pypopRF Population Mapping" in the list
    - Click `Install Plugin`
-4. Wait for the installation to complete
-5. Click `Close`
+4. Wait for automatic dependency installation
+5. Click `Close` when complete
 
-The plugin will now appear in your `Plugins` menu as "pypopRF Population Mapping".
+The plugin will appear in your `Plugins` menu and toolbar as "pypopRF Population Mapping".
 
 ### Method 2: Manual Installation
 
-For cases where you can't access the QGIS Plugin Repository or need a specific version:
+For offline installation or specific versions:
 
 1. Download the plugin ZIP file:
    - Visit [GitHub Releases](https://github.com/wpgp/QGIS-pypopRF/releases)
@@ -46,57 +53,87 @@ For cases where you can't access the QGIS Plugin Repository or need a specific v
 3. Plugin Location:
    - Windows: `C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/`
    - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
-   - macOS: `~/Library/ApplicationSupport/QGIS/QGIS3/profiles/default/python/plugins/`
+   - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`
+
+## Dependencies
+
+The plugin automatically installs required Python packages:
+- numpy (1.26.4)
+- rasterio (1.4.3)
+- geopandas (1.0.1)
+- scikit-learn (1.4.2)
 
 ## Post-Installation Steps
 
 1. **Enable the Plugin:**
-
    - Go to `Plugins` → `Manage and Install Plugins`
    - Find "pypopRF Population Mapping" in the list
    - Check the box next to it to enable
 
 2. **Verify Installation:**
-
    - The pypopRF icon should appear in your QGIS toolbar
    - The plugin should be listed under `Plugins` → `pypopRF`
+   - Test plugin launch to ensure all dependencies are installed
 
 3. **First Launch:**
-
    - Click the pypopRF icon or find it in the Plugins menu
-   - The plugin interface should open without errors
+   - The plugin interface should open showing all available tabs:
+     - Project
+     - Input Data
+     - Settings
+     - Console
 
 ## Troubleshooting
 
 ### Common Installation Issues
 
 1. **Plugin Not Found in Repository**
-
    - Check your internet connection
    - Verify QGIS Plugin Repository settings
    - Try refreshing the plugin list
+   - Check proxy settings if behind a firewall
 
 2. **Dependencies Installation Failed**
-
-   - Open QGIS Python Console (Plugins → Python Console)
-   - Check error messages
+   - Check Python console for specific error messages
    - Verify Python package installation permissions
+   - Try manual installation of dependencies:
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - Check system PATH settings
 
 3. **Plugin Not Loading**
+   - Verify QGIS version compatibility
+   - Check Python version compatibility
+   - Ensure all dependencies are properly installed
+   - Check system permissions for plugin directory
+   - Review QGIS log for error messages
 
-   - Check QGIS version compatibility
-   - Verify Python dependencies
-   - Check system permissions
+4. **Memory or Performance Issues**
+   - Check available system memory
+   - Close unnecessary applications
+   - Adjust block processing settings if needed
+   - Consider hardware upgrades for large datasets
 
+### Getting Help
+- Check [GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues) for known problems
+- Search existing solutions in the documentation
+- Create a new issue with detailed error information
+- Contact the WorldPop SDI team for support
 
 ## Updating the Plugin
 
-- QGIS will automatically notify you of plugin updates
-- To update manually:
+The plugin includes automatic update notifications:
 
-   1. Go to `Plugins` → `Manage and Install Plugins`
-   2. Select `Installed` from the left sidebar
-   3. Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`
+1. **Automatic Updates:**
+   - QGIS will notify you when updates are available
+   - Click "Update" when prompted
+
+2. **Manual Updates:**
+   - Go to `Plugins` → `Manage and Install Plugins`
+   - Select `Installed` from the left sidebar
+   - Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`
+   - Wait for dependency updates to complete
 
 ## Uninstalling
 
@@ -106,6 +143,9 @@ To remove the plugin:
 2. Select `Installed` from the left sidebar
 3. Find "pypopRF Population Mapping"
 4. Click `Uninstall Plugin`
+5. Optional: Remove configuration files:
+   - Delete plugin directory from QGIS plugins folder
+   - Remove any remaining configuration files
 
 <div align="right">
   <a href="#top">↑ Back to Top</a>

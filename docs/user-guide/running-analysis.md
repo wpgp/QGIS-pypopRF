@@ -1,215 +1,111 @@
 # Running Analysis
 
-This guide explains the process of running population analysis using the pypopRF plugin, including preparation, execution, monitoring, and interpreting results.
+This guide explains how to run population analysis using the pypopRF plugin and interpret the results.
 
-## Before Running Analysis
+## Before Starting
 
-### Pre-run Checklist
-- All required files loaded
-- Settings configured
-- Sufficient disk space
-- Adequate memory available
-- Column names verified
-- CRS consistency checked
+### Quick Checklist
+✓ All required files loaded
+✓ Optional files prepared (if using)
+✓ Settings configured
+✓ Sufficient disk space (3-4x input data size)
+✓ Adequate memory available
+✓ Column names verified
 
-### System Preparation
-1. Close unnecessary applications
-2. Clear QGIS cache if needed
-3. Ensure stable power supply
-4. Check available disk space
-   - Required: 3-4x input data size
-   - Recommended: 10x for safety
+### Data Verification
+- Census data columns match settings
+- Mastergrid IDs match census data
+- Covariates cover study area
+- Optional files properly configured:
+  - Water mask (if using)
+  - Constraints (if using)
+  - Age-sex data (if using)
 
 ## Running the Analysis
 
-### Starting the Process
+### 1. Starting the Process
 
-1. **Verification Phase**
+The Start button will be enabled when:
+- All required files are loaded
+- Settings are properly configured
+- Project is initialized
 
-   - Input validation
-   - Settings check
-   - Resource availability check
-   - CRS consistency verification
+Click the green "Start" button to begin analysis.
 
-2. **Initialization**
+### 2. Processing Stages
 
-   - Project structure check
-   - Temporary directory creation
-   - Log file preparation
-   - Resource allocation
+The analysis runs through several stages:
 
-3. **Click Start**
-
-   - Green button indicates ready
-   - Console shows initialization
-   - Progress bar activates
-
-### Processing Stages
-
-#### 1. Feature Extraction (20%)
-- Loading covariate data
+#### Feature Extraction (20%)
+- Processing covariates
 - Calculating zonal statistics
-- Feature normalization
-- Status shown in console
+- Extracting predictive features
 
-#### 2. Model Training (40%)
-- Random Forest initialization
-- Feature importance calculation
-- Cross-validation
-- Model optimization
+#### Model Training (40%)
+- Training Random Forest model
+- Calculating feature importance
+- Validating model performance
 
-#### 3. Prediction Generation (60%)
-- Population probability calculation
-- Block-wise processing
-- Intermediate results saving
-- Memory management
+#### Population Prediction (60%)
+- Generating probability surface
+- Applying water mask (if enabled)
+- Processing spatial constraints (if enabled)
 
-#### 4. Dasymetric Mapping (80%)
-- Population redistribution
-- Constraint application
-- Result normalization
-- Quality checks
+#### Distribution Mapping (80%)
+- Creating normalized census
+- Generating population distribution
+- Processing age-sex structure (if enabled)
 
-#### 5. Finalization (100%)
-- Output validation
-- Layer preparation
-- Memory cleanup
-- Result visualization
+#### Finalization (100%)
+- Saving output files
+- Loading results in QGIS
+- Cleaning temporary files
 
 ## Monitoring Progress
 
 ### Console Output
-The console window shows:
-
+The console shows:
 - Current processing stage
-- Detailed progress information
-- Warnings and errors
-- Memory usage statistics
-
-Example console messages:
-```
-[INFO] Starting feature extraction...
-[INFO] Processing block 1/10...
-[INFO] Feature importance calculation...
-[INFO] Model training R² score: 0.85
-```
+- Progress information
+- Warnings or errors
+- Processing statistics
 
 ### Progress Bar
-- Shows overall completion percentage
-- Current stage indication
-- Time estimation (if available)
-- Color-coded status
+- Shows overall completion
+- Displays current stage
+- Updates in real-time
 
 ### Process Control
+- Use Stop button to cancel (red)
+- Processing will complete current stage
+- Results up to stop point are saved
 
-#### Pause/Resume
-- Not currently supported
-- Must complete or stop
+## Output Files
 
-#### Stop Process
-- Click "Stop" button (red)
-- Graceful shutdown
-- Cleanup temporary files
-- May take few moments
+### Main Outputs
+1. **normalized_census.tif**
+   - Census values adjusted to raster format
+   - Shows population distribution zones
 
-## Understanding Results
+2. **population_unconstrained.tif**
+   - Basic population distribution
+   - Without spatial constraints
 
-### Output Files
+3. **population_constrained.tif**
+   - Population distribution with constraints
+   - Only if constraints enabled
 
-1. **prediction.tif**
+### Additional Outputs
+- **Age-sex maps** (if enabled)
+  - Separate maps for each age-sex group
+  - Located in 'agesex' folder
 
-2. **normalized_census.tif**
+- **Model files**
+  - model.pkl.gz: Trained model
+  - scaler.pkl.gz: Data scaler
+  - features.csv: Feature importance
 
-3. **dasymetric.tif**
-
-4. **features.csv**
-
-### Quality Assessment
-
-#### Statistical Measures
-- R² score (model fit)
-- RMSE (prediction error)
-- Cross-validation results
-- Population total preservation
-
-#### Visual Inspection
-- Distribution patterns
-- Edge effects
-- Anomaly detection
-- Consistency check
-
-## Handling Errors
-
-### Common Error Messages
-
-1. **Memory Errors**
-```
-[ERROR] Out of memory in block processing
-Solution: Reduce block size or parallel cores
-```
-
-2. **Input Data Errors**
-```
-[ERROR] Column 'population' not found
-Solution: Verify CSV column names
-```
-
-3. **Processing Errors**
-```
-[ERROR] Failed to process block
-Solution: Check input data validity
-```
-
-### Recovery Steps
-
-1. **Process Fails**
-
-   - Check error message
-   - Review log file
-   - Adjust settings
-   - Clear temporary files
-   - Restart analysis
-
-2. **System Crashes**
-
-   - Close QGIS
-   - Clear temporary files
-   - Check system resources
-   - Restart with smaller area
-
-## Best Practices
-
-### Performance Optimization
-1. Start with small test area
-2. Monitor system resources
-3. Adjust parameters gradually
-4. Document optimal settings
-
-### Quality Control
-1. Compare with known data
-2. Check population totals
-3. Verify spatial patterns
-4. Document anomalies
-
-### Data Management
-1. Back up input files
-2. Save configuration
-3. Archive results
-4. Document process
-
-## After Analysis
-
-### Result Verification
-1. Check total population
-2. Verify spatial distribution
-3. Compare with input data
-4. Document any issues
-
-### Output Management
-1. Organize results
-2. Create backups
-3. Document settings used
-4. Save log files
+---
 
 <div align="right">
   <a href="#top">↑ Back to Top</a>

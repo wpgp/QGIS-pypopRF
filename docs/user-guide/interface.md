@@ -16,6 +16,9 @@ The plugin window consists of four main sections:
 - **Input Data**: Data file configuration
 - **Settings**: Processing and analysis parameters
 
+
+
+
 ## Main Tab
 
 The main tab provides project management and quick start information.

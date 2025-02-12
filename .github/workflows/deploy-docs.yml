@@ -2,9 +2,9 @@ name: Deploy Documentation
 on:
   push:
     branches: [ "master" ]
-#    paths:
-#      - 'docs/**'  # Trigger only when docs folder changes
-#      - 'mkdocs.yml'  # Or when config changes
+    paths:
+      - 'docs/**'  # Trigger only when docs folder changes
+      - 'mkdocs.yml'  # Or when config changes
 
 permissions:
   contents: write

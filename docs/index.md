@@ -2,40 +2,71 @@
 
 <div align="center">
   <img src="images/wp_logo.png" alt="WorldPop Logo" width="300"/>
-
 </div>
-
 
 ## Quick Navigation
 - [About pypopRF](#about-pyPoprf)
+- [Key Features](#key-features)
 - [How It Works](#how-it-works)
 - [Plugin Interface](#plugin-interface)
 - [Analysis Results](#analysis-results)
 - [Quick Start](getting-started/quickstart.md)
 
-
 ## About pypopRF
 
-pypopRF is a powerful tool developed by the WorldPop SDI Team that transforms your input data into detailed population distribution maps. It combines census data, building information, and machine learning to create accurate population estimates.
+pypopRF is a comprehensive population mapping tool developed by the WorldPop SDI Team. It transforms your input data into detailed population distribution maps using advanced machine learning techniques. The plugin combines census data, building information, and various spatial constraints to create highly accurate population estimates.
 
-💡 Technical Foundation: The plugin is built on the [pypopRF Python package](https://github.com/wpgp/pypopRF), which provides the core computational functionality. While the plugin makes these tools accessible through a graphical interface, advanced users can also use the Python package directly for more customized workflows.
+💡 **Technical Foundation**: The plugin is built on the [pypopRF Python package](https://github.com/wpgp/pypopRF), which provides the core computational functionality. While the plugin makes these tools accessible through a graphical interface, advanced users can also use the Python package directly for more customized workflows.
 
-⚠️ Note: For advanced features and detailed technical documentation of the underlying algorithms, please refer to the [pypopRF documentation](https://wpgp.github.io/pypopRF/).
+⚠️ **Note**: For advanced features and detailed technical documentation of the underlying algorithms, please refer to the [pypopRF documentation](https://wpgp.github.io/pypopRF/).
+
+## Key Features
+
+### Core Functionality
+- 🗺️ High-resolution population distribution mapping
+- 🤖 Machine learning-based prediction using Random Forest
+- 📊 Advanced dasymetric mapping techniques
+- 📈 Comprehensive statistical analysis
+
+### Advanced Features
+- 👥 Age and sex structure mapping
+- 💧 Water mask integration
+- 🏗️ Building footprint constraints
+- 🚀 Parallel processing support
+- 📋 Real-time progress monitoring
+- 🎯 Customizable processing parameters
 
 ## How It Works
 
 ```mermaid
-graph LR
-    Init[Initialize Project] --> A[Load Data]
-    A --> B[Configure Settings]
-    B --> C[Run Analysis]
-    C --> D[Get Results]
-
-    style Init fill:#dcedc8,stroke:#558b2f,stroke-width:2px
-    style A fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    style B fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    style C fill:#fff3e0,stroke:#ff6f00,stroke-width:2px
-    style D fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+graph TD
+    Init[Initialize Project] --> InputA[Load Census Data]
+    Init --> InputB[Load Mastergrid]
+    Init --> InputC[Load Covariates]
+    
+    subgraph "Optional Inputs"
+        InputD[Water Mask]
+        InputE[Constraints]
+        InputF[Age-Sex Data]
+    end
+    
+    InputA & InputB & InputC & InputD & InputE & InputF --> Config[Configure Settings]
+    Config --> Process[Run Analysis]
+    
+    Process --> ML[Machine Learning]
+    ML --> Pred[Population Prediction]
+    
+    Pred --> NormA[Basic Normalization]
+    Pred --> NormB[Constrained Normalization]
+    
+    NormA --> PopA[Population Distribution]
+    NormB --> PopB[Constrained Distribution]
+    
+    InputF --> AgeMap[Age-Sex Distribution]
+    
+    style Init fill:#dcedc8,stroke:#558b2f
+    style Process fill:#fff3e0,stroke:#ff6f00
+    style ML fill:#e1f5fe,stroke:#0277bd
 ```
 
 ## Plugin Interface
@@ -43,66 +74,75 @@ graph LR
 <div align="center">
   <img src="images/main_interface.png" alt="pypopRF Plugin Interface" width="800"/>
   <br/>
-  <em>Main plugin interface</em>
+  <em>Main plugin interface with enhanced features</em>
 </div>
 
 ### Key Components:
 
-1. **Project Tab**: Initialize your project and manage settings
-2. **Input Data Tab**: Configure all required data files
-3. **Settings Tab**: Adjust processing parameters
-4. **Console**: Monitor progress and view logs
-5. **Control Panel**: Start/stop analysis and view progress
-
-💡 **Tip:** Use the tabs to navigate through the workflow in a logical sequence.
+1. **Project Tab**: Initialize project and manage settings
+2. **Input Data Tab**: Configure required and optional data files:
+   - Census data (required)
+   - Mastergrid (required)
+   - Covariates (required)
+   - Water mask (optional)
+   - Constraints (optional)
+   - Age-sex structure data (optional)
+3. **Settings Tab**: Adjust processing parameters:
+   - Parallel processing options
+   - Block processing settings
+   - Census field mappings
+   - Output preferences
+4. **Console**: Monitor progress and view detailed logs
+5. **Control Panel**: Start/stop analysis and track progress
 
 ## Analysis Results
 
-The plugin generates three key outputs that show the progression of the analysis:
+The plugin generates multiple output layers showing different aspects of the analysis:
 
 <div align="center">
   <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
     <div style="flex: 1; margin: 10px;">
-      <img src="images/prediction.png" alt="Population Prediction" width="250"/>
-      <p><strong>1. Population Prediction</strong><br/>
-      Initial probability surface showing likely population distribution</p>
+      <img src="images/normalized_census.png" alt="Normalized Census" width="200"/>
+      <p><strong>1. Normalized Census</strong><br/>
+      Census-adjusted values</p>
     </div>
     <div style="flex: 1; margin: 10px;">
-      <img src="images/normalized_census.png" alt="Normalized Census" width="250"/>
-      <p><strong>2. Normalized Census</strong><br/>
-      Population values adjusted to match census totals</p>
+      <img src="images/unconstrained.png" alt="Unconstrained Population" width="200"/>
+      <p><strong>2. Unconstrained Population</strong><br/>
+      Basic population distribution</p>
     </div>
     <div style="flex: 1; margin: 10px;">
-      <img src="images/dasymetric.png" alt="Final Distribution" width="250"/>
-      <p><strong>3. Final Distribution</strong><br/>
-      High-resolution population distribution map</p>
+      <img src="images/constrained.png" alt="Constrained Population" width="200"/>
+      <p><strong>3. Constrained Population</strong><br/>
+      Distribution with spatial constraints</p>
     </div>
   </div>
 </div>
 
-## Processing in Action
+### Additional Outputs
 
-<div align="center">
-  <img src="images/analysis.png" alt="Analysis Process" width="700"/>
-  <br/>
-  <em>Real-time processing feedback and progress monitoring</em>
-</div>
+- 📊 **Age-Sex Structure Maps**: When age-sex data is provided
+- 📈 **Feature Importance**: Analysis of predictor variables
+- 📝 **Processing Logs**: Detailed analysis records
+- 🤖 **Model Files**: Saved for future use
 
-## Key Features
+## Processing Features
 
-✅ **User-Friendly Interface**
+✅ **Enhanced Processing**
 
-- Visual data management
-- Intuitive configuration
-- Real-time progress tracking
-- Direct QGIS integration
+- Multi-threaded computation
+- Block-based processing for large datasets
+- Progress tracking for each step
+- Memory-efficient operations
+- Robust error handling
 
 ⚠️ **Important Considerations**
 
-- Ensure consistent coordinate systems
-- Verify input data quality
-- Monitor system resources
-- Back up project files
+- Ensure consistent coordinate systems across all inputs
+- Verify data quality and completeness
+- Monitor system resources during processing
+- Regularly backup project files
+- Consider memory requirements for large datasets
 
 ## Support and Resources
 
@@ -115,10 +155,11 @@ The plugin generates three key outputs that show the progression of the analysis
 
 The WorldPop Spatial Data Infrastructure (SDI) Team at the University of Southampton specializes in:
 
-- Population mapping
+- High-resolution population mapping
 - Spatial demographics
 - Open-source geospatial tools
 - Machine learning for population estimation
+- Demographic data integration
 
 ## License
 

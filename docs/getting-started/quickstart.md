@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-This guide will help you create your first population map using the QGIS pypopRF plugin. We'll walk through a basic workflow from project setup to final output.
+This guide will help you create your first population map using the QGIS pypopRF plugin. We'll walk through a basic workflow from project setup to final output, including optional advanced features.
 
 ## Overview
 
@@ -8,140 +8,150 @@ A typical workflow consists of these steps:
 
 1. Project initialization
 2. Data preparation
-3. Running the analysis
-4. Viewing results
-
-Expected time: 15-30 minutes (depending on the size and complexity of your data)
+3. Optional feature setup
+4. Running the analysis
+5. Viewing results
 
 ## Before You Begin
 
 Ensure you have:
 
 - QGIS installed and pypopRF plugin enabled
-- Sample data files:
-
-  - Census boundaries with population counts
-  - Building footprints or similar covariates
-  - Administrative boundaries
+- Required data files:
+  - Census data with population counts (CSV)
+  - Mastergrid file defining analysis zones (GeoTIFF)
+  - Covariate rasters (e.g., building footprints, infrastructure)
+- Optional data files:
+  - Water mask for excluding water bodies
+  - Constraint rasters for specific areas
+  - Age-sex population structure data (CSV)
 
 ## Step 1: Initialize Project
 
 1. Open QGIS
 2. Click the pypopRF icon in the toolbar or find it in `Plugins → pypopRF`
 3. In the plugin window:
-
-   - Select the "Main" tab
+   - Select the "Project" tab
    - Choose a working directory
    - Click "Initialize New Project"
 
-
-A new project structure will be created with the necessary folders:
+A new project structure will be created:
 ```
 my_project/
 ├── data/      (for input files)
 ├── output/    (for results)
+│   ├── agesex/  (for age-sex outputs)
+│   └── logs/    (processing logs)
 └── config.yaml
 ```
 
 ## Step 2: Prepare Input Data
 
-### Add Required Files
+### Required Files
+
 1. In the "Input Data" tab:
    
    **Mastergrid File:**
-
    - Click "Browse" next to Mastergrid
    - Select your zone definition raster
-   - Format: GeoTIFF with zone IDs
+   - Format: GeoTIFF with unique zone IDs
 
    **Census Data:**
-
    - Click "Browse" next to Census File
    - Select your population data CSV
    - Must contain: zone IDs and population counts
 
    **Covariates:**
-
    - Click "Add Covariate"
    - Select building/infrastructure rasters
    - Add at least one covariate
    
-   **Optional Files:**
-   - Water mask to exclude water bodies
-   - Constraints for specific areas
+### Optional Files
+
+   **Water Mask:**
+   - Click "Browse" next to Water Mask
+   - Select raster defining water bodies
+   - Areas with value 1 will be excluded
+
+   **Constraints:**
+   - Click "Browse" next to Constraints
+   - Select raster with constraint areas
+   - Used to refine population distribution
+
+   **Age-Sex Data:**
+   - Click "Browse" next to Age-Sex Census
+   - Select CSV with age-sex structure
+
 
 ## Step 3: Configure Settings
 
 In the "Settings" tab:
 
 1. **Census Fields:**
-
    - Set Population Column Name (e.g., "pop")
    - Set ID Column Name (e.g., "id")
 
 2. **Processing Options:**
+   - Enable parallel processing for faster analysis
+   - Set number of CPU cores (recommended: 6+)
+   - Adjust block size for memory management
+   - Enable block processing for large areas
 
-   - Enable parallel processing if needed
-   - Set number of CPU cores
-   - Adjust block size for large areas
-
+3. **Output Options:**
+   - Choose whether to add layers to QGIS
+   - Set logging level for process monitoring
 
 ## Step 4: Run Analysis
 
-1. Verify all required inputs are set (green indicators)
+1. Verify inputs (green indicators show ready state)
 2. Click the "Start" button
-3. Monitor progress in the console window
-4. Wait for processing to complete
-
+3. Monitor progress in the console window:
+   - Feature extraction progress
+   - Model training status
+   - Prediction and mapping progress
+4. Wait for completion message
 
 ## Step 5: View Results
 
-Once processing is complete:
+The analysis produces several output layers:
 
-1. Output files are automatically added to QGIS
-2. You'll see three new layers:
-
-   - Prediction surface
-   - Normalized census
-   - Final population distribution
-
-
-The main output files are saved in your project's output directory:
-
+### Main Outputs
 - `prediction.tif`: Initial population prediction
-- `dasymetric.tif`: Final high-resolution distribution
-- `normalized_census.tif`: Intermediate normalization
-- `features.csv`: Extracted covariate features
+- `normalized_census.tif`: Census-adjusted values
+- `population_unconstrained.tif`: Basic distribution
+- `population_constrained.tif`: Distribution with constraints
 
-## Next Steps
+### Additional Outputs (if using optional features)
+- `normalized_census_unconstrained.tif`: Unconstrained census-adjusted values
+- `agesex/*.tif`: Age-sex structure maps
+- `model.pkl.gz`: Trained Random Forest model
+- `scaler.pkl.gz`: Feature scaler
+- `features.csv`: Extracted features with importance metrics
 
-- Adjust symbolization for better visualization
-- Export maps for reports
-- Try different covariates
-- Experiment with processing parameters
+All outputs are saved in your project's output directory and can be automatically added to QGIS.
 
 ## Common Issues
 
-1. **Missing Data Error:**
+1. **Data Preparation:**
+   - Ensure consistent coordinate systems
+   - Check for missing or invalid values
+   - Verify column names in CSV files
 
-   - Ensure all required files are loaded
-   - Check file paths in config.yaml
+2. **Processing:**
+   - Reduce cores if memory issues occur
+   - Increase block size for large areas
+   - Monitor system resources
 
-2. **Processing Stops:**
-
-   - Reduce number of CPU cores
-   - Increase block size
-   - Check available memory
-
-3. **Unexpected Results:**
-
-   - Verify census data columns
-   - Check covariate alignment
-   - Review mastergrid zones
+3. **Results:**
+   - Verify census totals match
+   - Check for unexpected patterns
+   - Review log files for warnings
 
 ## Getting Help
-- See detailed [User Guide](../user-guide/interface.md)
-- Report issues on [GitHub](https://github.com/wpgp/QGIS-pypopRF/issues)
+- Review detailed [User Guide](../user-guide/interface.md)
+- Check [Common Issues](../user-guide/troubleshooting.md)
+- Report problems on [GitHub](https://github.com/wpgp/QGIS-pypopRF/issues)
+- Contact WorldPop SDI team for support
 
 <div align="right">
   <a href="#top">↑ Back to Top</a>

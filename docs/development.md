@@ -1,23 +1,24 @@
 # Development Guide
 
-This guide is for developers who want to understand, modify, or contribute to the QGIS pypopRF plugin.
+This guide is for developers who want to understand, modify, or contribute to the QGIS pypopRF plugin. We welcome contributions and suggestions from the community!
 
 ## Project Structure
 
 ```
 QGIS-pypopRF/
-├── pypoprf/                  # Core Python package (submodule)
-├── q_models/                 # QGIS-specific models
-│   ├── console_handler.py    # Console output management
-│   ├── config_manager.py     # Configuration handling
-│   ├── covariate_table.py   # Covariate UI management
-│   ├── file_handlers.py     # File operations
-│   ├── process_executor.py  # Analysis execution
-│   └── settings_handler.py  # Settings management
-├── qgis_pypoprf_dialog.py   # Main dialog implementation
+├── core/                    # Core functionality
+│   ├── pypoprf/            # Population modeling components
+├── q_models/               # QGIS-specific models
+│   ├── console_handler.py  # Console output management
+│   ├── config_manager.py   # Configuration handling
+│   ├── covariate_table.py # Covariate UI management
+│   ├── file_handlers.py   # File operations
+│   ├── process_executor.py # Analysis execution
+│   └── settings_handler.py # Settings management
+├── qgis_pypoprf_dialog.py  # Main dialog implementation
 ├── qgis_pypoprf_dialog_base.ui  # Qt UI definition
-├── metadata.txt             # Plugin metadata
-└── __init__.py             # Plugin entry point
+├── metadata.txt           # Plugin metadata
+└── __init__.py           # Plugin entry point
 ```
 
 ## Core Components
@@ -26,36 +27,47 @@ QGIS-pypopRF/
 - Manages plugin UI lifecycle
 - Connects UI signals and slots
 - Coordinates between components
+- Handles user interactions
 
 ### 2. Model Classes
-- **ConsoleHandler**: Manages logging and output
-- **ConfigManager**: Handles YAML configuration
-- **CovariateTableHandler**: Manages covariate inputs
-- **FileHandler**: Handles file operations
-- **ProcessExecutor**: Manages analysis execution
-- **SettingsHandler**: Handles plugin settings
+
+#### Console and Logging (console_handler.py)
+- Real-time console output
+- Log file management
+- Progress reporting
+- Error handling
+
+#### Configuration (config_manager.py)
+- YAML configuration handling
+- Settings validation
+- Project structure management
+- Default configurations
+
+#### Data Management
+- **CovariateTableHandler**: Manages covariate inputs and table UI
+- **FileHandler**: Handles file operations and validation
+- **ProcessExecutor**: Manages analysis execution and threading
+- **SettingsHandler**: Manages plugin settings and preferences
 
 ### 3. UI Design (qgis_pypoprf_dialog_base.ui)
 - Qt Designer UI definition
-- Tab-based interface
+- Intuitive tab-based interface
 - Progress monitoring
 - File selection widgets
+- Advanced settings panels
 
 ## Development Setup
 
 ### Requirements
 ```bash
-# Development dependencies
-pip install -r requirements-dev.txt
-
-# Core package requirements
-pip install -e pypoprf/
+# Install plugin requirements
+pip install -r requirements.txt
 ```
 
 ### Environment Setup
 1. Clone repository:
 ```bash
-git clone --recursive https://github.com/wpgp/QGIS-pypopRF.git
+git clone https://github.com/wpgp/QGIS-pypopRF.git
 ```
 
 2. Install for development:
@@ -72,17 +84,19 @@ New-Item -ItemType SymbolicLink -Path "$env:APPDATA\QGIS\QGIS3\profiles\default\
 ## Development Guidelines
 
 ### Code Style
-- Follow PEP 8
-- Use type hints
-- Write docstrings
-- Keep methods focused
-- Comment complex logic
+- Follow PEP 8 conventions
+- Use type hints for better code clarity
+- Write comprehensive docstrings
+- Keep methods focused and maintainable
+- Comment complex logic sections
+- Use meaningful variable names
 
 ### UI Development
-- Use Qt Designer for UI changes
-- Maintain tab-based organization
+- Use Qt Designer for UI modifications
+- Maintain consistent tab-based organization
 - Follow QGIS UI guidelines
-- Consider user workflow
+- Consider user workflow and experience
+- Ensure responsive interface
 
 ### Error Handling
 ```python
@@ -94,26 +108,28 @@ except Exception as e:
     self.logger.error(f"Operation failed: {str(e)}")
     # Inform user
     self.show_error_message("Operation failed", str(e))
+finally:
+    # Cleanup
+    self.cleanup_resources()
 ```
 
-### Logging
+### Logging Best Practices
 ```python
-# Use logger throughout code
-self.logger.debug("Detailed information")
-self.logger.info("General information")
-self.logger.warning("Warning message")
-self.logger.error("Error message")
+# Use appropriate log levels
+self.logger.debug("Detailed technical information")
+self.logger.info("General process information")
+self.logger.warning("Warning about potential issues")
+self.logger.error("Error that needs attention")
 ```
 
 ## Threading and Performance
 
-### ProcessWorker Class
-- Handles long-running operations
-- Runs in separate thread
-- Emits progress signals
-- Manages memory usage
+### Thread Management
+- Use QThread for heavy processing
+- Emit progress signals
+- Handle cancellation properly
+- Manage memory usage
 
-Example:
 ```python
 class ProcessWorker(QThread):
     progress = pyqtSignal(int, str)
@@ -121,31 +137,68 @@ class ProcessWorker(QThread):
     
     def run(self):
         try:
-            # Long-running process
+            # Processing steps
             self.progress.emit(50, "Processing...")
+            
+            # Check for cancellation
+            if not self._is_running:
+                return
+                
         except Exception as e:
             self.finished.emit(False, str(e))
 ```
 
-### Memory Management
-- Use block processing
-- Monitor resource usage
-- Clean temporary files
+### Resource Management
+- Implement block processing for large datasets
+- Monitor memory usage
+- Clean up temporary files
 - Release resources properly
+- Handle large input files efficiently
 
-## Building and Deployment
+## Contributing
 
-### Building Plugin
-```bash
-# Create release zip
-python build.py
-```
+We welcome contributions from the community! Here's how you can help:
 
-### Release Checklist
-1. Update version numbers
-2. Run all tests
-3. Update documentation
-4. Create release notes
-5. Tag release
-6. Build plugin package
+### How to Contribute
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Write/update tests
+5. Submit a pull request
 
+### What to Contribute
+- Bug fixes
+- New features
+- Documentation improvements
+- Performance enhancements
+- UI/UX improvements
+- Translations
+
+### Development Process
+1. Check existing issues or create a new one
+2. Discuss proposed changes
+3. Implement changes
+4. Submit pull request
+5. Respond to review comments
+
+### Code Review Process
+- All changes require review
+- Follow the pull request template
+- Include test cases
+- Update documentation
+- Maintain code quality
+
+## Getting Help
+
+- GitHub Issues: Report bugs and feature requests
+- Discussions: Ask questions and share ideas
+- Wiki: Additional documentation
+- Email: Contact the development team
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+We appreciate your interest in contributing to the QGIS pypopRF plugin! Your contributions help make the tool better for everyone.
