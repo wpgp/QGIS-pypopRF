@@ -21,7 +21,7 @@ jobs:
           python-version: 3.x
 
       - name: Install dependencies
-        run: pip install mkdocs-material pymdown-extensions markdown
+        run: pip install mkdocs-material==9.5.13 pymdown-extensions==10.5 markdown==3.5.1
 
       - name: Deploy documentation
         run: |

@@ -36,19 +36,28 @@ nav:
     - Running Analysis: user-guide/running-analysis.md
   - Development: development.md
 
+#markdown_extensions:
+#  - pymdownx.superfences:
+#      custom_fences:
+#        - name: mermaid
+#          class: mermaid
+#          format: !!python/name:pymdownx.superfences.fence_code_format
+#  - pymdownx.superfences
+#  - pymdownx.inlinehilite
+#  - pymdownx.snippets
+#  - pymdownx.highlight
+#  - admonition
+#  - pymdownx.details
+#  - attr_list
+#  - md_in_html
+#  - pymdownx.tasklist
+#  - markdown.extensions.extra
 markdown_extensions:
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.superfences
   - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.highlight
   - admonition
   - pymdownx.details
   - attr_list
   - md_in_html
   - pymdownx.tasklist
-  - markdown.extensions.extra
