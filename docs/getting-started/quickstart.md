@@ -17,11 +17,15 @@ A typical workflow consists of these steps:
 Ensure you have:
 
 - QGIS installed and pypopRF plugin enabled
+
 - Required data files:
+
   - Census data with population counts (CSV)
   - Mastergrid file defining analysis zones (GeoTIFF)
   - Covariate rasters (e.g., building footprints, infrastructure)
+  
 - Optional data files:
+
   - Water mask for excluding water bodies
   - Constraint rasters for specific areas
   - Age-sex population structure data (CSV)
@@ -51,34 +55,34 @@ my_project/
 
 1. In the "Input Data" tab:
    
-   **Mastergrid File:**
+**Mastergrid File:**
    - Click "Browse" next to Mastergrid
    - Select your zone definition raster
    - Format: GeoTIFF with unique zone IDs
 
-   **Census Data:**
+**Census Data:**
    - Click "Browse" next to Census File
    - Select your population data CSV
    - Must contain: zone IDs and population counts
 
-   **Covariates:**
+**Covariates:**
    - Click "Add Covariate"
    - Select building/infrastructure rasters
    - Add at least one covariate
    
 ### Optional Files
 
-   **Water Mask:**
+**Water Mask:**
    - Click "Browse" next to Water Mask
    - Select raster defining water bodies
    - Areas with value 1 will be excluded
 
-   **Constraints:**
+**Constraints:**
    - Click "Browse" next to Constraints
    - Select raster with constraint areas
    - Used to refine population distribution
 
-   **Age-Sex Data:**
+**Age-Sex Data:**
    - Click "Browse" next to Age-Sex Census
    - Select CSV with age-sex structure
 
@@ -87,17 +91,17 @@ my_project/
 
 In the "Settings" tab:
 
-1. **Census Fields:**
+**Census Fields:**
    - Set Population Column Name (e.g., "pop")
    - Set ID Column Name (e.g., "id")
 
-2. **Processing Options:**
+**Processing Options:**
    - Enable parallel processing for faster analysis
    - Set number of CPU cores (recommended: 6+)
    - Adjust block size for memory management
    - Enable block processing for large areas
 
-3. **Output Options:**
+**Output Options:**
    - Choose whether to add layers to QGIS
    - Set logging level for process monitoring
 
@@ -129,23 +133,6 @@ The analysis produces several output layers:
 - `features.csv`: Extracted features with importance metrics
 
 All outputs are saved in your project's output directory and can be automatically added to QGIS.
-
-## Common Issues
-
-1. **Data Preparation:**
-   - Ensure consistent coordinate systems
-   - Check for missing or invalid values
-   - Verify column names in CSV files
-
-2. **Processing:**
-   - Reduce cores if memory issues occur
-   - Increase block size for large areas
-   - Monitor system resources
-
-3. **Results:**
-   - Verify census totals match
-   - Check for unexpected patterns
-   - Review log files for warnings
 
 ## Getting Help
 - Review detailed [User Guide](../user-guide/interface.md)

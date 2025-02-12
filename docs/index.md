@@ -89,14 +89,14 @@ graph TD
 - Water mask (optional)
 - Constraints (optional)
 - Age-sex structure data (optional)
-- 
+
 **Settings Tab**: Adjust processing parameters:
 
 - Parallel processing options
 - Block processing settings
 - Census field mappings
 - Output preferences
-- 
+
 **Console**: Monitor progress and view detailed logs
 
 **Control Panel**: Start/stop analysis and track progress
