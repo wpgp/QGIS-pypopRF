@@ -179,8 +179,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         default_index = core_counts.index(default_cores) if default_cores in core_counts else 0
         self.cpuCoresComboBox.setCurrentIndex(default_index)
-
-        self.logger.info(f"Default processors value set to: {default_cores} cores")
+        self.config_manager.update_config('max_workers', default_cores)
 
     def _set_initial_state(self):
         """Set initial state of UI widgets before project initialization."""
