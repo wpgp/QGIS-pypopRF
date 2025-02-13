@@ -6,29 +6,29 @@ from typing import Any, Dict
 import yaml
 
 DEFAULT_CONFIG = {
-    'data_dir': 'data',
-    'output_dir': 'output',
-    'mastergrid': None,
-    'mask': None,
-    'covariates': {},
-    'constrain': None,
-    'census_data': None,
-    'agesex_data': None,
-    'census_pop_column': 'pop',
-    'census_id_column': 'id',
-    'by_block': True,
-    'block_size': [512 , 512],
-    'max_workers': 1,
-    'show_progress': False,
-    'logging': {
-        'level': 'INFO',
-        'file': 'logs_pypoprf.log'
-    }
+    "data_dir": "data",
+    "output_dir": "output",
+    "mastergrid": None,
+    "mask": None,
+    "covariates": {},
+    "constrain": None,
+    "census_data": None,
+    "agesex_data": None,
+    "census_pop_column": "pop",
+    "census_id_column": "id",
+    "by_block": True,
+    "block_size": [512, 512],
+    "max_workers": 1,
+    "show_progress": False,
+    "logging": {"level": "INFO", "file": "logs_pypoprf.log"},
 }
+
 
 class ConfigError(Exception):
     """Custom exception for configuration related errors."""
+
     pass
+
 
 class ConfigManager:
     """Manager for handling YAML configuration file.
@@ -56,7 +56,7 @@ class ConfigManager:
         self._lock = threading.Lock()
 
     @contextmanager
-    def _open_config(self, mode='r'):
+    def _open_config(self, mode="r"):
         """Context manager for safe config file operations.
 
         Args:
@@ -90,22 +90,22 @@ class ConfigManager:
         """
         try:
             self.working_dir = working_dir
-            config_path = Path(working_dir) / 'config.yaml'
+            config_path = Path(working_dir) / "config.yaml"
             self.config_path = str(config_path)
 
             # Create output directory
-            output_dir = Path(working_dir) / 'output'
+            output_dir = Path(working_dir) / "output"
             output_dir.mkdir(parents=True, exist_ok=True)
 
             # Setup log file
-            log_file = output_dir / 'logs_pypoprf.log'
+            log_file = output_dir / "logs_pypoprf.log"
             self._setup_log_file(log_file)
 
             # Create config
             config = DEFAULT_CONFIG.copy()
-            config['work_dir'] = str(working_dir)
+            config["work_dir"] = str(working_dir)
 
-            with self._open_config('w') as f:
+            with self._open_config("w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
             self.logger.info(f"Created config at {config_path}")
@@ -126,17 +126,17 @@ class ConfigManager:
             ConfigError: If update fails
         """
         try:
-            with self._open_config('r') as f:
+            with self._open_config("r") as f:
                 config = yaml.safe_load(f)
-            if key.startswith('covariate_'):
-                name = key.replace('covariate_', '')
-                config['covariates'][name] = value
+            if key.startswith("covariate_"):
+                name = key.replace("covariate_", "")
+                config["covariates"][name] = value
                 self.logger.info(f"Added covariate '{name}': {value}")
             else:
                 config[key] = value
-                if key not in ['logging', 'census_id_column', 'census_pop_column']:
+                if key not in ["logging", "census_id_column", "census_pop_column"]:
                     self.logger.info(f"Updated {key}: {value}")
-            with self._open_config('w') as f:
+            with self._open_config("w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
         except Exception as e:
             raise ConfigError(f"Configuration update failed: {str(e)}")
@@ -152,7 +152,7 @@ class ConfigManager:
         """
         try:
             if log_file.exists():
-                log_file.write_text('')
+                log_file.write_text("")
                 self.logger.info("Previous log file cleared")
             else:
                 log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -171,7 +171,7 @@ class ConfigManager:
             ConfigError: If configuration cannot be read
         """
         try:
-            with self._open_config('r') as f:
+            with self._open_config("r") as f:
                 return yaml.safe_load(f)
         except Exception as e:
             raise ConfigError(f"Failed to read configuration: {str(e)}")
@@ -190,15 +190,15 @@ class ConfigManager:
 
         try:
             config = self.get_config()
-            if key.startswith('covariate_'):
-                name = key.replace('covariate_', '')
-                if name in config['covariates']:
-                    del config['covariates'][name]
+            if key.startswith("covariate_"):
+                name = key.replace("covariate_", "")
+                if name in config["covariates"]:
+                    del config["covariates"][name]
             else:
                 config[key] = None
                 self.logger.info(f"Cleared {key} in config")
 
-            with self._open_config('w') as f:
+            with self._open_config("w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
         except Exception as e:

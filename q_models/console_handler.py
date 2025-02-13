@@ -9,9 +9,9 @@ from qgis.PyQt import QtWidgets
 from ..core.pypoprf.utils.logger import get_logger
 
 # Constants
-DEFAULT_FONT_FAMILY = 'Consolas'
+DEFAULT_FONT_FAMILY = "Consolas"
 DEFAULT_FONT_SIZE = 10
-DEFAULT_LOG_LEVEL = 'INFO'
+DEFAULT_LOG_LEVEL = "INFO"
 CONSOLE_STYLE = """
     QTextEdit {
         background-color: white;
@@ -25,6 +25,7 @@ CONSOLE_STYLE = """
 
 class ConsoleStreamError(Exception):
     """Custom exception for console stream operations."""
+
     pass
 
 
@@ -41,7 +42,9 @@ class ConsoleStream(QObject):
 
     messageReceived = pyqtSignal(str)
 
-    def __init__(self, text_widget: QtWidgets.QTextEdit, parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self, text_widget: QtWidgets.QTextEdit, parent: Optional[QObject] = None
+    ) -> None:
         """Initialize the console stream.
 
         Args:
@@ -149,11 +152,13 @@ class ConsoleHandler:
         except Exception as e:
             raise ConsoleStreamError(f"Failed to clear console: {str(e)}")
 
-    def update_logging_settings(self,
-                                level: str,
-                                save_log: bool,
-                                work_dir: Optional[str] = None,
-                                filename: Optional[str] = None) -> None:
+    def update_logging_settings(
+        self,
+        level: str,
+        save_log: bool,
+        work_dir: Optional[str] = None,
+        filename: Optional[str] = None,
+    ) -> None:
         """Update logging settings.
 
         Args:
@@ -173,7 +178,7 @@ class ConsoleHandler:
 
         # Update log file if needed
         if save_log and work_dir and filename:
-            log_file = os.path.join(work_dir, 'output', filename)
+            log_file = os.path.join(work_dir, "output", filename)
             if log_file != self._log_file:
                 os.makedirs(os.path.dirname(log_file), exist_ok=True)
                 self._log_file = log_file

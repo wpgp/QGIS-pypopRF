@@ -31,13 +31,13 @@ class DasymetricMapper:
             settings: Settings object containing configuration parameters
         """
         self.settings = settings
-        self.output_dir = Path(settings.work_dir) / 'output'
+        self.output_dir = Path(settings.work_dir) / "output"
         self.output_dir.mkdir(exist_ok=True)
 
     @staticmethod
-    def _validate_census(census: pd.DataFrame,
-                         kwargs: dict,
-                         simple: bool = False) -> Tuple[pd.DataFrame, str, str]:
+    def _validate_census(
+        census: pd.DataFrame, kwargs: dict, simple: bool = False
+    ) -> Tuple[pd.DataFrame, str, str]:
         """
         Validate census data and extract column names.
 
@@ -62,8 +62,8 @@ class DasymetricMapper:
         logger.debug(f"Available columns: {cols.tolist()}")
 
         # Get column names from kwargs with defaults
-        pop_column = kwargs.get('pop_column', 'pop')
-        id_column = kwargs.get('id_column', 'id')
+        pop_column = kwargs.get("pop_column", "pop")
+        id_column = kwargs.get("id_column", "id")
         logger.debug(f"Using columns: id={id_column}, population={pop_column}")
 
         # Validate required columns exist
@@ -79,10 +79,10 @@ class DasymetricMapper:
             raise ValueError(error_msg)
 
         # Handle special case where population column is named 'sum'
-        if pop_column == 'sum':
+        if pop_column == "sum":
             logger.info("Renaming 'sum' column to 'pop'")
-            pop_column = 'pop'
-            census = census.rename(columns={'sum': 'pop'})
+            pop_column = "pop"
+            census = census.rename(columns={"sum": "pop"})
 
         # Validate population values
         if (census[pop_column] < 0).any():
@@ -98,27 +98,27 @@ class DasymetricMapper:
         return census, id_column, pop_column
 
     @staticmethod
-    def _check_compatibility(src_profile,
-                             tgt_profile,
-                             labels: Tuple[str, str]) -> None:
+    def _check_compatibility(src_profile, tgt_profile, labels: Tuple[str, str]) -> None:
 
         logger.info(f"Checking compatibility between {labels[0]} and {labels[1]}")
 
         # Check for compatible CRS
-        if tgt_profile['crs'] != src_profile['crs']:
+        if tgt_profile["crs"] != src_profile["crs"]:
             error_msg = f"CRS mismatch between {labels[1]} and {labels[0]}"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         # Check for compatible dimensions
-        if (tgt_profile['width'] != src_profile['width'] or
-                tgt_profile['height'] != src_profile['height']):
+        if (
+            tgt_profile["width"] != src_profile["width"]
+            or tgt_profile["height"] != src_profile["height"]
+        ):
             error_msg = f"Dimension mismatch between {labels[1]} and {labels[0]}"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         # Check for compatible transforms
-        if tgt_profile['transform'] != src_profile['transform']:
+        if tgt_profile["transform"] != src_profile["transform"]:
             error_msg = f"Transform mismatch between {labels[1]} and {labels[0]}"
             logger.error(error_msg)
             raise ValueError(error_msg)
@@ -128,28 +128,30 @@ class DasymetricMapper:
     def _get_raster_type_description(self, file_path: Path) -> str:
         """Get descriptive name for raster type based on filename."""
         name = file_path.stem
-        if 'normalized_census_constrained' in name:
-            if '_f' in name or '_m' in name:
+        if "normalized_census_constrained" in name:
+            if "_f" in name or "_m" in name:
                 return f"Normalized constrained census raster ({name.split('_')[-1]})"
             return "Normalized constrained census raster"
-        elif 'normalized_census' in name:
-            if '_f' in name or '_m' in name:
+        elif "normalized_census" in name:
+            if "_f" in name or "_m" in name:
                 return f"Normalized census raster ({name.split('_')[-1]})"
             return "Normalized census raster"
-        elif 'population_constrained' in name:
-            if '_f' in name or '_m' in name:
+        elif "population_constrained" in name:
+            if "_f" in name or "_m" in name:
                 return f"Constrained population raster ({name.split('_')[-1]})"
             return "Constrained population raster"
-        elif 'population' in name:
-            if '_f' in name or '_m' in name:
+        elif "population" in name:
+            if "_f" in name or "_m" in name:
                 return f"Population raster ({name.split('_')[-1]})"
             return "Population raster"
         return "Raster"
 
-    def _validate_inputs(self,
-                         prediction_path: str,
-                         mastergrid_path: str,
-                         constrain_path: Optional[str] = None) -> None:
+    def _validate_inputs(
+        self,
+        prediction_path: str,
+        mastergrid_path: str,
+        constrain_path: Optional[str] = None,
+    ) -> None:
         """
         Validate input files and their compatibility.
 
@@ -163,13 +165,10 @@ class DasymetricMapper:
         """
         logger.info("Starting input validation")
 
-        input_files = {
-            'Prediction': prediction_path,
-            'Mastergrid': mastergrid_path
-        }
+        input_files = {"Prediction": prediction_path, "Mastergrid": mastergrid_path}
 
         if constrain_path:
-            input_files['Constrain'] = constrain_path
+            input_files["Constrain"] = constrain_path
 
         for file_type, path in input_files.items():
             if not Path(path).exists():
@@ -204,7 +203,9 @@ class DasymetricMapper:
             mst_data = mst.read(1)
             mst_nodata = mst.nodata
 
-            self._check_compatibility(mst_profile, pred_profile, labels=('mastergrid', 'prediction'))
+            self._check_compatibility(
+                mst_profile, pred_profile, labels=("mastergrid", "prediction")
+            )
 
             # Analyze mastergrid content
             unique_zones = np.unique(mst_data[mst_data != mst_nodata])
@@ -228,7 +229,9 @@ class DasymetricMapper:
                 con_nodata = con.nodata
 
                 # Check compatibility
-                self._check_compatibility(con_profile, pred_profile, labels=('constraining', 'prediction'))
+                self._check_compatibility(
+                    con_profile, pred_profile, labels=("constraining", "prediction")
+                )
 
                 # Analyze mastergrid content
                 valid_con = np.unique(con_data[con_data != con_nodata])
@@ -244,8 +247,7 @@ class DasymetricMapper:
 
         logger.info("Input validation completed successfully")
 
-    def _validate_agesex(census: pd.DataFrame,
-                         id_column: str) -> tuple[Any, str, list[Any]]:
+    def _validate_agesex(census: pd.DataFrame, id_column: str) -> tuple[Any, str, list[Any]]:
         """
         Validate census data and extract column names.
 
@@ -269,7 +271,7 @@ class DasymetricMapper:
         logger.debug(f"Available columns: {cols.tolist()}")
 
         # Get column names from kwargs with defaults
-        pop_columns = [c for c in cols if c[0] in ['f','F','m','M']]
+        pop_columns = [c for c in cols if c[0] in ["f", "F", "m", "M"]]
 
         # Validate required columns exist
         missing_cols = []
@@ -282,9 +284,7 @@ class DasymetricMapper:
         logger.info("Census data validation completed successfully")
         return census, id_column, pop_columns
 
-    def _load_census(self,
-                     census_path: str,
-                     **kwargs) -> Tuple[pd.DataFrame, str, str]:
+    def _load_census(self, census_path: str, **kwargs) -> Tuple[pd.DataFrame, str, str]:
         """
         Load and validate census data.
 
@@ -306,7 +306,7 @@ class DasymetricMapper:
         # Load census data based on file extension
         file_ext = Path(census_path).suffix.lower()
         try:
-            if file_ext == '.csv':
+            if file_ext == ".csv":
                 logger.debug(f"Loading CSV file: {census_path}")
                 census = pd.read_csv(census_path)
             else:
@@ -343,9 +343,7 @@ class DasymetricMapper:
 
         return census, id_column, pop_column
 
-    def _load_agesex(self,
-                     census_path: str,
-                     id_column: str) -> tuple[Any, str, list[Any]]:
+    def _load_agesex(self, census_path: str, id_column: str) -> tuple[Any, str, list[Any]]:
         """
         Load and validate census data with age-sex structure.
 
@@ -367,11 +365,11 @@ class DasymetricMapper:
         # Load census data based on file extension
         file_ext = Path(census_path).suffix.lower()
         try:
-            if file_ext == '.csv':
+            if file_ext == ".csv":
                 logger.debug(f"Loading CSV file: {census_path}")
                 census = pd.read_csv(census_path)
                 cols = census.columns.values
-                pop_columns = [c for c in cols if c[0] in ['f', 'F', 'm', 'M']]
+                pop_columns = [c for c in cols if c[0] in ["f", "F", "m", "M"]]
 
             else:
                 error_msg = f"Unsupported census file format: {file_ext}"
@@ -390,12 +388,14 @@ class DasymetricMapper:
 
         return census, id_column, pop_columns
 
-    def _calculate_normalization(self,
-                                 census: pd.DataFrame,
-                                 prediction_path: str,
-                                 id_column: str,
-                                 pop_column: str,
-                                 constrained: bool = False) -> pd.DataFrame:
+    def _calculate_normalization(
+        self,
+        census: pd.DataFrame,
+        prediction_path: str,
+        id_column: str,
+        pop_column: str,
+        constrained: bool = False,
+    ) -> pd.DataFrame:
         """
         Calculate normalization factors with detailed diagnostics.
 
@@ -418,11 +418,13 @@ class DasymetricMapper:
             logger.info("Using standard mastergrid for normalization")
             reference_grid = self.settings.mastergrid
 
-        sum_prob = raster_stat(prediction_path,
-                               reference_grid,
-                               by_block=self.settings.by_block,
-                               max_workers=self.settings.max_workers,
-                               block_size=self.settings.block_size)
+        sum_prob = raster_stat(
+            prediction_path,
+            reference_grid,
+            by_block=self.settings.by_block,
+            max_workers=self.settings.max_workers,
+            block_size=self.settings.block_size,
+        )
 
         stats_summary = f"""
             Number of zones: {len(sum_prob)}
@@ -435,31 +437,40 @@ class DasymetricMapper:
         logger.info(f"Number of zones found: {len(sum_prob)}")
         logger.info(
             f"Sample zones (top 5) - ID: {sum_prob['id'].head().tolist()}, "
-            f"Sum: {sum_prob['sum'].head().round(2).tolist()}")
+            f"Sum: {sum_prob['sum'].head().round(2).tolist()}"
+        )
 
         # Merge Results
         pre_merge_pop = census[pop_column].sum()
 
-        merged = pd.merge(census,
-                          sum_prob[['id', 'sum']],
-                          left_on=id_column,
-                          right_on='id',
-                          how='outer')
+        merged = pd.merge(
+            census,
+            sum_prob[["id", "sum"]],
+            left_on=id_column,
+            right_on="id",
+            how="outer",
+        )
 
-        unmatched_census = merged[merged['sum'].isna()]
+        unmatched_census = merged[merged["sum"].isna()]
         unmatched_stats = merged[merged[pop_column].isna()]
 
         logger.info(f"Census zones: {len(unmatched_census)} {unmatched_census['id'].tolist()}")
-        logger.info(f"Statistics zones: {len(unmatched_stats)} {unmatched_stats['id'].tolist()}")
-        logger.info(f"Census rows: {len(census)}, Statistics rows: {len(sum_prob)}, Merged rows: {len(merged)}")
+        logger.info(
+            f"Statistics zones: {len(unmatched_stats)} {unmatched_stats['id'].tolist()}"
+        )
+        logger.info(
+            f"Census rows: {len(census)}, Statistics rows: {len(sum_prob)}, Merged rows: {len(merged)}"
+        )
 
         # Normalization Results
-        valid = merged['sum'].values > 0
-        merged['norm'] = np.divide(merged[pop_column],
-                                   merged['sum'],
-                                   where=valid,
-                                   out=np.full_like(merged['sum'], np.nan))
-        total_pop_check = (merged['sum'] * merged['norm']).sum()
+        valid = merged["sum"].values > 0
+        merged["norm"] = np.divide(
+            merged[pop_column],
+            merged["sum"],
+            where=valid,
+            out=np.full_like(merged["sum"], np.nan),
+        )
+        total_pop_check = (merged["sum"] * merged["norm"]).sum()
 
         constraint_type = "constrained" if constrained else "unconstrained"
         logger.info(f"Normalization factors summary ({constraint_type}):")
@@ -471,25 +482,33 @@ class DasymetricMapper:
         logger.info(f"Population Verification ({constraint_type}):")
         logger.info(f"Original: {pre_merge_pop:,}")
         logger.info(f"After normalization: {total_pop_check:,.0f}")
-        logger.info(f"Difference: {abs(total_pop_check - pre_merge_pop):,} "
-                    f"({abs(total_pop_check - pre_merge_pop) / pre_merge_pop:.2%})")
+        logger.info(
+            f"Difference: {abs(total_pop_check - pre_merge_pop):,} "
+            f"({abs(total_pop_check - pre_merge_pop) / pre_merge_pop:.2%})"
+        )
 
         logger.info(f"Valid normalizations: {valid.sum()} of {len(merged)} zones")
         logger.info(f"Zones with zero sums: {len(merged[merged['sum'] == 0])}")
 
         if abs(total_pop_check - pre_merge_pop) / pre_merge_pop > 0.01:
-            logger.warning(f"Population difference after normalization exceeds 1% ({constraint_type})")
+            logger.warning(
+                f"Population difference after normalization exceeds 1% ({constraint_type})"
+            )
 
-        invalid_norms = len(merged[merged['norm'].isna()])
+        invalid_norms = len(merged[merged["norm"].isna()])
         if invalid_norms > 0:
-            logger.warning(f"Found {invalid_norms} invalid normalization factors ({constraint_type})")
+            logger.warning(
+                f"Found {invalid_norms} invalid normalization factors ({constraint_type})"
+            )
 
         return merged
 
-    def _create_normalized_raster(self,
-                                  normalized_data: pd.DataFrame,
-                                  constrained: bool = False,
-                                  suffix: Optional[str] = None) -> str:
+    def _create_normalized_raster(
+        self,
+        normalized_data: pd.DataFrame,
+        constrained: bool = False,
+        suffix: Optional[str] = None,
+    ) -> str:
         """
         Create raster of normalization factors.
 
@@ -502,21 +521,20 @@ class DasymetricMapper:
             Path to normalized raster
         """
 
-
         mastergrid = self.settings.constrain if constrained else self.settings.mastergrid
 
         if suffix:
-            output_dir = self.output_dir / 'agesex' / 'additional_files'
+            output_dir = self.output_dir / "agesex" / "additional_files"
             output_dir.mkdir(parents=True, exist_ok=True)
             if constrained:
-                output_path = output_dir / f'normalized_census_constrained_{suffix}.tif'
+                output_path = output_dir / f"normalized_census_constrained_{suffix}.tif"
             else:
-                output_path = output_dir / f'normalized_census_{suffix}.tif'
+                output_path = output_dir / f"normalized_census_{suffix}.tif"
         else:
             if constrained:
-                output_path = self.output_dir / 'normalized_census_constrained.tif'
+                output_path = self.output_dir / "normalized_census_constrained.tif"
             else:
-                output_path = self.output_dir / 'normalized_census.tif'
+                output_path = self.output_dir / "normalized_census.tif"
 
         logger.debug(f"Output path set to: {output_path}")
         raster_type = self._get_raster_type_description(output_path)
@@ -525,23 +543,26 @@ class DasymetricMapper:
         # Get profile from mastergrid
         with rasterio.open(mastergrid) as src:
             profile = src.profile.copy()
-            profile.update({
-                'dtype': 'float32',
-                'nodata': -99,
-                'blockxsize': self.settings.block_size[0],
-                'blockysize': self.settings.block_size[1],
-            })
+            profile.update(
+                {
+                    "dtype": "float32",
+                    "nodata": -99,
+                    "blockxsize": self.settings.block_size[0],
+                    "blockysize": self.settings.block_size[1],
+                }
+            )
             logger.debug("Raster profile created from mastergrid")
 
         # Create a mapping from zone IDs to normalization factors
         norm_mapping = {
-            row['id']: row['norm']
+            row["id"]: row["norm"]
             for _, row in normalized_data.iterrows()
-            if not np.isnan(row['norm'])
+            if not np.isnan(row["norm"])
         }
 
-        with rasterio.open(mastergrid) as mst, \
-                rasterio.open(str(output_path), 'w', **profile) as dst:
+        with rasterio.open(mastergrid) as mst, rasterio.open(
+            str(output_path), "w", **profile
+        ) as dst:
 
             if self.settings.by_block:
                 logger.info("Processing by blocks")
@@ -561,7 +582,7 @@ class DasymetricMapper:
                         mastergrid_path=str(mastergrid),
                         norm_mapping=norm_mapping,
                         profile=profile,
-                        idx=i
+                        idx=i,
                     )
                     worker.setAutoDelete(False)
                     workers.append(worker)
@@ -578,7 +599,9 @@ class DasymetricMapper:
                 logger.info(f"\nNormalization summary:")
                 logger.info(f"- Total windows processed: {len(windows)}")
                 logger.info(f"- Total valid mappings: {total_valid_mappings}")
-                logger.info(f"- Percentage of valid mappings: {total_valid_mappings / len(norm_mapping) * 100:.2f}%")
+                logger.info(
+                    f"- Percentage of valid mappings: {total_valid_mappings / len(norm_mapping) * 100:.2f}%"
+                )
 
                 workers.clear()
             else:
@@ -588,7 +611,7 @@ class DasymetricMapper:
                     window=window,
                     mastergrid_path=str(mastergrid),
                     norm_mapping=norm_mapping,
-                    profile=profile
+                    profile=profile,
                 )
                 worker.run()
                 if worker.result is not None:
@@ -599,11 +622,13 @@ class DasymetricMapper:
         logger.info(f"{raster_type} created successfully: {output_path}")
         return str(output_path)
 
-    def _create_dasymetric_raster(self,
-                                  prediction_path: str,
-                                  norm_raster_path: str,
-                                  constrained: bool = False,
-                                  suffix: Optional[str] = None) -> Path:
+    def _create_dasymetric_raster(
+        self,
+        prediction_path: str,
+        norm_raster_path: str,
+        constrained: bool = False,
+        suffix: Optional[str] = None,
+    ) -> Path:
         """Create final dasymetric population raster.
 
         Args:
@@ -615,38 +640,39 @@ class DasymetricMapper:
         # Determine output path based on parameters
         if suffix:
             # Agesex output
-            output_dir = self.output_dir / 'agesex'
+            output_dir = self.output_dir / "agesex"
             output_dir.mkdir(exist_ok=True)
             if constrained:
-                output_path = output_dir / f'population_{suffix}_constrained.tif'
+                output_path = output_dir / f"population_{suffix}_constrained.tif"
             else:
-                output_path = output_dir / f'population_{suffix}.tif'
+                output_path = output_dir / f"population_{suffix}.tif"
         else:
             # Regular output
             if constrained:
-                output_path = self.output_dir / 'population_constrained.tif'
+                output_path = self.output_dir / "population_constrained.tif"
             else:
-                output_path = self.output_dir / 'population_unconstrained.tif'
+                output_path = self.output_dir / "population_unconstrained.tif"
 
         logger.debug(f"Output path set to: {output_path}")
         raster_type = self._get_raster_type_description(output_path)
         logger.info(f"Creating {raster_type.lower()}")
 
-
         with rasterio.open(prediction_path) as src:
             profile = src.profile.copy()
-            profile.update({
-                'dtype': 'float32',
-                'nodata': -99,
-                'blockxsize': 256,
-                'blockysize': 256,
-            })
+            profile.update(
+                {
+                    "dtype": "float32",
+                    "nodata": -99,
+                    "blockxsize": 256,
+                    "blockysize": 256,
+                }
+            )
 
-        with rasterio.open(str(output_path), 'w', **profile) as dst:
+        with rasterio.open(str(output_path), "w", **profile) as dst:
             if self.settings.by_block:
-                output_data = np.full((dst.height, dst.width),
-                                      profile['nodata'],
-                                      dtype=profile['dtype'])
+                output_data = np.full(
+                    (dst.height, dst.width), profile["nodata"], dtype=profile["dtype"]
+                )
                 windows = [window[1] for window in dst.block_windows()]
 
                 executor = QThreadPool.globalInstance()
@@ -658,9 +684,12 @@ class DasymetricMapper:
                 for i, window in enumerate(windows):
                     worker = DasymetricWorker(
                         window=window,
-                        file_paths={'prediction': prediction_path, 'normalization': norm_raster_path},
+                        file_paths={
+                            "prediction": prediction_path,
+                            "normalization": norm_raster_path,
+                        },
                         profile=profile,
-                        idx=i
+                        idx=i,
                     )
                     worker.setAutoDelete(False)
                     workers.append(worker)
@@ -672,14 +701,18 @@ class DasymetricMapper:
                     if worker.result is not None:
                         window = windows[i]
                         result_data = worker.result[0]
-                        output_data[window.row_off:window.row_off + window.height,
-                        window.col_off:window.col_off + window.width] = result_data
+                        output_data[
+                            window.row_off : window.row_off + window.height,
+                            window.col_off : window.col_off + window.width,
+                        ] = result_data
 
-                valid_mask = output_data != profile['nodata']
+                valid_mask = output_data != profile["nodata"]
                 if np.any(valid_mask):
                     logger.info("Final data statistics before writing:")
-                    logger.info(f"- Range: [{output_data[valid_mask].min():.2f}, "
-                                f"{output_data[valid_mask].max():.2f}]")
+                    logger.info(
+                        f"- Range: [{output_data[valid_mask].min():.2f}, "
+                        f"{output_data[valid_mask].max():.2f}]"
+                    )
                     logger.info(f"- Mean: {output_data[valid_mask].mean():.2f}")
                     logger.info(f"- Valid pixels: {np.sum(valid_mask)}")
 
@@ -691,8 +724,11 @@ class DasymetricMapper:
                 window = Window(0, 0, dst.width, dst.height)
                 worker = DasymetricWorker(
                     window=window,
-                    file_paths={'prediction': prediction_path, 'normalization': norm_raster_path},
-                    profile=profile
+                    file_paths={
+                        "prediction": prediction_path,
+                        "normalization": norm_raster_path,
+                    },
+                    profile=profile,
                 )
                 worker.run()
                 if worker.result is not None:
@@ -714,127 +750,95 @@ class DasymetricMapper:
         """
 
         # Load and validate inputs
-        self._validate_inputs(prediction_path, self.settings.mastergrid, self.settings.constrain)
+        self._validate_inputs(
+            prediction_path, self.settings.mastergrid, self.settings.constrain
+        )
 
         census, id_column, pop_column = self._load_census(
-            self.settings.census['path'],
-            **self.settings.census
+            self.settings.census["path"], **self.settings.census
         )
 
         normalized_data = self._calculate_normalization(
-            census,
-            prediction_path,
-            id_column,
-            pop_column,
-            constrained=False
+            census, prediction_path, id_column, pop_column, constrained=False
         )
 
-        norm_raster_path = self._create_normalized_raster(
-            normalized_data,
-            constrained=False
-        )
+        norm_raster_path = self._create_normalized_raster(normalized_data, constrained=False)
 
         final_unconstrained_path = self._create_dasymetric_raster(
-            prediction_path,
-            norm_raster_path,
-            constrained=False
+            prediction_path, norm_raster_path, constrained=False
         )
 
-        final_paths = {
-            'unconstrained': final_unconstrained_path
-        }
+        final_paths = {"unconstrained": final_unconstrained_path}
 
         if self.settings.constrain:
             normalized_data_c = self._calculate_normalization(
-                census,
-                prediction_path,
-                id_column,
-                pop_column,
-                constrained=True
+                census, prediction_path, id_column, pop_column, constrained=True
             )
 
             norm_raster_path_c = self._create_normalized_raster(
-                normalized_data_c,
-                constrained=True
+                normalized_data_c, constrained=True
             )
 
             final_constrained_path = self._create_dasymetric_raster(
-                prediction_path,
-                norm_raster_path_c,
-                constrained=True
+                prediction_path, norm_raster_path_c, constrained=True
             )
 
-            final_paths['constrained'] = final_constrained_path
+            final_paths["constrained"] = final_constrained_path
 
         return final_paths
 
-    def map_agesex(self,
-                   prediction_path: str,
-                   agesex_path: str) -> None:
+    def map_agesex(self, prediction_path: str, agesex_path: str) -> None:
 
         # Load and validate inputs
-        self._validate_inputs(prediction_path, self.settings.mastergrid, self.settings.constrain)
+        self._validate_inputs(
+            prediction_path, self.settings.mastergrid, self.settings.constrain
+        )
 
-        agesex_dir = self.output_dir / 'agesex'
+        agesex_dir = self.output_dir / "agesex"
         agesex_dir.mkdir(exist_ok=True)
 
-        census, id_column, pop_columns = self._load_agesex(agesex_path, self.settings.census['id_column'])
+        census, id_column, pop_columns = self._load_agesex(
+            agesex_path, self.settings.census["id_column"]
+        )
         norm = census[[id_column]].copy()
-        norm['one'] = 1
+        norm["one"] = 1
 
         # Perform zonal statistics to get normalization factor
         normalized_data = self._calculate_normalization(
-            norm,
-            prediction_path,
-            id_column,
-            'one',
-            constrained=False
+            norm, prediction_path, id_column, "one", constrained=False
         )
 
         for pop_column in pop_columns:
             normalized = normalized_data.copy()
-            normalized['norm'] *= census[pop_column].values
+            normalized["norm"] *= census[pop_column].values
 
             # Create normalized raster
             norm_raster_path = self._create_normalized_raster(
-                normalized,
-                constrained=False,
-                suffix=pop_column
+                normalized, constrained=False, suffix=pop_column
             )
 
             self._create_dasymetric_raster(
-                prediction_path,
-                norm_raster_path,
-                constrained=False,
-                suffix=pop_column
+                prediction_path, norm_raster_path, constrained=False, suffix=pop_column
             )
-
 
         if self.settings.constrain:
             normalized_data_c = self._calculate_normalization(
-                norm,
-                prediction_path,
-                id_column,
-                'one',
-                constrained=True
+                norm, prediction_path, id_column, "one", constrained=True
             )
 
             for pop_column in pop_columns:
                 normalized = normalized_data_c.copy()
-                normalized['norm'] *= census[pop_column].values
+                normalized["norm"] *= census[pop_column].values
 
                 norm_raster_path = self._create_normalized_raster(
-                    normalized,
-                    constrained=True,
-                    suffix=pop_column
+                    normalized, constrained=True, suffix=pop_column
                 )
 
                 self._create_dasymetric_raster(
                     prediction_path,
                     norm_raster_path,
                     constrained=True,
-                    suffix=pop_column
+                    suffix=pop_column,
                 )
 
         return
-

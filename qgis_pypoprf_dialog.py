@@ -35,8 +35,9 @@ from .q_models.file_handlers import FileHandler
 from .q_models.process_executor import ProcessExecutor
 from .q_models.settings_handler import SettingsHandler
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'qgis_pypoprf_dialog_base.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "qgis_pypoprf_dialog_base.ui")
+)
 
 
 class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -56,8 +57,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         process_executor: Handler for analysis execution
     """
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None,
-                 iface: Optional[Any] = None) -> None:
+    def __init__(
+        self, parent: Optional[QtWidgets.QWidget] = None, iface: Optional[Any] = None
+    ) -> None:
         """Initialize the dialog.
 
         Args:
@@ -73,11 +75,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.logger = self.console_handler.logger
         self.config_manager = ConfigManager(self.logger)
         self.covariate_handler = CovariateTableHandler(
-            self.covariatesTable,
-            self.config_manager,
-            self.logger
+            self.covariatesTable, self.config_manager, self.logger
         )
-        self.file_handler = FileHandler('', self.logger)
+        self.file_handler = FileHandler("", self.logger)
         self.settings_handler = SettingsHandler(self.config_manager, self.logger)
         self.process_executor = ProcessExecutor(self, self.logger, iface)
 
@@ -100,27 +100,30 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # File widget signals
         self.workingDirEdit.fileChanged.connect(self.on_working_dir_changed)
         self.mastergridFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change('mastergrid', x))
-        self.maskFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change('mask', x))
+            lambda x: self._handle_file_change("mastergrid", x)
+        )
+        self.maskFileWidget.fileChanged.connect(lambda x: self._handle_file_change("mask", x))
         self.constrainFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change('constrain', x))
+            lambda x: self._handle_file_change("constrain", x)
+        )
         self.populationCensusFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change('census_data', x))
+            lambda x: self._handle_file_change("census_data", x)
+        )
         self.agesexCensusFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change('agesex_data', x))
+            lambda x: self._handle_file_change("agesex_data", x)
+        )
 
         # Settings tab signals
         self.enableParallelCheckBox.stateChanged.connect(
-            lambda: self.cpuCoresComboBox.setEnabled(
-                self.enableParallelCheckBox.isChecked()))
+            lambda: self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked())
+        )
         self.enableBlockProcessingCheckBox.stateChanged.connect(
             lambda: self.blockSizeComboBox.setEnabled(
-                self.enableBlockProcessingCheckBox.isChecked()))
-        self.cpuCoresComboBox.currentTextChanged.connect(
-            self._handle_cpu_cores_changed)
-        self.blockSizeComboBox.currentTextChanged.connect(
-            self._handle_block_size_changed)
+                self.enableBlockProcessingCheckBox.isChecked()
+            )
+        )
+        self.cpuCoresComboBox.currentTextChanged.connect(self._handle_cpu_cores_changed)
+        self.blockSizeComboBox.currentTextChanged.connect(self._handle_block_size_changed)
 
         # Logging signals
         self.comboBox.currentTextChanged.connect(self._update_logging_settings)
@@ -130,7 +133,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Analysis signals
         self.mainStartButton.setStyleSheet(
-            "QPushButton { background-color: #878c87; color: black; font-size: 10pt; }")
+            "QPushButton { background-color: #878c87; color: black; font-size: 10pt; }"
+        )
         self.mainStartButton.clicked.connect(self._handle_start_button)
 
     def _setup_file_widgets(self):
@@ -179,7 +183,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         default_index = core_counts.index(default_cores) if default_cores in core_counts else 0
         self.cpuCoresComboBox.setCurrentIndex(default_index)
-        self.config_manager.update_config('max_workers', default_cores)
+        self.config_manager.update_config("max_workers", default_cores)
 
     def _set_initial_state(self):
         """Set initial state of UI widgets before project initialization."""
@@ -218,11 +222,11 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Process settings
         self.enableParallelCheckBox.setEnabled(enabled)
-        self.cpuCoresComboBox.setEnabled(
-            self.enableParallelCheckBox.isChecked() and enabled)
+        self.cpuCoresComboBox.setEnabled(self.enableParallelCheckBox.isChecked() and enabled)
         self.enableBlockProcessingCheckBox.setEnabled(enabled)
         self.blockSizeComboBox.setEnabled(
-            self.enableBlockProcessingCheckBox.isChecked() and enabled)
+            self.enableBlockProcessingCheckBox.isChecked() and enabled
+        )
 
         # Census settings
         self.popColumnEdit.setEnabled(enabled)
@@ -253,7 +257,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.mainStartButton.setEnabled(all([has_mastergrid, has_census]))
         if all([has_mastergrid, has_census]):
             self.mainStartButton.setStyleSheet(
-                "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }")
+                "QPushButton { background-color: #4CAF50; color: black; font-size: 10pt; }"
+            )
 
     def on_working_dir_changed(self, path: str):
         """Handle working directory change"""
@@ -297,16 +302,23 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.logger.info("Project initialized successfully!")
                 self.logger.info(
                     '<span style="font-weight: bold; font-size: 11pt; color: '
-                    '#050505;">Next steps: &#8628;</span>')
-                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
-                                 '1. Place input files in the data directory'
-                                 '</span>')
-                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
-                                 '2. Configure input data paths in the Input Data tab'
-                                 '</span>')
-                self.logger.info('<span style="font-weight: bold; color: #0066cc;">'
-                                 '3. Adjust processing settings in the Settings tab'
-                                 '</span>')
+                    '#050505;">Next steps: &#8628;</span>'
+                )
+                self.logger.info(
+                    '<span style="font-weight: bold; color: #0066cc;">'
+                    "1. Place input files in the data directory"
+                    "</span>"
+                )
+                self.logger.info(
+                    '<span style="font-weight: bold; color: #0066cc;">'
+                    "2. Configure input data paths in the Input Data tab"
+                    "</span>"
+                )
+                self.logger.info(
+                    '<span style="font-weight: bold; color: #0066cc;">'
+                    "3. Adjust processing settings in the Settings tab"
+                    "</span>"
+                )
 
         except Exception as e:
             self.logger.error(f"Error initializing project: {str(e)}")
@@ -319,10 +331,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         """
 
         file_paths, _ = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Select Covariate Files",
-            "",
-            "GeoTIFF files (*.tif *.tiff)"
+            self, "Select Covariate Files", "", "GeoTIFF files (*.tif *.tiff)"
         )
         filenames = []
         for path in file_paths:
@@ -342,17 +351,17 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         Updates both config file and logger instance with new settings.
         """
 
-        self.config_manager.update_config('logging', {
-            'level': self.comboBox.currentText(),
-            'file': self.logsColumnEdit.text()
-        })
+        self.config_manager.update_config(
+            "logging",
+            {"level": self.comboBox.currentText(), "file": self.logsColumnEdit.text()},
+        )
 
         # Then update logger
         self.console_handler.update_logging_settings(
             level=self.comboBox.currentText(),
             save_log=True,
             work_dir=self.workingDirEdit.filePath(),
-            filename=self.logsColumnEdit.text()
+            filename=self.logsColumnEdit.text(),
         )
 
     def _handle_cpu_cores_changed(self, i_cores):
@@ -366,7 +375,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             try:
                 cores = int(i_cores) if i_cores else 0
                 if cores > 0:
-                    self.config_manager.update_config('max_workers', cores)
+                    self.config_manager.update_config("max_workers", cores)
                     self.logger.debug(f"CPU cores set to {cores}")
             except ValueError:
                 self.logger.warning(f"Invalid CPU cores value: {i_cores}")
@@ -380,9 +389,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         if self.enableBlockProcessingCheckBox.isChecked():
             try:
-                w, h = map(int, text.replace(' ', '').split(','))
+                w, h = map(int, text.replace(" ", "").split(","))
                 if w > 0 and h > 0:
-                    self.config_manager.update_config('block_size', [w, h])
+                    self.config_manager.update_config("block_size", [w, h])
             except ValueError:
                 self.logger.warning(f"Invalid block size format: {text}")
 

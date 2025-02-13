@@ -8,6 +8,7 @@ from typing import Optional
 
 class FileHandlerError(Exception):
     """Custom exception for file handling operations."""
+
     pass
 
 
@@ -37,9 +38,10 @@ class FileHandler:
 
     def _validate_logger(self) -> None:
         """Validate logger instance has required methods."""
-        required_methods = ['info', 'error', 'debug', 'warning']
-        missing_methods = [method for method in required_methods
-                           if not hasattr(self.logger, method)]
+        required_methods = ["info", "error", "debug", "warning"]
+        missing_methods = [
+            method for method in required_methods if not hasattr(self.logger, method)
+        ]
         if missing_methods:
             raise FileHandlerError(
                 f"Logger missing required methods: {', '.join(missing_methods)}"
@@ -81,7 +83,7 @@ class FileHandler:
                 self.logger.error(f"Source file not found: {source_path}")
                 raise FileNotFoundError(f"Source file not found: {source_path}")
 
-            data_dir = Path(self.working_dir) / 'data'
+            data_dir = Path(self.working_dir) / "data"
             data_dir.mkdir(exist_ok=True)
 
             dest_file = data_dir / source_file.name
@@ -100,12 +102,15 @@ class FileHandler:
             self.logger.error(f"Failed to copy file: {str(e)}")
             raise FileHandlerError(f"Failed to copy file: {str(e)}")
 
-    def validate_inputs(self, mastergrid_path: str,
-                        census_path: str,
-                        covariate_count: int,
-                        mask_path: Optional[str] = None,
-                        constrain_path: Optional[str] = None,
-                        agesex_path: Optional[str] = None) -> bool:
+    def validate_inputs(
+        self,
+        mastergrid_path: str,
+        census_path: str,
+        covariate_count: int,
+        mask_path: Optional[str] = None,
+        constrain_path: Optional[str] = None,
+        agesex_path: Optional[str] = None,
+    ) -> bool:
         """Validate required input files.
 
         Args:
@@ -170,14 +175,15 @@ class FileHandler:
         if folder_path and Path(folder_path).exists():
             try:
                 if platform.system() == "Windows":
-                    subprocess.run(['explorer', folder_path])
+                    subprocess.run(["explorer", folder_path])
                 elif platform.system() == "Darwin":  # macOS
-                    subprocess.run(['open', folder_path])
+                    subprocess.run(["open", folder_path])
                 else:  # Linux
-                    subprocess.run(['xdg-open', folder_path])
+                    subprocess.run(["xdg-open", folder_path])
             except subprocess.CalledProcessError as e:
-                self.logger.error(f"Failed to open folder with error code "
-                                  f"{e.returncode}: {str(e)}")
+                self.logger.error(
+                    f"Failed to open folder with error code " f"{e.returncode}: {str(e)}"
+                )
                 raise FileHandlerError(
                     f"Failed to open folder. Command failed with code {e.returncode}: "
                     f"{e.stderr or str(e)}"

@@ -59,7 +59,7 @@ class PyPopRF:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&QGIS pypopRF')
+        self.menu = self.tr("&QGIS pypopRF")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -78,19 +78,20 @@ class PyPopRF:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('PyPopRF', message)
+        return QCoreApplication.translate("PyPopRF", message)
 
     def add_action(
-            self,
-            icon_path,
-            text,
-            callback,
-            enabled_flag=True,
-            add_to_menu=True,
-            add_to_toolbar=True,
-            status_tip=None,
-            whats_this=None,
-            parent=None):
+        self,
+        icon_path,
+        text,
+        callback,
+        enabled_flag=True,
+        add_to_menu=True,
+        add_to_toolbar=True,
+        status_tip=None,
+        whats_this=None,
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -146,9 +147,7 @@ class PyPopRF:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -161,13 +160,13 @@ class PyPopRF:
         to their respective actions.
         """
 
-        icon_path = ':/plugins/pypopRF/icon.png'
+        icon_path = ":/plugins/pypopRF/icon.png"
         self.add_action(
             icon_path,
-            text=self.tr(u'Run Population Modeling'),
+            text=self.tr("Run Population Modeling"),
             callback=self.run,
             parent=self.iface.mainWindow(),
-            status_tip=self.tr('Start population modeling process')
+            status_tip=self.tr("Start population modeling process"),
         )
         self.first_start = True
 
@@ -178,9 +177,7 @@ class PyPopRF:
         is being unloaded.
         """
         for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&QGIS pypopRF'),
-                action)
+            self.iface.removePluginMenu(self.tr("&QGIS pypopRF"), action)
             self.iface.removeToolBarIcon(action)
 
         # Clear references
@@ -206,6 +203,5 @@ class PyPopRF:
         except Exception as e:
             # Log error and show user-friendly message
             self.iface.messageBar().pushCritical(
-                'PyPopRF Error',
-                f'An error occurred: {str(e)}'
+                "PyPopRF Error", f"An error occurred: {str(e)}"
             )

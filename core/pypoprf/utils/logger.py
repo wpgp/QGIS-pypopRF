@@ -7,7 +7,7 @@ from pathlib import Path
 class PopRFLogger:
     """Logger for pypopRF with file and stream output support."""
 
-    def __init__(self, name: str = 'pypopRF'):
+    def __init__(self, name: str = "pypopRF"):
         # Initialize base logger
         self.logger = logging.getLogger(name)
         self.logger.handlers.clear()
@@ -27,17 +27,16 @@ class PopRFLogger:
         """Get message formatter."""
         if not colored:
             return logging.Formatter(
-                '%(asctime)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
+                "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
 
         class ColorFormatter(logging.Formatter):
             COLORS = {
-                logging.DEBUG: '#0000FF',  # Blue
-                logging.INFO: '#008000',  # Green
-                logging.WARNING: '#FFA500',  # Orange
-                logging.ERROR: '#FF0000',  # Red
-                logging.CRITICAL: '#8B0000'  # Dark Red
+                logging.DEBUG: "#0000FF",  # Blue
+                logging.INFO: "#008000",  # Green
+                logging.WARNING: "#FFA500",  # Orange
+                logging.ERROR: "#FF0000",  # Red
+                logging.CRITICAL: "#8B0000",  # Dark Red
             }
 
             def format(self, record):
@@ -45,25 +44,24 @@ class PopRFLogger:
                 level = record.levelname
                 msg = record.getMessage()
 
-                color = self.COLORS.get(record.levelno, '#000000')
+                color = self.COLORS.get(record.levelno, "#000000")
                 return (
                     f'<span style="color: #666666">{timestamp}</span> - '
                     f'<span style="color: {color}">{level} - {msg}</span>'
                 )
 
         return ColorFormatter(
-            '%(asctime)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
         )
 
     def set_level(self, level: str) -> None:
         """Set logging level."""
         levels = {
-            'DEBUG': logging.DEBUG,
-            'INFO': logging.INFO,
-            'WARNING': logging.WARNING,
-            'ERROR': logging.ERROR,
-            'CRITICAL': logging.CRITICAL
+            "DEBUG": logging.DEBUG,
+            "INFO": logging.INFO,
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL,
         }
         self.logger.setLevel(levels.get(level.upper(), logging.INFO))
 
@@ -89,7 +87,7 @@ class PopRFLogger:
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
         # Create new handler
-        self.file_handler = logging.FileHandler(filepath, mode='w')
+        self.file_handler = logging.FileHandler(filepath, mode="w")
         self.file_handler.setFormatter(self._get_formatter())
         self.logger.addHandler(self.file_handler)
 
@@ -106,18 +104,29 @@ class PopRFLogger:
         self.close()
 
     # Logging methods
-    def debug(self, msg: str): self.logger.debug(msg)
-    def info(self, msg: str): self.logger.info(msg)
-    def warning(self, msg: str): self.logger.warning(msg)
-    def error(self, msg: str): self.logger.error(msg)
-    def critical(self, msg: str): self.logger.critical(msg)
+    def debug(self, msg: str):
+        self.logger.debug(msg)
+
+    def info(self, msg: str):
+        self.logger.info(msg)
+
+    def warning(self, msg: str):
+        self.logger.warning(msg)
+
+    def error(self, msg: str):
+        self.logger.error(msg)
+
+    def critical(self, msg: str):
+        self.logger.critical(msg)
 
 
 # Global logger instance
 logger = PopRFLogger()
 
-def get_logger(log_file: Optional[str] = None,
-               output_stream: Optional[TextIO] = None) -> PopRFLogger:
+
+def get_logger(
+    log_file: Optional[str] = None, output_stream: Optional[TextIO] = None
+) -> PopRFLogger:
     """Get global logger instance."""
     if log_file:
         logger.set_log_file(log_file)

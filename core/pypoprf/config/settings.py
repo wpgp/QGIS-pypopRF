@@ -9,6 +9,7 @@ from ..utils.logger import get_logger
 
 logger = get_logger()
 
+
 class Settings:
     """Configuration settings manager for pypopRF.
 
@@ -31,24 +32,26 @@ class Settings:
         show_progress (bool): Show progress bars
 
     """
-    def __init__(self,
-                 work_dir: str = ".",
-                 data_dir: str = "data",
-                 mastergrid: Optional[str] = None,
-                 mask: Optional[str] = None,
-                 constrain: Optional[str] = None,
-                 covariates: Optional[Dict[str, str]] = None,
-                 census_data: Optional[str] = None,
-                 census_pop_column: Optional[str] = None,
-                 census_id_column: Optional[str] = None,
-                 agesex_data: Optional[str] = None,
-                 output_dir: Optional[str] = None,
-                 by_block: bool = True,
-                 block_size: Tuple[int, int] = (512, 512),
-                 max_workers: int = 4,
-                 show_progress: bool = True,
-                 logging: Optional[Dict] = None):
 
+    def __init__(
+        self,
+        work_dir: str = ".",
+        data_dir: str = "data",
+        mastergrid: Optional[str] = None,
+        mask: Optional[str] = None,
+        constrain: Optional[str] = None,
+        covariates: Optional[Dict[str, str]] = None,
+        census_data: Optional[str] = None,
+        census_pop_column: Optional[str] = None,
+        census_id_column: Optional[str] = None,
+        agesex_data: Optional[str] = None,
+        output_dir: Optional[str] = None,
+        by_block: bool = True,
+        block_size: Tuple[int, int] = (512, 512),
+        max_workers: int = 4,
+        show_progress: bool = True,
+        logging: Optional[Dict] = None,
+    ):
         """Initialize Settings.
 
         Args:
@@ -110,10 +113,11 @@ class Settings:
             if not self.output_dir.is_absolute():
                 self.output_dir = self.work_dir / output_dir
         else:
-            self.output_dir = self.work_dir / 'output'
+            self.output_dir = self.work_dir / "output"
 
-    def _init_input_files(self, mastergrid: Optional[str], mask: Optional[str],
-                          constrain: Optional[str]) -> None:
+    def _init_input_files(
+        self, mastergrid: Optional[str], mask: Optional[str], constrain: Optional[str]
+    ) -> None:
         """Initialize input file paths."""
         # Process paths relative to data directory
         self.mastergrid = self._resolve_path(mastergrid)
@@ -125,35 +129,36 @@ class Settings:
         self.covariate = {}
         if covariates:
             self.covariate = {
-                key: self._resolve_path(path)
-                for key, path in covariates.items()
+                key: self._resolve_path(path) for key, path in covariates.items()
             }
 
         if not self.covariate:
             raise ValueError("At least one covariate is required")
 
-    def _init_census(self, census_data: Optional[str], pop_column: Optional[str],
-                     id_column: Optional[str], agesex_data: Optional[str]) -> None:
+    def _init_census(
+        self,
+        census_data: Optional[str],
+        pop_column: Optional[str],
+        id_column: Optional[str],
+        agesex_data: Optional[str],
+    ) -> None:
         """Initialize census data settings."""
         self.census = {
-            'path': self._resolve_path(census_data),
-            'pop_column': pop_column,
-            'id_column': id_column
+            "path": self._resolve_path(census_data),
+            "pop_column": pop_column,
+            "id_column": id_column,
         }
         self.agesex_data = self._resolve_path(agesex_data)
 
     def _init_logging(self, logging: Optional[Dict]) -> None:
         """Initialize logging settings."""
-        self.logging = {
-            'level': 'INFO',
-            'file': 'pypoprf.log'
-        }
+        self.logging = {"level": "INFO", "file": "pypoprf.log"}
         if logging:
             self.logging.update(logging)
 
-        if self.logging['file']:
-            self.logging['file'] = str(self.output_dir / self.logging['file'])
-        logger.set_level(self.logging['level'])
+        if self.logging["file"]:
+            self.logging["file"] = str(self.output_dir / self.logging["file"])
+        logger.set_level(self.logging["level"])
 
     def _resolve_path(self, path: Optional[str]) -> Optional[str]:
         """Resolve path relative to data directory."""
@@ -182,13 +187,13 @@ class Settings:
 
         logger.info("Validating settings!")
 
-        if not self.census['path']:
+        if not self.census["path"]:
             logger.error("Census data path is required")
             raise ValueError("Census data path is required")
-        if not self.census['pop_column']:
+        if not self.census["pop_column"]:
             logger.error("Census population column name is required")
             raise ValueError("Census population column name is required")
-        if not self.census['id_column']:
+        if not self.census["id_column"]:
             logger.error("Census ID column name is required")
             raise ValueError("Census ID column name is required")
         if not self.covariate:
@@ -197,7 +202,7 @@ class Settings:
 
         template_profile = None
 
-        if self.mastergrid != 'create':
+        if self.mastergrid != "create":
             if not Path(self.mastergrid).is_file():
                 logger.error(f"Mastergrid file not found: {self.mastergrid}")
                 raise FileNotFoundError(f"Mastergrid file not found: {self.mastergrid}")
@@ -214,7 +219,9 @@ class Settings:
         if self.constrain is not None:
             constrain_path = Path(self.constrain)
             if not constrain_path.is_file():
-                logger.warning(f"Constraining file not found: {self.constrain}, proceeding without constrain")
+                logger.warning(
+                    f"Constraining file not found: {self.constrain}, proceeding without constrain"
+                )
                 self.constrain = None
 
         logger.info("Validating covariates")
@@ -227,22 +234,22 @@ class Settings:
                 if template_profile is None:
                     template_profile = src.profile
                 else:
-                    if src.crs != template_profile['crs']:
+                    if src.crs != template_profile["crs"]:
                         logger.warning(f"Covariate {name}: CRS mismatch")
-                    if src.transform[0] != template_profile['transform'][0]:
+                    if src.transform[0] != template_profile["transform"][0]:
                         logger.warning(f"Covariate {name}: Resolution mismatch")
-                    if src.width != template_profile['width']:
+                    if src.width != template_profile["width"]:
                         logger.warning(f"Covariate {name}: Width mismatch")
-                    if src.height != template_profile['height']:
+                    if src.height != template_profile["height"]:
                         logger.warning(f"Covariate {name}: Height mismatch")
 
         logger.info("Validating census data")
-        census_path = Path(self.census['path'])
+        census_path = Path(self.census["path"])
         if not census_path.is_file():
             logger.error(f"Census file not found: {census_path}")
             raise FileNotFoundError(f"Census file not found: {census_path}")
 
-        if census_path.suffix.lower() != '.csv':
+        if census_path.suffix.lower() != ".csv":
             logger.error("Census file must be CSV format")
             raise ValueError("Census file must be CSV format")
 
@@ -251,27 +258,31 @@ class Settings:
             agesex_path = Path(self.agesex_data)
             if not agesex_path.is_file():
                 logger.warning(
-                    f"Age-sex census file not found: {self.agesex_data}, proceeding without age-sex structure")
+                    f"Age-sex census file not found: {self.agesex_data}, proceeding without age-sex structure"
+                )
                 self.agesex_data = None
-            elif agesex_path.suffix.lower() != '.csv':
+            elif agesex_path.suffix.lower() != ".csv":
                 logger.error("Age-sex census file must be CSV format")
                 raise ValueError("Age-sex census file must be CSV format")
 
         try:
             df = pd.read_csv(census_path, nrows=1)
             missing_cols = []
-            for col in [self.census['pop_column'], self.census['id_column']]:
+            for col in [self.census["pop_column"], self.census["id_column"]]:
                 if col not in df.columns:
                     missing_cols.append(col)
                 if missing_cols:
-                    logger.error(f"Missing required columns in census data: {', '.join(missing_cols)}")
-                    raise ValueError(f"Missing required columns in census data: {', '.join(missing_cols)}")
+                    logger.error(
+                        f"Missing required columns in census data: {', '.join(missing_cols)}"
+                    )
+                    raise ValueError(
+                        f"Missing required columns in census data: {', '.join(missing_cols)}"
+                    )
         except Exception as e:
             logger.error(f"Error reading census file: {str(e)}")
             raise ValueError(f"Error reading census file: {str(e)}")
 
         logger.info("Settings validation completed successfully")
-
 
     @classmethod
     def validate_config_file(cls, config_path: str) -> None:
@@ -288,8 +299,11 @@ class Settings:
         logger.info(f"Validating configuration file: {config_path}")
 
         required_fields = {
-            'work_dir', 'covariates', 'census_data',
-            'census_pop_column', 'census_id_column'
+            "work_dir",
+            "covariates",
+            "census_data",
+            "census_pop_column",
+            "census_id_column",
         }
 
         with open(config_path) as f:
@@ -300,14 +314,14 @@ class Settings:
             logger.error(f"Missing required fields in config: {missing}")
             raise ValueError(f"Missing required fields in config: {missing}")
 
-        if not isinstance(config.get('covariates', {}), dict):
+        if not isinstance(config.get("covariates", {}), dict):
             logger.error("'covariates' must be a dictionary")
             raise ValueError("'covariates' must be a dictionary")
 
         logger.info("Configuration file validation successful")
 
     @classmethod
-    def from_file(cls, config_path: Path) -> 'Settings':
+    def from_file(cls, config_path: Path) -> "Settings":
         """
         Create Settings instance from configuration file.
 
@@ -329,10 +343,10 @@ class Settings:
 
         # Resolve work_dir relative to config file location
         config_dir = Path(config_path).parent.resolve()
-        if config['work_dir'] == '.':
-            config['work_dir'] = str(config_dir)
-        elif not Path(config['work_dir']).is_absolute():
-            config['work_dir'] = str(config_dir / config['work_dir'])
+        if config["work_dir"] == ".":
+            config["work_dir"] = str(config_dir)
+        elif not Path(config["work_dir"]).is_absolute():
+            config["work_dir"] = str(config_dir / config["work_dir"])
 
         return cls(**config)
 
@@ -344,7 +358,9 @@ class Settings:
             str: Formatted string containing all settings
         """
 
-        covariate_str = '\n    '.join(f"- {key}: {value}" for key, value in self.covariate.items())
+        covariate_str = "\n    ".join(
+            f"- {key}: {value}" for key, value in self.covariate.items()
+        )
         return (
             f"pypopRF Settings:\n"
             f"  Work Directory: {self.work_dir}\n"

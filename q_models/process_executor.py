@@ -38,10 +38,9 @@ class ProcessWorker(QThread):
     layer_created = pyqtSignal(str, str)
     final_layers_ready = pyqtSignal(str, str)
 
-    def __init__(self,
-                 config_path: Path,
-                 logger: Logger,
-                 use_existing_model: bool = False) -> None:
+    def __init__(
+        self, config_path: Path, logger: Logger, use_existing_model: bool = False
+    ) -> None:
         """Initialize worker thread.
 
         Args:
@@ -76,37 +75,40 @@ class ProcessWorker(QThread):
             self.ui_state.emit(False)
 
             self.progress.emit(0, "Loading settings...")
-            temp_dir = Path(settings.work_dir) / 'output' / 'temp'
+            temp_dir = Path(settings.work_dir) / "output" / "temp"
             temp_dir.mkdir(exist_ok=True)
 
             if settings.agesex_data:
-                agesex_dir = Path(settings.work_dir) / 'output' / 'agesex'
+                agesex_dir = Path(settings.work_dir) / "output" / "agesex"
                 agesex_dir.mkdir(parents=True, exist_ok=True)
 
-            model_path = Path(settings.work_dir) / 'output' / 'model.pkl.gz'
-            scaler_path = Path(settings.work_dir) / 'output' / 'scaler.pkl.gz'
+            model_path = Path(settings.work_dir) / "output" / "model.pkl.gz"
+            scaler_path = Path(settings.work_dir) / "output" / "scaler.pkl.gz"
 
             # Re-mask mastergrid if requested
             if settings.mask:
                 self.progress.emit(10, "Remasking mastergrid...")
-                outfile = settings.mask.replace('.tif', '_remasked.tif')
-                remask_layer(settings.mastergrid,
-                            settings.mask,
-                            1,
-                            outfile=outfile,
-                            block_size=settings.block_size)
+                outfile = settings.mask.replace(".tif", "_remasked.tif")
+                remask_layer(
+                    settings.mastergrid,
+                    settings.mask,
+                    1,
+                    outfile=outfile,
+                    block_size=settings.block_size,
+                )
                 settings.mastergrid = outfile
-
 
             # Constraining mastergrid if requested
             if settings.constrain:
                 self.progress.emit(15, "Constraining mastergrid...")
-                outfile = settings.constrain.replace('.tif', '_constrained.tif')
-                remask_layer(settings.mastergrid,
-                            settings.constrain,
-                            0,
-                            outfile=outfile,
-                            block_size=settings.block_size)
+                outfile = settings.constrain.replace(".tif", "_constrained.tif")
+                remask_layer(
+                    settings.mastergrid,
+                    settings.constrain,
+                    0,
+                    outfile=outfile,
+                    block_size=settings.block_size,
+                )
                 settings.constrain = outfile
 
             # Feature extraction
@@ -160,20 +162,21 @@ class ProcessWorker(QThread):
                 duration = time.time() - self.start_time
                 self.logger.info(
                     f'<span style="'
-                    f'color: #4CAF50; '
-                    f'font-size: 12pt; '
-                    f'font-weight: bold; '
-                    f'font-family: Consolas, monospace; '
-                    f'padding: 2px 6px; '
-                    f'border-radius: 3px; '
+                    f"color: #4CAF50; "
+                    f"font-size: 12pt; "
+                    f"font-weight: bold; "
+                    f"font-family: Consolas, monospace; "
+                    f"padding: 2px 6px; "
+                    f"border-radius: 3px; "
                     f'">'
-                    f'✨ All Process completed in {self.format_time(duration)} ✨'
-                    f'</span>'
+                    f"✨ All Process completed in {self.format_time(duration)} ✨"
+                    f"</span>"
                 )
 
                 self.progress.emit(100, "Completed successfully!")
-                self.finished.emit(True, "Prediction and dasymetric "
-                                         "mapping completed successfully!")
+                self.finished.emit(
+                    True, "Prediction and dasymetric " "mapping completed successfully!"
+                )
 
             self._cleanup_temp_dirs(settings)
 
@@ -203,8 +206,8 @@ class ProcessWorker(QThread):
             - Age-sex additional files directory
         """
         dirs_to_clean = [
-            os.path.join(settings.work_dir, 'output', 'temp'),
-            os.path.join(settings.work_dir, 'output', 'agesex', 'additional_files')
+            os.path.join(settings.work_dir, "output", "temp"),
+            os.path.join(settings.work_dir, "output", "agesex", "additional_files"),
         ]
 
         for dir_path in dirs_to_clean:
@@ -224,7 +227,9 @@ class ProcessWorker(QThread):
                     self.logger.debug(f"Directory does not exist, skipping: {dir_path}")
 
             except PermissionError as e:
-                self.logger.warning(f"Permission denied when cleaning directory {dir_path}: {str(e)}")
+                self.logger.warning(
+                    f"Permission denied when cleaning directory {dir_path}: {str(e)}"
+                )
             except OSError as e:
                 self.logger.warning(f"OS error when cleaning directory {dir_path}: {str(e)}")
             except Exception as e:
@@ -237,16 +242,16 @@ class ProcessWorker(QThread):
         Args:
             settings: Settings instance for paths
         """
-        feature_importance_path = Path(settings.work_dir) / 'output' / 'feature_importance.csv'
+        feature_importance_path = Path(settings.work_dir) / "output" / "feature_importance.csv"
 
         if not feature_importance_path.exists():
             self.logger.warning("Feature importance file not found")
             return
 
         importance_df = pd.read_csv(feature_importance_path)
-        max_importance = importance_df['importance'].max()
-        importance_df['importance_normalized'] = importance_df['importance'] / max_importance
-        sorted_importance = importance_df.sort_values('importance', ascending=False)
+        max_importance = importance_df["importance"].max()
+        importance_df["importance_normalized"] = importance_df["importance"] / max_importance
+        sorted_importance = importance_df.sort_values("importance", ascending=False)
 
         name_width = 25
         self.logger.info("=" * 60)
@@ -265,12 +270,12 @@ class ProcessWorker(QThread):
                 return "#999999"
 
         for _, row in sorted_importance.iterrows():
-            feature = row['feature'].replace('_avg', '')
-            importance_rel = row['importance_normalized'] * 100
-            std = row['std'] * 100
+            feature = row["feature"].replace("_avg", "")
+            importance_rel = row["importance_normalized"] * 100
+            std = row["std"] * 100
 
             if len(feature) > name_width - 3:
-                feature = feature[:name_width - 3] + "..."
+                feature = feature[: name_width - 3] + "..."
 
             formatted_name = f"{feature:<{name_width}}"
             formatted_values = f"{importance_rel:5.1f}% (±{std:4.1f}%)"
@@ -337,7 +342,7 @@ class ProcessExecutor:
             return
 
         # Check output files
-        output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
+        output_dir = Path(self.dialog.workingDirEdit.filePath()) / "output"
         if not self._check_and_clear_outputs(output_dir):
             return
 
@@ -358,7 +363,7 @@ class ProcessExecutor:
             self.worker = ProcessWorker(
                 self.dialog.config_manager.config_path,
                 self.logger,
-                use_existing_model=use_existing_model
+                use_existing_model=use_existing_model,
             )
 
             # Connect signals
@@ -397,8 +402,8 @@ class ProcessExecutor:
                 - Whether to use existing model
         """
 
-        model_path = Path(output_dir) / 'model.pkl.gz'
-        scaler_path = Path(output_dir) / 'scaler.pkl.gz'
+        model_path = Path(output_dir) / "model.pkl.gz"
+        scaler_path = Path(output_dir) / "scaler.pkl.gz"
 
         if not (model_path.exists() and scaler_path.exists()):
             return True, False
@@ -471,7 +476,7 @@ class ProcessExecutor:
         return self.dialog.file_handler.validate_inputs(
             self.dialog.mastergridFileWidget.filePath(),
             self.dialog.populationCensusFileWidget.filePath(),
-            self.dialog.covariatesTable.rowCount()
+            self.dialog.covariatesTable.rowCount(),
         )
 
     def _set_ui_enabled(self, enabled):
@@ -493,14 +498,16 @@ class ProcessExecutor:
                 "QPushButton { background-color: #4CAF50; "
                 "color: black; "
                 "font-weight: bold; "
-                "font-size: 10pt; }")
+                "font-size: 10pt; }"
+            )
         else:
             self.dialog.mainStartButton.setText("Stop")
             self.dialog.mainStartButton.setStyleSheet(
                 "QPushButton { background-color: #f44336; "
                 "color: black; "
                 "font-weight: bold; "
-                "font-size: 10pt; }")
+                "font-size: 10pt; }"
+            )
 
     def add_output_layers(self):
         """Add all output layers to QGIS.
@@ -509,17 +516,17 @@ class ProcessExecutor:
             ProcessError: If adding layers fails
         """
         try:
-            output_dir = Path(self.dialog.workingDirEdit.filePath()) / 'output'
+            output_dir = Path(self.dialog.workingDirEdit.filePath()) / "output"
             constrain_enabled = self.dialog.constrainFileWidget.filePath() is not None
 
-            filenames = ['normalized_census.tif', 'population_unconstrained.tif']
+            filenames = ["normalized_census.tif", "population_unconstrained.tif"]
             if constrain_enabled:
-                filenames.append('population_constrained.tif')
+                filenames.append("population_constrained.tif")
 
             for filename in filenames:
                 file_path = output_dir / filename
                 if file_path.exists():
-                    layer = self.iface.addRasterLayer(str(file_path), '')
+                    layer = self.iface.addRasterLayer(str(file_path), "")
                     if layer and layer.isValid():
                         self.output_layers.append(layer)
                         self.logger.info(f"Added layer {filename}")
@@ -551,7 +558,7 @@ class ProcessExecutor:
             # Validate block processing settings
             if self.dialog.enableBlockProcessingCheckBox.isChecked():
                 try:
-                    w, h = map(int, self.dialog.blockSizeComboBox.currentText().split(','))
+                    w, h = map(int, self.dialog.blockSizeComboBox.currentText().split(","))
                     if w <= 0 or h <= 0:
                         errors.append("Block size dimensions must be positive.")
                 except ValueError:
@@ -580,19 +587,18 @@ class ProcessExecutor:
             bool: True if files were deleted or don't exist, False if deletion cancelled or failed
         """
         output_files = [
-            'prediction.tif',
-            'normalized_census.tif',
-            'population_unconstrained.tif',
-            'population_constrained.tif',
-            'features.csv'
+            "prediction.tif",
+            "normalized_census.tif",
+            "population_unconstrained.tif",
+            "population_constrained.tif",
+            "features.csv",
         ]
-
 
         output_path = Path(output_dir)
         if not output_path.exists():
             return True
 
-        agesex_dir = output_path / 'agesex'
+        agesex_dir = output_path / "agesex"
         if agesex_dir.exists():
             shutil.rmtree(agesex_dir)
 
@@ -669,4 +675,3 @@ class ProcessExecutor:
             return False
 
         return True
-

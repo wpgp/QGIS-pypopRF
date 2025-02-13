@@ -10,6 +10,7 @@ from qgis.PyQt import QtWidgets, QtCore
 
 class CovariateTableError(Exception):
     """Custom exception for covariate table operations."""
+
     pass
 
 
@@ -25,10 +26,9 @@ class CovariateTableHandler:
         logger: Logger instance for output messages
     """
 
-    def __init__(self,
-                 table_widget: QTableWidget,
-                 config_manager: Any,
-                 logger: Logger) -> None:
+    def __init__(
+        self, table_widget: QTableWidget, config_manager: Any, logger: Logger
+    ) -> None:
         """Initialize CovariateTableHandler.
 
         Args:
@@ -61,7 +61,7 @@ class CovariateTableHandler:
         """
         try:
             self.table.setColumnCount(4)
-            self.table.setHorizontalHeaderLabels(['Name', 'Size', 'File Path', 'Actions'])
+            self.table.setHorizontalHeaderLabels(["Name", "Size", "File Path", "Actions"])
             header = self.table.horizontalHeader()
 
             # Set column resize modes
@@ -86,7 +86,7 @@ class CovariateTableHandler:
             return
 
         try:
-            data_dir = Path(self.config_manager.working_dir) / 'data'
+            data_dir = Path(self.config_manager.working_dir) / "data"
 
             for filename in filenames:
                 if self.check_duplicate(filename):
@@ -129,7 +129,7 @@ class CovariateTableHandler:
         self.table.setCellWidget(row, 3, delete_button)
 
         # Update config
-        self.config_manager.update_config(f'covariate_{name}', filename)
+        self.config_manager.update_config(f"covariate_{name}", filename)
 
     def _create_delete_button(self, row: int, button: QtWidgets.QPushButton) -> None:
         """Create delete button with proper connection.
@@ -157,7 +157,7 @@ class CovariateTableHandler:
             name = self.table.item(row, 0).text()
             self.logger.debug(f"Removing covariate '{name}' from row {row}")
 
-            self.config_manager.clear_config_value(f'covariate_{name}')
+            self.config_manager.clear_config_value(f"covariate_{name}")
             self.table.removeRow(row)
 
             self._update_delete_buttons(row)
@@ -180,7 +180,9 @@ class CovariateTableHandler:
 
     def remove_selected_covariates(self):
         """Remove selected covariates from table and config"""
-        selected_rows = sorted(set(item.row() for item in self.table.selectedItems()), reverse=True)
+        selected_rows = sorted(
+            set(item.row() for item in self.table.selectedItems()), reverse=True
+        )
 
         if not selected_rows:
             return
@@ -188,7 +190,7 @@ class CovariateTableHandler:
         for row in selected_rows:
             name = self.table.item(row, 0).text()
             self.table.removeRow(row)
-            self.config_manager.clear_config_value(f'covariate_{name}')
+            self.config_manager.clear_config_value(f"covariate_{name}")
 
         self.logger.info("Removed selected covariates")
 
@@ -220,7 +222,6 @@ class CovariateTableHandler:
         else:
             QTableWidget.keyPressEvent(self.table, event)
 
-
     @staticmethod
     def format_size(size: int) -> str:
         """
@@ -232,7 +233,7 @@ class CovariateTableHandler:
         Returns:
             str: Formatted size string
         """
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in ["B", "KB", "MB", "GB"]:
             if size < 1024:
                 return f"{size:.1f} {unit}"
             size /= 1024

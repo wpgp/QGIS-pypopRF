@@ -16,8 +16,8 @@ class FeatureExtractor:
     """Extract and process features for population modeling."""
 
     # Supported file formats
-    SUPPORTED_VECTOR_FORMATS = {'.shp', '.json', '.geojson', '.gpkg'}
-    SUPPORTED_TABLE_FORMATS = {'.csv'}
+    SUPPORTED_VECTOR_FORMATS = {".shp", ".json", ".geojson", ".gpkg"}
+    SUPPORTED_TABLE_FORMATS = {".csv"}
 
     def __init__(self, settings: Settings):
         """
@@ -65,13 +65,15 @@ class FeatureExtractor:
                 return pd.read_csv(path)
             else:
                 logger.error(f"Unsupported file format: {ext}")
-                raise ValueError(f'Unsupported file format: {ext}')
+                raise ValueError(f"Unsupported file format: {ext}")
 
         except Exception as e:
             logger.error(f"Failed to load file: {str(e)}")
             raise ValueError(f"Failed to load file: {str(e)}")
 
-    def dump_table(self, df: pd.DataFrame, path: str, drop: Optional[List[str]] = None) -> None:
+    def dump_table(
+        self, df: pd.DataFrame, path: str, drop: Optional[List[str]] = None
+    ) -> None:
         """
         Save data table to file.
 
@@ -120,35 +122,35 @@ class FeatureExtractor:
                 logger.debug("Saved as CSV file")
             else:
                 logger.error(f"Unsupported file format: {ext}")
-                raise ValueError(f'Unsupported file format: {ext}')
+                raise ValueError(f"Unsupported file format: {ext}")
 
         except Exception as e:
             logger.error(f"Failed to save file: {str(e)}")
             raise ValueError(f"Failed to save file: {str(e)}")
 
-    def validate_census(self,
-                        census: pd.DataFrame,
-                        simple: bool = False) -> Tuple[pd.DataFrame, str, str]:
+    def validate_census(
+        self, census: pd.DataFrame, simple: bool = False
+    ) -> Tuple[pd.DataFrame, str, str]:
         """Validate census data and return processed dataframe with column names."""
         logger.info("Validating census data")
 
         cols = census.columns.values
-        pop_column = self.settings.census['pop_column']
-        id_column = self.settings.census['id_column']
+        pop_column = self.settings.census["pop_column"]
+        id_column = self.settings.census["id_column"]
 
         logger.debug(f"Required columns: pop={pop_column}, id={id_column}")
 
         if id_column not in cols:
             logger.error(f"ID column '{id_column}' not found in census data")
-            raise ValueError('id_column not found in census data')
+            raise ValueError("id_column not found in census data")
         if pop_column not in cols:
             logger.error(f"Population column '{pop_column}' not found in census data")
-            raise ValueError('pop_column not found in census data')
+            raise ValueError("pop_column not found in census data")
 
-        if pop_column == 'sum':
+        if pop_column == "sum":
             logger.info("Renaming 'sum' column to 'pop'")
-            pop_column = 'pop'
-            census = census.rename(columns={'sum': 'pop'})
+            pop_column = "pop"
+            census = census.rename(columns={"sum": "pop"})
 
         if simple:
             logger.debug("Simplifying census DataFrame")
@@ -157,9 +159,7 @@ class FeatureExtractor:
         logger.info("Census data validation completed successfully")
         return census, id_column, pop_column
 
-    def extract(self,
-                save: Optional[str] = None,
-                avg_only: bool = True) -> pd.DataFrame:
+    def extract(self, save: Optional[str] = None, avg_only: bool = True) -> pd.DataFrame:
         """
         Extract features from raster data.
 
@@ -183,7 +183,7 @@ class FeatureExtractor:
                 self.settings.mastergrid,
                 by_block=self.settings.by_block,
                 max_workers=self.settings.max_workers,
-                block_size=self.settings.block_size
+                block_size=self.settings.block_size,
             )
             logger.debug(f"Initial features extracted: {res.shape}")
         except Exception as e:
@@ -192,7 +192,7 @@ class FeatureExtractor:
 
         # Load and validate census data
         try:
-            census = self.load_table(self.settings.census['path'])
+            census = self.load_table(self.settings.census["path"])
             census, id_column, pop_column = self.validate_census(census, simple=True)
             logger.debug(f"Census data loaded: {len(census)} rows")
         except Exception as e:
@@ -201,19 +201,13 @@ class FeatureExtractor:
 
         # Merge with census data
         logger.info("Merging features with census data")
-        res = pd.merge(
-            res,
-            census,
-            left_on='id',
-            right_on=id_column,
-            how='inner'
-        )
+        res = pd.merge(res, census, left_on="id", right_on=id_column, how="inner")
         logger.debug(f"Merged data shape: {res.shape}")
 
         # Get count for density calculation
         count = None
         for c in res.columns.values:
-            if c.endswith('count'):
+            if c.endswith("count"):
                 count = res[c].values
                 logger.debug(f"Using '{c}' for density calculation")
                 break
@@ -225,27 +219,27 @@ class FeatureExtractor:
         # Filter columns if avg_only is True
         if avg_only:
             logger.info("Filtering for average statistics only")
-            cols = ['id', 'pop']
-            cols.extend([c for c in res.columns if c.endswith('avg')])
+            cols = ["id", "pop"]
+            cols.extend([c for c in res.columns if c.endswith("avg")])
             res = res[cols]
             logger.debug(f"Selected columns: {cols}")
 
         # Calculate population density
         logger.info("Calculating population density")
-        res['dens'] = np.divide(res['pop'], count, where=(count > 0))
+        res["dens"] = np.divide(res["pop"], count, where=(count > 0))
 
         # Check for potential issues in density calculation
         zero_counts = np.sum(count == 0)
         if zero_counts > 0:
             logger.warning(f"Found {zero_counts} zones with zero count")
 
-        inf_density = np.sum(np.isinf(res['dens']))
+        inf_density = np.sum(np.isinf(res["dens"]))
         if inf_density > 0:
             logger.warning(f"Found {inf_density} zones with infinite density")
 
         # Save features
         logger.info("Saving extracted features")
-        output_path = Path(self.settings.work_dir) / 'output' / 'features.csv'
+        output_path = Path(self.settings.work_dir) / "output" / "features.csv"
         self.dump_table(res, str(output_path))
         logger.debug(f"Features saved to: {output_path}")
 

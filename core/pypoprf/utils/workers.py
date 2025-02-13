@@ -26,7 +26,9 @@ class ProgressBar:
         else:
             self.update_frequency = update_frequency
 
-        logger.debug(f"Progress bar initialized: total={total}, update_frequency={self.update_frequency}")
+        logger.debug(
+            f"Progress bar initialized: total={total}, update_frequency={self.update_frequency}"
+        )
 
         self.last_update = 0
         self._logged_percentage = -1
@@ -45,12 +47,12 @@ class ProgressBar:
         else:
             self.current += 1
 
-        percentage = (self.current / self.total)
+        percentage = self.current / self.total
         elapsed_time = time.time() - self.start_time
 
         if self.current - self.last_update >= self.update_frequency:
             filled = int(self.width * percentage)
-            bar = '█' * filled + '░' * (self.width - filled)
+            bar = "█" * filled + "░" * (self.width - filled)
 
             if percentage != self._logged_percentage:
                 progress_text = (
@@ -58,20 +60,22 @@ class ProgressBar:
                     f'<span style="color: #050500">Elapsed time: {self._format_time(elapsed_time)}</span> '
                 )
                 if self.logger:
-                    self.logger.info(f'<span style="font-family: monospace;">{progress_text}</span>')
+                    self.logger.info(
+                        f'<span style="font-family: monospace;">{progress_text}</span>'
+                    )
                 self._logged_percentage = percentage
 
             self.last_update = self.current
 
     def finish(self):
         if self.logger:
-            filled = '█' * self.width
+            filled = "█" * self.width
             total_time = time.time() - self.start_time
             self.logger.info(
                 f'<span style="font-family: monospace; color: #4CAF50">'
                 f"Completed: |{filled}| 100% ({self.total}/{self.total}) "
                 f"Total time: {self._format_time(total_time)}"
-                f'</span>'
+                f"</span>"
             )
 
 
@@ -99,9 +103,9 @@ class PredictionWorker(QRunnable):
         try:
             df = pd.DataFrame()
             for k, path in self.covariates.items():
-                with rasterio.open(path, 'r') as src_file:
+                with rasterio.open(path, "r") as src_file:
                     arr = src_file.read(window=self.window)[0, :, :]
-                    df[k + '_avg'] = arr.flatten()
+                    df[k + "_avg"] = arr.flatten()
 
             df = df[self.selected_features]
             sx = self.scaler.transform(df)
@@ -142,8 +146,9 @@ class RasterWorker(QRunnable):
 
     def run(self):
         try:
-            with rasterio.open(self.file_paths['mastergrid'], 'r') as mst, \
-                    rasterio.open(self.file_paths['target'], 'r') as tgt:
+            with rasterio.open(self.file_paths["mastergrid"], "r") as mst, rasterio.open(
+                self.file_paths["target"], "r"
+            ) as tgt:
 
                 m = mst.read(window=self.window)
                 t = tgt.read(window=self.window)
@@ -151,7 +156,7 @@ class RasterWorker(QRunnable):
                 nodata = tgt.nodata
                 skip = mst.nodata
 
-            self.result = self.process_params['func'](t, m, nodata=nodata, skip=skip)
+            self.result = self.process_params["func"](t, m, nodata=nodata, skip=skip)
 
             with self.lock:
                 self.__class__.completed_workers += 1
@@ -187,21 +192,22 @@ class RasterStackWorker(QRunnable):
 
     def run(self):
         try:
-            with rasterio.open(self.file_paths['mastergrid']) as mst:
+            with rasterio.open(self.file_paths["mastergrid"]) as mst:
                 m = mst.read(1, window=self.window)
 
                 t = []
-                for key in self.process_params['keys']:
-                    with rasterio.open(self.file_paths[f'target_{key}']) as src:
+                for key in self.process_params["keys"]:
+                    with rasterio.open(self.file_paths[f"target_{key}"]) as src:
                         t.append(src.read(1, window=self.window))
 
             results = [
-                self.process_params['func'](
-                    ta, m,
-                    nodata=self.process_params['nodata_values'][key],
-                    skip=self.process_params['skip']
+                self.process_params["func"](
+                    ta,
+                    m,
+                    nodata=self.process_params["nodata_values"][key],
+                    skip=self.process_params["skip"],
                 )
-                for ta, key in zip(t, self.process_params['keys'])
+                for ta, key in zip(t, self.process_params["keys"])
             ]
             self.result = results
 
@@ -239,16 +245,13 @@ class NormalizationWorker(QRunnable):
         cls.total_process_time = 0
         cls.total_workers = 0
 
-
     def run(self):
         try:
-            with rasterio.open(self.mastergrid_path, 'r') as mst:
+            with rasterio.open(self.mastergrid_path, "r") as mst:
                 mst_data = mst.read(1, window=self.window)
                 nodata = mst.nodata
 
-
-
-            output = np.full_like(mst_data, self.profile['nodata'], dtype='float32')
+            output = np.full_like(mst_data, self.profile["nodata"], dtype="float32")
 
             valid_data = mst_data != nodata
             unique_zones = np.unique(mst_data[valid_data])
@@ -259,7 +262,7 @@ class NormalizationWorker(QRunnable):
                     output[mask] = self.norm_mapping[zone_id]
                     self.valid_mappings += mask.sum()
 
-            output[~valid_data] = self.profile['nodata']
+            output[~valid_data] = self.profile["nodata"]
 
             self.result = output[np.newaxis, :, :]
 
@@ -277,7 +280,7 @@ class DasymetricWorker(QRunnable):
     completed_workers = 0
     progress_bar = None
     lock = threading.Lock()
-    final_stats = {'min': float('inf'), 'max': float('-inf'), 'sum': 0, 'count': 0}
+    final_stats = {"min": float("inf"), "max": float("-inf"), "sum": 0, "count": 0}
 
     def __init__(self, window, file_paths, profile, idx=None):
         super().__init__()
@@ -292,17 +295,25 @@ class DasymetricWorker(QRunnable):
         cls.completed_workers = 0
         cls.progress_bar = ProgressBar(total_workers, logger=logger)
 
-        cls.final_stats = {'min': float('inf'), 'max': float('-inf'), 'sum': 0, 'count': 0}
+        cls.final_stats = {
+            "min": float("inf"),
+            "max": float("-inf"),
+            "sum": 0,
+            "count": 0,
+        }
 
     def run(self):
         try:
-            with rasterio.open(self.file_paths['prediction']) as pred, \
-                    rasterio.open(self.file_paths['normalization']) as norm:
+            with rasterio.open(self.file_paths["prediction"]) as pred, rasterio.open(
+                self.file_paths["normalization"]
+            ) as norm:
 
                 pred_data = pred.read(1, window=self.window)
                 norm_data = norm.read(1, window=self.window)
 
-                invalid_mask = (pred_data == pred.nodata) | (norm_data == self.profile['nodata'])
+                invalid_mask = (pred_data == pred.nodata) | (
+                    norm_data == self.profile["nodata"]
+                )
 
                 pred_data = np.where(invalid_mask, 0, pred_data)
                 norm_data = np.where(invalid_mask, 0, norm_data)
@@ -318,16 +329,16 @@ class DasymetricWorker(QRunnable):
                         f"mean={valid_values.mean():.2f}"
                     )
 
-                population[invalid_mask] = self.profile['nodata']
+                population[invalid_mask] = self.profile["nodata"]
 
                 final_valid = population[~invalid_mask]
                 if len(final_valid) > 0:
                     with self.lock:
                         stats = self.__class__.final_stats
-                        stats['min'] = min(stats['min'], final_valid.min())
-                        stats['max'] = max(stats['max'], final_valid.max())
-                        stats['sum'] += final_valid.sum()
-                        stats['count'] += len(final_valid)
+                        stats["min"] = min(stats["min"], final_valid.min())
+                        stats["max"] = max(stats["max"], final_valid.max())
+                        stats["sum"] += final_valid.sum()
+                        stats["count"] += len(final_valid)
 
                 self.result = population[np.newaxis, :, :]
 
@@ -347,7 +358,15 @@ class MaskWorker(QRunnable):
     lock = threading.Lock()
     reading_lock = threading.Lock()
 
-    def __init__(self, window, mst, msk, mask_value: int, nodata: float, idx: Optional[int] = None):
+    def __init__(
+        self,
+        window,
+        mst,
+        msk,
+        mask_value: int,
+        nodata: float,
+        idx: Optional[int] = None,
+    ):
         super().__init__()
         self.window = window
         self.mst = mst
@@ -397,7 +416,7 @@ class ScaledRasterWorker(QRunnable):
                 nodata = src.nodata
 
             # Create output array
-            output = np.full_like(norm_data, self.profile['nodata'], dtype='float32')
+            output = np.full_like(norm_data, self.profile["nodata"], dtype="float32")
 
             # Scale the normalized data
             valid_data = norm_data != nodata
@@ -408,7 +427,7 @@ class ScaledRasterWorker(QRunnable):
                     mask = norm_data == zone_id
                     output[mask] = norm_data[mask] * self.scale_factors[zone_id]
 
-            output[~valid_data] = self.profile['nodata']
+            output[~valid_data] = self.profile["nodata"]
             self.result = output[np.newaxis, :, :]
 
         except Exception as e:

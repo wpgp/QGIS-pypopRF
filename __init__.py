@@ -45,50 +45,57 @@ def classFactory(iface):  # pylint: disable=invalid-name
 
         # Determine OS and Python executable
         system = platform.system().lower()
-        if system == 'windows':
-            python = os.path.join(os.environ.get('PYTHONHOME'), 'python.exe')
-            platform_tag = 'win_amd64'
-        elif system == 'linux':
-            python = 'python3'
-            platform_tag = 'manylinux2014_x86_64'
-        elif system == 'darwin':
-            python = 'python3'
-            platform_tag = 'macosx_10_14_x86_64'
+        if system == "windows":
+            python = os.path.join(os.environ.get("PYTHONHOME"), "python.exe")
+            platform_tag = "win_amd64"
+        elif system == "linux":
+            python = "python3"
+            platform_tag = "manylinux2014_x86_64"
+        elif system == "darwin":
+            python = "python3"
+            platform_tag = "macosx_10_14_x86_64"
         else:
             raise OSError(f"Unsupported operating system: {system}")
 
         try:
             # First attempt: with platform-specific wheels
-            subprocess.check_call([
-                python,
-                '-m',
-                'pip',
-                'install',
-                '-r',
-                requirements_path,
-                '--platform',
-                platform_tag,
-                '--only-binary=:all:',
-                f'--target={deps_path}'
-            ])
+            subprocess.check_call(
+                [
+                    python,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    requirements_path,
+                    "--platform",
+                    platform_tag,
+                    "--only-binary=:all:",
+                    f"--target={deps_path}",
+                ]
+            )
         except subprocess.CalledProcessError as e:
             try:
                 # Second attempt: without platform specifications
-                subprocess.check_call([
-                    python,
-                    '-m',
-                    'pip',
-                    'install',
-                    '-r',
-                    requirements_path,
-                    f'--target={deps_path}'
-                ])
+                subprocess.check_call(
+                    [
+                        python,
+                        "-m",
+                        "pip",
+                        "install",
+                        "-r",
+                        requirements_path,
+                        f"--target={deps_path}",
+                    ]
+                )
             except subprocess.CalledProcessError as e:
-                raise RuntimeError(f"Failed to install dependencies for {system} ({platform_tag}). Error: {str(e)}")
+                raise RuntimeError(
+                    f"Failed to install dependencies for {system} ({platform_tag}). Error: {str(e)}"
+                )
 
     if deps_path not in sys.path:
         sys.path.insert(1, deps_path)
         importlib.invalidate_caches()
 
     from .qgis_pypoprf import PyPopRF
+
     return PyPopRF(iface)
