@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/development/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/getting-started/installation/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/getting-started/quickstart/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/user-guide/input-data/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/user-guide/interface/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/user-guide/running-analysis/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+    <url>
+         <loc>https://wpgp.github.io/QGIS-pypopRF/user-guide/settings/</loc>
+         <lastmod>2025-02-13</lastmod>
+    </url>
+</urlset>
