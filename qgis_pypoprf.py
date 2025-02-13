@@ -159,8 +159,7 @@ class PyPopRF:
         Initializes the plugin's visual components and connects them
         to their respective actions.
         """
-
-        icon_path = ":/plugins/pypopRF/icon.png"
+        icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
         self.add_action(
             icon_path,
             text=self.tr("Run Population Modeling"),
