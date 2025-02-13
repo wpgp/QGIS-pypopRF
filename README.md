@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/913350629.svg)](https://doi.org/10.5281/zenodo.14867059)
+
 # QGIS pypopRF Plugin
 
 A QGIS plugin for high-resolution population mapping using machine learning and dasymetric techniques. Create detailed population distribution maps by combining census data with geospatial covariates.
