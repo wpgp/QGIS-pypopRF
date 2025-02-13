@@ -2,7 +2,7 @@
 name=pypopRF
 qgisMinimumVersion=3.0
 description=A plugin for population prediction and dasymetric mapping using machine learning
-version=0.1
+version=0.1.0
 author=WorldPop SDI Team:
     Borys Nosatiuk (Project Lead),
     Rhorom Priyatikanto,
