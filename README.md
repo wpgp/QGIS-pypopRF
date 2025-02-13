@@ -70,6 +70,20 @@ The plugin generates the following files in your project's output directory:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Citation
+
+If you use QGIS-pypopRF in your research, please cite:
+
+```bibtex
+@software{QGIS-pypopRF,
+  author = {Nosatiuk B., Priyatikanto R., Zhang W., McKeen T., Vataga E., Tejedor-Garavito N, Bondarenko M.},
+  title = {QGIS-pypopRF: Population Prediction and Dasymetric Mapping Tool},
+  publisher = {GitHub},
+  url = {https://github.com/wpgp/QGIS-pypopRF}
+}
+```
+
+
 ## Development Team
 
 Developed by the WorldPop SDI Team:
