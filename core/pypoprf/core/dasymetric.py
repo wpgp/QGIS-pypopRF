@@ -78,12 +78,6 @@ class DasymetricMapper:
             logger.error(error_msg)
             raise ValueError(error_msg)
 
-        # Handle special case where population column is named 'sum'
-        if pop_column == "sum":
-            logger.info("Renaming 'sum' column to 'pop'")
-            pop_column = "pop"
-            census = census.rename(columns={"sum": "pop"})
-
         # Validate population values
         if (census[pop_column] < 0).any():
             logger.error("Found negative population values in census data")

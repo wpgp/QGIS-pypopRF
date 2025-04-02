@@ -147,11 +147,6 @@ class FeatureExtractor:
             logger.error(f"Population column '{pop_column}' not found in census data")
             raise ValueError("pop_column not found in census data")
 
-        if pop_column == "sum":
-            logger.info("Renaming 'sum' column to 'pop'")
-            pop_column = "pop"
-            census = census.rename(columns={"sum": "pop"})
-
         if simple:
             logger.debug("Simplifying census DataFrame")
             census = census[[id_column, pop_column]]
@@ -219,14 +214,17 @@ class FeatureExtractor:
         # Filter columns if avg_only is True
         if avg_only:
             logger.info("Filtering for average statistics only")
-            cols = ["id", "pop"]
+            pop_column = self.settings.census["pop_column"]
+            id_column = self.settings.census["id_column"]
+            cols = [id_column, pop_column]
             cols.extend([c for c in res.columns if c.endswith("avg")])
             res = res[cols]
             logger.debug(f"Selected columns: {cols}")
 
         # Calculate population density
         logger.info("Calculating population density")
-        res["dens"] = np.divide(res["pop"], count, where=(count > 0))
+        pop_column = self.settings.census["pop_column"]
+        res["dens"] = np.divide(res[pop_column], count, where=(count > 0))
 
         # Check for potential issues in density calculation
         zero_counts = np.sum(count == 0)

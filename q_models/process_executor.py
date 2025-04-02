@@ -66,8 +66,9 @@ class ProcessWorker(QThread):
 
     def run(self):
         """Run the analysis process"""
-        settings = Settings.from_file(self.config_path)
         try:
+            settings = Settings.from_file(self.config_path)
+
             if not self._is_running:
                 self._cleanup_temp_dirs(settings)
                 return
@@ -182,7 +183,7 @@ class ProcessWorker(QThread):
 
         except Exception as e:
             self.logger.error(f"Analysis failed: {str(e)}")
-            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            # self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.finished.emit(False, str(e))
 
     @staticmethod
@@ -463,8 +464,6 @@ class ProcessExecutor:
             if self.dialog.addToQgisCheckBox.isChecked():
                 self.add_output_layers()
             self.logger.info(f"Analysis completed successfully: {message}")
-        else:
-            self.logger.error(f"Analysis failed: {message}")
 
     def _validate_inputs(self):
         """Validate all required inputs.

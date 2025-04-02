@@ -176,10 +176,13 @@ class ConsoleHandler:
             self._log_level = level
             self.logger.set_level(level)
 
-        # Update log file if needed
-        if save_log and work_dir and filename:
+        if work_dir and filename:
             log_file = os.path.join(work_dir, "output", filename)
             if log_file != self._log_file:
-                os.makedirs(os.path.dirname(log_file), exist_ok=True)
-                self._log_file = log_file
-                self.logger.set_log_file(log_file)
+                try:
+                    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+                    self._log_file = log_file
+                    self.logger.set_log_file(log_file)
+                    self.logger.info(f"Log file set to: {log_file}")
+                except Exception as e:
+                    raise ConsoleStreamError(f"Failed to set log file: {str(e)}")

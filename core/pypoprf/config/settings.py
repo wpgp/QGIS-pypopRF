@@ -5,9 +5,31 @@ import pandas as pd
 import rasterio
 import yaml
 
+from ....q_models.config_manager import ConfigManager
 from ..utils.logger import get_logger
 
 logger = get_logger()
+
+
+def rename_column_in_csv(file_path: str, old_column_name: str, new_column_name: str) -> bool:
+
+    try:
+        logger.info(f"Renaming column '{old_column_name}' to '{new_column_name}' in file {file_path}")
+
+        df = pd.read_csv(file_path)
+
+        if old_column_name not in df.columns:
+            logger.error(f"Column '{old_column_name}' not found in the file")
+            return False
+
+        df = df.rename(columns={old_column_name: new_column_name})
+        df.to_csv(file_path, index=False)
+        logger.info(f"Successfully renamed column in {file_path}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to rename column in CSV file: {str(e)}")
+        return False
 
 
 class Settings:
@@ -252,6 +274,20 @@ class Settings:
         if census_path.suffix.lower() != ".csv":
             logger.error("Census file must be CSV format")
             raise ValueError("Census file must be CSV format")
+
+        if self.census["pop_column"] == "sum":
+            logger.warning("Column name 'sum' can cause conflicts with data processing")
+            new_column_name = "population"
+
+            success = rename_column_in_csv(str(census_path), "sum", new_column_name)
+            if success:
+                logger.info(f"Renamed column 'sum' to '{new_column_name}' in file")
+                self.census["pop_column"] = new_column_name
+                config_path = Path(self.work_dir) / "config.yaml"
+                if config_path.exists():
+                    temp_config = ConfigManager(logger)
+                    temp_config.config_path = str(config_path)
+                    temp_config.update_config("census_pop_column", "population")
 
         # Validate agesex data if provided
         if self.agesex_data is not None:
