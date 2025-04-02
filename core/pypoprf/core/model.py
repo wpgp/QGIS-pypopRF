@@ -116,7 +116,9 @@ class Model:
 
             with joblib_resources():
                 logger.info("Performing feature selection")
-                importances, selected = self._select_features(X_scaled, y)
+                importances, selected = self._select_features(
+                    X_scaled, y, limit=self.settings.selection_threshold
+                )
                 logger.debug(f"Selected {len(selected)} features")
 
             X = X[selected]

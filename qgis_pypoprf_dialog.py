@@ -132,6 +132,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.settings_handler.connect_log_filename_signals(self)
 
         self.logScaleCheckBox.stateChanged.connect(lambda: self.settings_handler.save_settings(self))
+        self.selectionThresholdLimit.valueChanged.connect(lambda: self.settings_handler.save_settings(self))
+
 
         # Analysis signals
         self.mainStartButton.setStyleSheet(
@@ -237,6 +239,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         # Additional settings
         self.addToQgisCheckBox.setEnabled(enabled)
         self.logScaleCheckBox.setEnabled(enabled)
+        self.selectionThresholdLimit.setEnabled(enabled)
 
     def _handle_file_change(self, file_type: str, path: str):
         """Handle file selection changes for input files.

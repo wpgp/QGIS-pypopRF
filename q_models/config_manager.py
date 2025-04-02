@@ -21,6 +21,7 @@ DEFAULT_CONFIG = {
     "max_workers": 1,
     "show_progress": False,
     "log_scale": True,
+    "selection_threshold": 0.01,
     "logging": {"level": "INFO", "file": "logs_pypoprf.log"},
 }
 
@@ -129,16 +130,27 @@ class ConfigManager:
         try:
             with self._open_config("r") as f:
                 config = yaml.safe_load(f)
+
+            # Handle covariate case
             if key.startswith("covariate_"):
                 name = key.replace("covariate_", "")
-                config["covariates"][name] = value
-                self.logger.info(f"Added covariate '{name}': {value}")
+                old_value = config["covariates"].get(name)
+                if old_value != value:
+                    config["covariates"][name] = value
+                    self.logger.info(f"Updated covariate '{name}': {value}")
             else:
-                config[key] = value
-                if key not in ["logging", "census_id_column", "census_pop_column"]:
-                    self.logger.info(f"Updated {key}: {value}")
+                # For regular settings, check if value has changed
+                old_value = config.get(key)
+                if old_value != value:
+                    config[key] = value
+                    # Log changes except for certain keys that we don't want to log
+                    if key not in ["logging", "census_id_column", "census_pop_column"]:
+                        self.logger.info(f"Updated {key}: {value}")
+
+            # Save config
             with self._open_config("w") as f:
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
         except Exception as e:
             raise ConfigError(f"Configuration update failed: {str(e)}")
 
