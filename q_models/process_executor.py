@@ -39,14 +39,15 @@ class ProcessWorker(QThread):
     final_layers_ready = pyqtSignal(str, str)
 
     def __init__(
-        self, config_path: Path, logger: Logger, use_existing_model: bool = False
+        self, config_path: Path, logger: Logger,
+            # use_existing_model: bool = False
     ) -> None:
         """Initialize worker thread.
 
         Args:
             config_path: Path to configuration file
             logger: Logger instance
-            use_existing_model: Whether to use existing trained model
+            # use_existing_model: Whether to use existing trained model
 
         Raises:
             ProcessError: If initialization fails
@@ -56,7 +57,7 @@ class ProcessWorker(QThread):
         self.logger = logger
         self._is_running = True
         self.start_time = time.time()
-        self.use_existing_model = use_existing_model
+        # self.use_existing_model = use_existing_model
 
     def stop(self):
         """Stop the analysis process"""
@@ -127,12 +128,13 @@ class ProcessWorker(QThread):
 
                 model = Model(settings)
 
-                if self.use_existing_model:
-                    self.progress.emit(40, "Loading existing model...")
-                    model.load_model(str(model_path), str(scaler_path))
-                else:
-                    self.progress.emit(40, "Training new model...")
-                    model.train(features, log_scale=settings.log_scale)
+                # if self.use_existing_model:
+                #     self.progress.emit(40, "Loading existing model...")
+                #     model.load_model(str(model_path), str(scaler_path))
+                # else:
+
+                self.progress.emit(40, "Training new model...")
+                model.train(features, log_scale=settings.log_scale)
 
                 self._print_feature_importance(settings)
 
@@ -347,10 +349,10 @@ class ProcessExecutor:
         if not self._check_and_clear_outputs(output_dir):
             return
 
-        # Check existing model and get user choice
-        proceed, use_existing_model = self._check_existing_model(output_dir)
-        if not proceed:
-            return
+        # # Check existing model and get user choice
+        # proceed, use_existing_model = self._check_existing_model(output_dir)
+        # if not proceed:
+        #     return
 
         # Clear console and reset progress
         self.dialog.console_handler.clear()
@@ -364,7 +366,7 @@ class ProcessExecutor:
             self.worker = ProcessWorker(
                 self.dialog.config_manager.config_path,
                 self.logger,
-                use_existing_model=use_existing_model,
+                # use_existing_model=use_existing_model,
             )
 
             # Connect signals

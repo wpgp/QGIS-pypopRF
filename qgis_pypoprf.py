@@ -188,9 +188,11 @@ class PyPopRF:
         Creates and shows the main plugin dialog. Dialog is created only
         once per QGIS session to improve performance.
         """
-        if self.first_start:
-            self.first_start = False
-            self.dlg = PyPopRFDialog(iface=self.iface)
+        # if self.first_start:
+        #     self.first_start = False
+        #     self.dlg = PyPopRFDialog(iface=self.iface)
+
+        self.dlg = PyPopRFDialog(iface=self.iface)
 
         try:
             self.dlg.show()

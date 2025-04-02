@@ -142,7 +142,12 @@ class SettingsHandler:
             dialog.popColumnEdit.setText(config["census_pop_column"])
             dialog.idColumnEdit.setText(config["census_id_column"])
 
+            # Load log scale setting
             dialog.logScaleCheckBox.setChecked(config.get("log_scale", True))
+
+            # Load selection threshold setting
+            dialog.selectionThresholdLimit.setValue(config.get("selection_threshold", 0.01))
+
             self.logger.info("Settings loaded successfully")
 
         except Exception as e:
@@ -162,6 +167,8 @@ class SettingsHandler:
                 "by_block": dialog.enableBlockProcessingCheckBox.isChecked(),
                 "census_pop_column": dialog.popColumnEdit.text(),
                 "census_id_column": dialog.idColumnEdit.text(),
+                "log_scale": dialog.logScaleCheckBox.isChecked(),
+                "selection_threshold": dialog.selectionThresholdLimit.value(),
             }
 
             # Handle block size
@@ -176,7 +183,7 @@ class SettingsHandler:
             for key, value in settings.items():
                 self.config_manager.update_config(key, value)
 
-            self.logger.info("Settings saved successfully")
+            self.logger.debug("Settings saved successfully")
             return True
 
         except Exception as e:

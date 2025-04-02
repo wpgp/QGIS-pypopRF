@@ -57,6 +57,7 @@ class Settings:
         max_workers: int = 4,
         show_progress: bool = True,
         log_scale: bool = True,
+        selection_threshold: float = 0.01,
         logging: Optional[Dict] = None,
     ):
         """Initialize Settings.
@@ -78,6 +79,7 @@ class Settings:
             max_workers: Max parallel workers
             show_progress: Show progress bars
             log_scale: Whether to train model on log(dens)
+            selection_threshold: Threshold for feature selection in the model
             logging: Logging configuration
 
         Raises:
@@ -104,6 +106,7 @@ class Settings:
         self.max_workers = max_workers
         self.show_progress = show_progress
         self.log_scale = log_scale
+        self.selection_threshold = selection_threshold
 
         # Logging settings
         self._init_logging(logging)
@@ -403,6 +406,7 @@ class Settings:
             f"    Max Workers: {self.max_workers}\n"
             f"    Show Progress: {self.show_progress}"
             f"    Log Scale: {self.log_scale}"
+            f"    CCS Limit: {self.log_scale}"
             f"  Logging:\n"
             f"    Level: {self.logging['level']}\n"
             f"    File: {self.logging['file']}"
