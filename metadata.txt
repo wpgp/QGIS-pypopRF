@@ -15,7 +15,13 @@ about=The QGIS PyPopRF plugin provides tools for high-resolution population pred
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
 hasProcessingProvider=no
-changelog=Version 0.1:
+changelog=Version 0.1.1:
+    * Added logarithmic scale option
+    * Added configurable feature selection threshold
+    * Improved configuration management
+    * Fixed bugs in prediction processing
+    * Enhanced UI layout
+Version 0.1.0:
     * Initial release
     * Basic population modeling functionality
     * Support for parallel processing

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-04-02
+
+### Added
+- Logarithmic scale option for improved population density modeling
+- Configurable selection threshold for feature importance (CCS Limit)
+
+### Changed
+- Optimized configuration updates to only log actual changes
+- Improved plugin cleanup when restarting
+- Enhanced UI layout in Settings tab
+
+### Fixed
+- Bug with PredictionWorker parameters
+- Issues with model parameter passing for logarithmic transformations
+
 ## [0.1.0] - 2024-02-13
 
 First release of the QGIS pypopRF Plugin.
