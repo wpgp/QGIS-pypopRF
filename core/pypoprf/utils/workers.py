@@ -119,7 +119,7 @@ class PredictionWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class RasterWorker(QRunnable):
@@ -165,7 +165,7 @@ class RasterWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class RasterStackWorker(QRunnable):
@@ -218,7 +218,7 @@ class RasterStackWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class NormalizationWorker(QRunnable):
@@ -273,7 +273,7 @@ class NormalizationWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class DasymetricWorker(QRunnable):
@@ -349,7 +349,7 @@ class DasymetricWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class MaskWorker(QRunnable):
@@ -396,7 +396,7 @@ class MaskWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in mask worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())
 
 
 class ScaledRasterWorker(QRunnable):
@@ -432,4 +432,4 @@ class ScaledRasterWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            logger.error(traceback.format_exc())
+            # logger.error(traceback.format_exc())

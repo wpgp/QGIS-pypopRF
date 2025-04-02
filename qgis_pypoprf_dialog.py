@@ -297,6 +297,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
                 # Load initial settings
                 self.settings_handler.load_settings(self)
+                self._update_logging_settings()
 
                 # Show next steps
                 self.logger.info("Project initialized successfully!")

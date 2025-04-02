@@ -78,7 +78,9 @@ class Model:
         logger.info("Starting model training process")
 
         data = data.dropna()
-        drop_cols = np.intersect1d(data.columns.values, ["id", "pop", "dens"])
+        pop_column = self.settings.census["pop_column"]
+        id_column = self.settings.census["id_column"]
+        drop_cols = np.intersect1d(data.columns.values, [id_column, pop_column, "dens"])
         X = data.drop(columns=drop_cols).copy()
         y = data["dens"].values
         self.target_mean = y.mean()
