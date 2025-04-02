@@ -131,6 +131,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.settings_handler.connect_census_fields_signals(self)
         self.settings_handler.connect_log_filename_signals(self)
 
+        self.logScaleCheckBox.stateChanged.connect(lambda: self.settings_handler.save_settings(self))
+
         # Analysis signals
         self.mainStartButton.setStyleSheet(
             "QPushButton { background-color: #878c87; color: black; font-size: 10pt; }"
@@ -234,6 +236,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # Additional settings
         self.addToQgisCheckBox.setEnabled(enabled)
+        self.logScaleCheckBox.setEnabled(enabled)
 
     def _handle_file_change(self, file_type: str, path: str):
         """Handle file selection changes for input files.

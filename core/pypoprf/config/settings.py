@@ -37,22 +37,6 @@ class Settings:
 
     This class handles configuration settings for population modeling,
     including file paths, processing parameters, and validation of inputs.
-
-    Attributes:
-        work_dir (Path): Working directory path
-        data_dir (Path): Data directory path
-        mastergrid (str): Path to mastergrid file
-        mask (str): Path to water mask file (optional)
-        constrain (str): Path to constraining raster (optional)
-        covariate (dict): Dictionary of covariate names and paths
-        census (dict): Census data configuration
-        agesex_data (str): Path to age-sex structure CSV file (optional)
-        output_dir (Path): Output directory path
-        by_block (bool): Whether to process by blocks
-        block_size (tuple): Size of processing blocks
-        max_workers (int): Maximum parallel workers
-        show_progress (bool): Show progress bars
-
     """
 
     def __init__(
@@ -72,6 +56,7 @@ class Settings:
         block_size: Tuple[int, int] = (512, 512),
         max_workers: int = 4,
         show_progress: bool = True,
+        log_scale: bool = True,
         logging: Optional[Dict] = None,
     ):
         """Initialize Settings.
@@ -92,6 +77,7 @@ class Settings:
             block_size: Block dimensions (width, height)
             max_workers: Max parallel workers
             show_progress: Show progress bars
+            log_scale: Whether to train model on log(dens)
             logging: Logging configuration
 
         Raises:
@@ -117,6 +103,7 @@ class Settings:
         self.block_size = tuple(block_size)
         self.max_workers = max_workers
         self.show_progress = show_progress
+        self.log_scale = log_scale
 
         # Logging settings
         self._init_logging(logging)
@@ -415,6 +402,7 @@ class Settings:
             f"    Block Size: {self.block_size}\n"
             f"    Max Workers: {self.max_workers}\n"
             f"    Show Progress: {self.show_progress}"
+            f"    Log Scale: {self.log_scale}"
             f"  Logging:\n"
             f"    Level: {self.logging['level']}\n"
             f"    File: {self.logging['file']}"

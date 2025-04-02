@@ -20,6 +20,7 @@ DEFAULT_CONFIG = {
     "block_size": [512, 512],
     "max_workers": 1,
     "show_progress": False,
+    "log_scale": True,
     "logging": {"level": "INFO", "file": "logs_pypoprf.log"},
 }
 

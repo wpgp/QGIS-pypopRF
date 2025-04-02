@@ -142,6 +142,7 @@ class SettingsHandler:
             dialog.popColumnEdit.setText(config["census_pop_column"])
             dialog.idColumnEdit.setText(config["census_id_column"])
 
+            dialog.logScaleCheckBox.setChecked(config.get("log_scale", True))
             self.logger.info("Settings loaded successfully")
 
         except Exception as e:
