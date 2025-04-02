@@ -132,7 +132,7 @@ class ProcessWorker(QThread):
                     model.load_model(str(model_path), str(scaler_path))
                 else:
                     self.progress.emit(40, "Training new model...")
-                    model.train(features)
+                    model.train(features, log_scale=settings.log_scale)
 
                 self._print_feature_importance(settings)
 
@@ -140,7 +140,7 @@ class ProcessWorker(QThread):
                 if not self._is_running:
                     return
                 self.progress.emit(60, "Making predictions...")
-                predictions = model.predict()
+                predictions = model.predict(log_scale=settings.log_scale)
 
                 # predictions = Path(settings.work_dir) / 'output' / 'prediction.tif'
 

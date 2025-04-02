@@ -59,6 +59,7 @@ class Model:
         data: pd.DataFrame,
         model_path: Optional[str] = None,
         scaler_path: Optional[str] = None,
+        log_scale: bool = True,
         save_model: bool = True,
     ) -> None:
         """
@@ -69,6 +70,7 @@ class Model:
                  Must include 'id', 'pop', 'dens' columns
             model_path: Optional path to load pretrained model
             scaler_path: Optional path to load fitted scaler
+            log_scale: Whether to train the model with log(dens)
             save_model: Whether to save model after training
 
         Raises:
@@ -83,6 +85,8 @@ class Model:
         drop_cols = np.intersect1d(data.columns.values, [id_column, pop_column, "dens"])
         X = data.drop(columns=drop_cols).copy()
         y = data["dens"].values
+        if log_scale:
+            y = np.log(y + 0.1)
         self.target_mean = y.mean()
         self.feature_names = X.columns.values
 
@@ -116,12 +120,17 @@ class Model:
                 logger.debug(f"Selected {len(selected)} features")
 
             X = X[selected]
+            self.selected_features = selected
             self.scaler.fit(X)
             X_scaled = self.scaler.transform(X)
 
             logger.info("Fitting Random Forest model")
             self.model.fit(X_scaled, y)
             logger.debug("Model fitting completed")
+
+            with joblib_resources():
+                logger.info("Calculating cross-validation scores")
+                self._calculate_cv_scores(X_scaled, y)
         else:
             logger.info(f"Loading model from: {model_path}")
             with joblib_resources():
@@ -132,10 +141,6 @@ class Model:
                 except Exception as e:
                     logger.error(f"Failed to load model: {str(e)}")
                     raise
-
-        with joblib_resources():
-            logger.info("Calculating cross-validation scores")
-            self._calculate_cv_scores(X_scaled, y)
 
         if save_model:
             logger.info("Saving model and scaler")
@@ -188,7 +193,7 @@ class Model:
             raise
 
     def _select_features(
-        self, X: np.ndarray, y: np.ndarray, limit: float = 0.05
+        self, X: np.ndarray, y: np.ndarray, limit: float = 0.01
     ) -> Tuple[pd.DataFrame, np.ndarray]:
         """
         Select features based on importance using permutation importance.
@@ -204,13 +209,13 @@ class Model:
 
         logger.info("Calculating permutation importance")
         result = permutation_importance(
-            model, X, y, n_repeats=10, n_jobs=1, scoring="neg_root_mean_squared_error"
+            model, X, y, n_repeats=20, n_jobs=1, scoring="neg_root_mean_squared_error"
         )
 
         sorted_idx = result.importances_mean.argsort()
         importances = pd.DataFrame(
             result.importances[sorted_idx].T / ymean,
-            columns=names,
+            columns=names[sorted_idx],
         )
 
         self.feature_importances = pd.DataFrame(
@@ -224,7 +229,7 @@ class Model:
         importance_path = Path(self.settings.work_dir) / "output" / "feature_importance.csv"
         self.feature_importances.to_csv(importance_path, index=False)
 
-        selected = importances.columns.values[importances.mean(axis=0) > limit]
+        selected = importances.columns.values[np.median(importances, axis=0) > limit]
         self.selected_features = selected
         return importances, selected
 
@@ -302,7 +307,7 @@ class Model:
         logger.info(f"- Using threads: {self.settings.max_workers}")
         return executor
 
-    def _process_windows(self, dst, executor: QThreadPool) -> Tuple[List, List]:
+    def _process_windows(self, dst, executor: QThreadPool, log_scale: bool = True) -> Tuple[List, List]:
         """Process raster windows in parallel."""
         windows = [window[1] for window in dst.block_windows()]
         workers = []
@@ -317,6 +322,7 @@ class Model:
                 self.selected_features,
                 self.model,
                 self.scaler,
+                log_scale=log_scale,
             )
             worker.idx = i
             worker.setAutoDelete(False)
@@ -354,7 +360,7 @@ class Model:
         except Exception as e:
             logger.warning(f"Failed to close mastergrid: {str(e)}")
 
-    def predict(self) -> str:
+    def predict(self, log_scale: bool = True) -> str:
         """Main prediction method."""
 
         if self.model is None or self.scaler is None:
@@ -369,7 +375,7 @@ class Model:
                 with rasterio.open(outfile, "w", **profile) as dst:
                     if self.settings.by_block:
                         executor = self._setup_thread_pool()
-                        windows, workers = self._process_windows(dst, executor)
+                        windows, workers = self._process_windows(dst, executor, log_scale=log_scale)
 
                         executor.waitForDone()
                         PredictionWorker.progress_bar.finish()
@@ -384,9 +390,10 @@ class Model:
                         worker = PredictionWorker(
                             window,
                             self.settings.covariate,
-                            self.feature_names,
+                            self.selected_features,
                             self.model,
                             self.scaler,
+                            log_scale=log_scale,
                         )
 
                         worker.run()

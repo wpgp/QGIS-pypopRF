@@ -84,7 +84,7 @@ class PredictionWorker(QRunnable):
     progress_bar = None
     lock = threading.Lock()
 
-    def __init__(self, window, covariates, selected_features, model, scaler):
+    def __init__(self, window, covariates, selected_features, model, scaler, log_scale=True):
         super().__init__()
         self.window = window
         self.covariates = covariates
@@ -93,6 +93,7 @@ class PredictionWorker(QRunnable):
         self.scaler = scaler
         self.result = None
         self.idx = None
+        self.log_scale = log_scale
 
     @classmethod
     def init_progress(cls, total_workers, logger):
@@ -110,6 +111,8 @@ class PredictionWorker(QRunnable):
             df = df[self.selected_features]
             sx = self.scaler.transform(df)
             yp = self.model.predict(sx)
+            if self.log_scale:
+                yp = np.exp(yp)
             self.result = yp.reshape(arr.shape)
 
             with self.lock:

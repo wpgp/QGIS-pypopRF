@@ -808,11 +808,12 @@ class DasymetricMapper:
 
             # Create normalized raster
             norm_raster_path = self._create_normalized_raster(
-                normalized, constrained=False, suffix=pop_column
+                normalized, constrained=False,
             )
 
             self._create_dasymetric_raster(
-                prediction_path, norm_raster_path, constrained=False, suffix=pop_column
+                prediction_path, norm_raster_path, constrained=False,
+                suffix=pop_column
             )
 
         if self.settings.constrain:
@@ -825,7 +826,7 @@ class DasymetricMapper:
                 normalized["norm"] *= census[pop_column].values
 
                 norm_raster_path = self._create_normalized_raster(
-                    normalized, constrained=True, suffix=pop_column
+                    normalized, constrained=True,
                 )
 
                 self._create_dasymetric_raster(
