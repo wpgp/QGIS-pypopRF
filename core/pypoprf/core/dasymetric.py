@@ -10,7 +10,7 @@ from rasterio.windows import Window
 from ..config.settings import Settings
 from ..utils.logger import get_logger
 from ..utils.raster import raster_stat
-from ..utils.workers import NormalizationWorker, DasymetricWorker, ScaledRasterWorker
+from ..utils.workers import NormalizationWorker, DasymetricWorker
 
 logger = get_logger()
 
@@ -18,18 +18,9 @@ logger = get_logger()
 class DasymetricMapper:
     """
     Handle dasymetric mapping for population distribution.
-
-    This class manages the process of dasymetric mapping, which redistributes
-    population data from census units to a finer grid based on ancillary data.
-    """
+     """
 
     def __init__(self, settings: Settings):
-        """
-        Initialize the DasymetricMapper.
-
-        Args:
-            settings: Settings object containing configuration parameters
-        """
         self.settings = settings
         self.output_dir = Path(settings.work_dir) / "output"
         self.output_dir.mkdir(exist_ok=True)
@@ -40,20 +31,6 @@ class DasymetricMapper:
     ) -> Tuple[pd.DataFrame, str, str]:
         """
         Validate census data and extract column names.
-
-        Args:
-            census: Census DataFrame with population data
-            kwargs: Dictionary with parameters including column names
-            simple: If True, return simplified DataFrame with only ID and population columns
-
-        Returns:
-            Tuple containing:
-            - Validated census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If required columns are not found
         """
         logger.info("Validating census data")
 
@@ -148,14 +125,6 @@ class DasymetricMapper:
     ) -> None:
         """
         Validate input files and their compatibility.
-
-        Args:
-            prediction_path: Path to prediction raster
-            mastergrid_path: Path to mastergrid raster
-            constrain_path: Path to constraining raster
-
-        Raises:
-            ValueError: If files are incompatible or contain invalid data
         """
         logger.info("Starting input validation")
 
@@ -244,19 +213,6 @@ class DasymetricMapper:
     def _validate_agesex(census: pd.DataFrame, id_column: str) -> tuple[Any, str, list[Any]]:
         """
         Validate census data and extract column names.
-
-        Args:
-            census: Census DataFrame with population data
-            id_column: Column name containing region IDs
-
-        Returns:
-            Tuple containing:
-            - Validated census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If required columns are not found
         """
         logger.info("Validating census data with age-sex structure")
 
@@ -281,19 +237,6 @@ class DasymetricMapper:
     def _load_census(self, census_path: str, **kwargs) -> Tuple[pd.DataFrame, str, str]:
         """
         Load and validate census data.
-
-        Args:
-            census_path: Path to census data file
-            **kwargs: Additional arguments passed to census validation
-
-        Returns:
-            Tuple containing:
-            - Processed census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If census data is invalid or cannot be loaded
         """
         logger.info("Loading census data")
 
@@ -340,19 +283,6 @@ class DasymetricMapper:
     def _load_agesex(self, census_path: str, id_column: str) -> tuple[Any, str, list[Any]]:
         """
         Load and validate census data with age-sex structure.
-
-        Args:
-            census_path: Path to census data file
-            id_column: Column name containing region IDs
-
-        Returns:
-            Tuple containing:
-            - Processed census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If census data is invalid or cannot be loaded
         """
         logger.info("Loading census data with age-sex structure")
 
@@ -392,16 +322,6 @@ class DasymetricMapper:
     ) -> pd.DataFrame:
         """
         Calculate normalization factors with detailed diagnostics.
-
-        Args:
-            census: Census DataFrame with population data
-            prediction_path: Path to prediction raster
-            id_column: Column name containing region IDs
-            pop_column: Column name containing population values
-            constrained: Whether to use constrained mastergrid for calculation
-
-        Returns:
-            DataFrame with normalization factors
         """
         logger.info("Calculating normalization factors")
 
@@ -466,13 +386,20 @@ class DasymetricMapper:
         )
         total_pop_check = (merged["sum"] * merged["norm"]).sum()
 
+        logger.debug(f"Before returning normalized data:")
+        logger.debug(f"  - Shape: {merged.shape}")
+        logger.debug(f"  - Columns: {merged.columns.tolist()}")
+        logger.debug(f"  - IDs range: [{merged['id'].min()}, {merged['id'].max()}]")
+        logger.debug(f"  - Valid normalization factors: {merged['norm'].count()}")
+
+
         constraint_type = "constrained" if constrained else "unconstrained"
         logger.info(f"Normalization factors summary ({constraint_type}):")
         logger.info(f"- Range: [{merged['norm'].min():.4f}, {merged['norm'].max():.4f}]")
         logger.info(f"- Mean: {merged['norm'].mean():.4f}")
         logger.info(f"- Median: {merged['norm'].median():.4f}")
         logger.info(f"- Std: {merged['norm'].std():.4f}")
-
+        #
         logger.info(f"Population Verification ({constraint_type}):")
         logger.info(f"Original: {pre_merge_pop:,}")
         logger.info(f"After normalization: {total_pop_check:,.0f}")
@@ -505,17 +432,15 @@ class DasymetricMapper:
     ) -> str:
         """
         Create raster of normalization factors.
-
-        Args:
-            normalized_data: DataFrame with normalization factors
-            constrained: Whether this is for constrained output
-            suffix: Optional suffix for agesex files
-
-        Returns:
-            Path to normalized raster
         """
 
         mastergrid = self.settings.constrain if constrained else self.settings.mastergrid
+
+        logger.debug(f"Normalized data summary:")
+        logger.debug(f"- Shape: {normalized_data.shape}")
+        logger.debug(f"- Norm range: [{normalized_data['norm'].min():.6f}, {normalized_data['norm'].max():.6f}]")
+        logger.debug(f"- Norm mean: {normalized_data['norm'].mean():.6f}")
+        logger.debug(f"- Norm median: {normalized_data['norm'].median():.6f}")
 
         if suffix:
             output_dir = self.output_dir / "agesex" / "additional_files"
@@ -534,7 +459,6 @@ class DasymetricMapper:
         raster_type = self._get_raster_type_description(output_path)
         logger.info(f"Creating {raster_type.lower()}")
 
-        # Get profile from mastergrid
         with rasterio.open(mastergrid) as src:
             profile = src.profile.copy()
             profile.update(
@@ -553,8 +477,11 @@ class DasymetricMapper:
             for _, row in normalized_data.iterrows()
             if not np.isnan(row["norm"])
         }
+        logger.debug(f"Created normalization mapping with {len(norm_mapping)} valid entries")
+        logger.debug(f"Norm mapping values range: [{min(norm_mapping.values()):.6f}, {max(norm_mapping.values()):.6f}]")
+        logger.debug(f"First 5 norm values: {list(norm_mapping.values())[:5]}")
 
-        with rasterio.open(mastergrid) as mst, rasterio.open(
+        with rasterio.open(
             str(output_path), "w", **profile
         ) as dst:
 
@@ -566,7 +493,6 @@ class DasymetricMapper:
                 executor.setMaxThreadCount(self.settings.max_workers)
 
                 workers = []
-                total_valid_mappings = 0
 
                 NormalizationWorker.init_progress(len(windows), logger)
 
@@ -584,18 +510,25 @@ class DasymetricMapper:
 
                 executor.waitForDone()
 
-                # Collect results and count valid mappings
+                total_valid_mappings = 0
                 for i, worker in enumerate(workers):
                     if worker.result is not None:
                         dst.write(worker.result, window=windows[i])
                         total_valid_mappings += worker.valid_mappings
 
+                total_mappings_count = sum(worker.valid_mappings for worker in workers if worker.result is not None)
+                logger.info(f"Total pixel mappings across all workers: {total_mappings_count}")
+
                 logger.info(f"\nNormalization summary:")
                 logger.info(f"- Total windows processed: {len(windows)}")
                 logger.info(f"- Total valid mappings: {total_valid_mappings}")
-                logger.info(
-                    f"- Percentage of valid mappings: {total_valid_mappings / len(norm_mapping) * 100:.2f}%"
-                )
+
+                with rasterio.open(mastergrid) as src:
+                    total_pixels = src.width * src.height
+
+                valid_percentage = (total_valid_mappings / total_pixels) * 100 if total_pixels > 0 else 0
+                logger.info(f"- Percentage of valid mappings: {valid_percentage:.2f}% (of all pixels)")
+                logger.info(f"- Average pixels per zone: {total_valid_mappings / len(norm_mapping):.2f}")
 
                 workers.clear()
             else:
@@ -612,6 +545,15 @@ class DasymetricMapper:
                     dst.write(worker.result)
                     logger.info(f"Valid mappings: {worker.valid_mappings}")
 
+        with rasterio.open(str(output_path)) as src:
+            data = src.read(1)
+            valid_mask = data != profile["nodata"]
+            if np.any(valid_mask):
+                logger.debug(f"Created raster statistics:")
+                logger.debug(f"- Valid pixels: {np.sum(valid_mask)}")
+                logger.debug(f"- Range: [{data[valid_mask].min():.6f}, {data[valid_mask].max():.6f}]")
+                logger.debug(f"- Mean value: {data[valid_mask].mean():.6f}")
+
         raster_type = self._get_raster_type_description(output_path)
         logger.info(f"{raster_type} created successfully: {output_path}")
         return str(output_path)
@@ -623,15 +565,8 @@ class DasymetricMapper:
         constrained: bool = False,
         suffix: Optional[str] = None,
     ) -> Path:
-        """Create final dasymetric population raster.
+        """Create final dasymetric population raster."""
 
-        Args:
-            prediction_path: Path to prediction raster
-            norm_raster_path: Path to normalization raster
-            constrained: Whether this is constrained output
-            suffix: Optional suffix for agesex files
-        """
-        # Determine output path based on parameters
         if suffix:
             # Agesex output
             output_dir = self.output_dir / "agesex"
@@ -657,8 +592,8 @@ class DasymetricMapper:
                 {
                     "dtype": "float32",
                     "nodata": -99,
-                    "blockxsize": 256,
-                    "blockysize": 256,
+                    "blockxsize": 512,
+                    "blockysize": 512,
                 }
             )
 
@@ -733,15 +668,7 @@ class DasymetricMapper:
         return output_path
 
     def map(self, prediction_path: str) -> dict[str, Path]:
-        """
-        Perform dasymetric mapping using prediction raster and census data.
-
-        Args:
-            prediction_path: Path to prediction raster from model
-
-        Returns:
-            Path to final dasymetric population raster
-        """
+        """Perform dasymetric mapping using prediction raster and census data."""
 
         # Load and validate inputs
         self._validate_inputs(

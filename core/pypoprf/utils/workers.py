@@ -1,7 +1,6 @@
 import threading
 import time
-import traceback
-from typing import Union, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -122,7 +121,6 @@ class PredictionWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
 
 
 class RasterWorker(QRunnable):
@@ -168,7 +166,6 @@ class RasterWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
 
 
 class RasterStackWorker(QRunnable):
@@ -221,7 +218,6 @@ class RasterStackWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
 
 
 class NormalizationWorker(QRunnable):
@@ -259,11 +255,14 @@ class NormalizationWorker(QRunnable):
             valid_data = mst_data != nodata
             unique_zones = np.unique(mst_data[valid_data])
 
+            total_valid_pixels = 0
             for zone_id in unique_zones:
                 if zone_id in self.norm_mapping:
                     mask = mst_data == zone_id
                     output[mask] = self.norm_mapping[zone_id]
-                    self.valid_mappings += mask.sum()
+                    pixels_in_zone = np.sum(mask)
+                    self.valid_mappings += np.sum(mask)
+                    total_valid_pixels += pixels_in_zone
 
             output[~valid_data] = self.profile["nodata"]
 
@@ -276,7 +275,6 @@ class NormalizationWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
 
 
 class DasymetricWorker(QRunnable):
@@ -308,33 +306,22 @@ class DasymetricWorker(QRunnable):
     def run(self):
         try:
             with rasterio.open(self.file_paths["prediction"]) as pred, rasterio.open(
-                self.file_paths["normalization"]
+                    self.file_paths["normalization"]
             ) as norm:
 
                 pred_data = pred.read(1, window=self.window)
                 norm_data = norm.read(1, window=self.window)
 
-                invalid_mask = (pred_data == pred.nodata) | (
-                    norm_data == self.profile["nodata"]
-                )
-
-                pred_data = np.where(invalid_mask, 0, pred_data)
-                norm_data = np.where(invalid_mask, 0, norm_data)
+                # pred_data = np.where(invalid_mask, 0, pred_data)
+                # norm_data = np.where(invalid_mask, 0, norm_data)
 
                 population = pred_data * norm_data
 
-                valid_values = population[~invalid_mask]
-                if len(valid_values) > 0:
-                    logger.debug(
-                        f"Window group {self.idx // 50}: "
-                        f"valid pixels={len(valid_values)}, "
-                        f"range=[{valid_values.min()}, {valid_values.max()}], "
-                        f"mean={valid_values.mean():.2f}"
-                    )
+                nodata_mask = (pred_data == pred.nodata) | (norm_data == self.profile['nodata'])
+                population[nodata_mask] = self.profile['nodata']
 
-                population[invalid_mask] = self.profile["nodata"]
+                final_valid = population[~nodata_mask]
 
-                final_valid = population[~invalid_mask]
                 if len(final_valid) > 0:
                     with self.lock:
                         stats = self.__class__.final_stats
@@ -352,7 +339,6 @@ class DasymetricWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
 
 
 class MaskWorker(QRunnable):
@@ -399,40 +385,3 @@ class MaskWorker(QRunnable):
 
         except Exception as e:
             logger.error(f"Error in mask worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())
-
-
-class ScaledRasterWorker(QRunnable):
-    def __init__(self, window, norm_raster_path, scale_factors, profile, idx=None):
-        super().__init__()
-        self.window = window
-        self.norm_raster_path = norm_raster_path
-        self.scale_factors = scale_factors
-        self.profile = profile
-        self.idx = idx
-        self.result = None
-
-    def run(self):
-        try:
-            with rasterio.open(self.norm_raster_path) as src:
-                norm_data = src.read(1, window=self.window)
-                nodata = src.nodata
-
-            # Create output array
-            output = np.full_like(norm_data, self.profile["nodata"], dtype="float32")
-
-            # Scale the normalized data
-            valid_data = norm_data != nodata
-            unique_zones = np.unique(norm_data[valid_data])
-
-            for zone_id in unique_zones:
-                if zone_id < len(self.scale_factors):
-                    mask = norm_data == zone_id
-                    output[mask] = norm_data[mask] * self.scale_factors[zone_id]
-
-            output[~valid_data] = self.profile["nodata"]
-            self.result = output[np.newaxis, :, :]
-
-        except Exception as e:
-            logger.error(f"Error in worker {self.idx}: {str(e)}")
-            # logger.error(traceback.format_exc())

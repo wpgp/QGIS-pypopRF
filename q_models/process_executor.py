@@ -16,21 +16,7 @@ from ..core.pypoprf.utils.raster import remask_layer
 
 
 class ProcessWorker(QThread):
-    """Worker thread for population analysis.
-
-    Handles the heavy computation processes including:
-    - Feature extraction
-    - Model training/loading
-    - Predictions
-    - Dasymetric mapping
-
-    Signals:
-        progress: Emits progress percentage and status message
-        finished: Emits success status and completion message
-        ui_state: Emits UI enable/disable signal
-        layer_created: Emits when new layer is created
-        final_layers_ready: Emits when all layers are ready
-    """
+    """Worker thread for population analysis."""
 
     progress = pyqtSignal(int, str)
     finished = pyqtSignal(bool, str)
@@ -40,18 +26,9 @@ class ProcessWorker(QThread):
 
     def __init__(
         self, config_path: Path, logger: Logger,
-            # use_existing_model: bool = False
     ) -> None:
-        """Initialize worker thread.
+        """Initialize worker thread."""
 
-        Args:
-            config_path: Path to configuration file
-            logger: Logger instance
-            # use_existing_model: Whether to use existing trained model
-
-        Raises:
-            ProcessError: If initialization fails
-        """
         super().__init__()
         self.config_path = config_path
         self.logger = logger
@@ -198,16 +175,8 @@ class ProcessWorker(QThread):
         return f"{seconds:.0f}s"
 
     def _cleanup_temp_dirs(self, settings):
-        """Clean up temporary directories after processing.
+        """Clean up temporary directories after processing."""
 
-        Args:
-            settings: Settings instance containing paths
-
-        Note:
-            Handles cleanup of:
-            - Main temp directory
-            - Age-sex additional files directory
-        """
         dirs_to_clean = [
             os.path.join(settings.work_dir, "output", "temp"),
             os.path.join(settings.work_dir, "output", "agesex", "additional_files"),
@@ -294,32 +263,12 @@ class ProcessWorker(QThread):
 
 
 class ProcessExecutor:
-    """Manager for running population analysis process.
-
-    Handles the execution of analysis processes including:
-    - Input validation
-    - Output management
-    - UI state management
-    - QGIS layer management
-
-    Attributes:
-        dialog: Main dialog instance
-        logger: Logger instance
-        iface: QGIS interface instance
-        worker: Current process worker instance
-        output_layers: List of created output layers
-    """
+    """Manager for running population analysis process."""
 
     progress = pyqtSignal(int, str)
 
     def __init__(self, dialog, logger, iface=None):
-        """Initialize ProcessExecutor.
-
-        Args:
-            dialog: Main dialog instance
-            logger: Logger instance
-            iface: Optional QGIS interface instance
-        """
+        """Initialize ProcessExecutor."""
         self.dialog = dialog
         self.logger = logger
         self.iface = iface
@@ -332,13 +281,7 @@ class ProcessExecutor:
         return bool(self.worker and self.worker.isRunning())
 
     def start_analysis(self):
-        """Start the analysis process.
-
-        Validates inputs, checks outputs, and initializes worker thread.
-
-        Raises:
-            ProcessError: If analysis startup fails
-        """
+        """Start the analysis process."""
 
         # Validate inputs
         if not self._validate_all():

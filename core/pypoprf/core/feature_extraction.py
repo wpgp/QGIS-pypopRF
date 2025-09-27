@@ -199,6 +199,7 @@ class FeatureExtractor:
                 block_size=self.settings.block_size,
             )
             logger.debug(f"Initial features extracted: {res.shape}")
+            logger.warning(f"Extracting features completed successfully {res.shape}")
         except Exception as e:
             logger.error(f"Failed to extract features from raster stack: {str(e)}")
             raise
@@ -242,6 +243,8 @@ class FeatureExtractor:
         # Calculate population density
         logger.info("Calculating population density")
         pop_column = self.settings.census["pop_column"]
+        logger.warning(f"Calculating population density completed successfully {res.shape}")
+
         res["dens"] = np.divide(res[pop_column], count, where=(count > 0))
 
         # Check for potential issues in density calculation
@@ -265,7 +268,7 @@ class FeatureExtractor:
             save_path = Path(self.settings.work_dir) / save
             self.dump_table(res, str(save_path))
 
-        logger.info(f"Extracted features: {res.columns.values.tolist()}")
+        logger.debug(f"Extracted features: {res.columns.values.tolist()}")
 
         self.features = res
         return res

@@ -23,17 +23,6 @@ logger = get_logger()
 class Model:
     """
     Population prediction model handler.
-
-    This class manages the training, feature selection, and prediction processes
-    for population modeling using Random Forest regression.
-
-    Attributes:
-        settings (Settings): Configuration settings for the model
-        model (RandomForestRegressor): Trained Random Forest model
-        scaler (RobustScaler): Fitted feature scaler
-        feature_names (np.ndarray): Names of selected features
-        target_mean (float): Mean of target variable for normalization
-        output_dir (Path): Directory for saving outputs
     """
 
     def __init__(self, settings: Settings):
@@ -62,21 +51,8 @@ class Model:
         log_scale: bool = True,
         save_model: bool = True,
     ) -> None:
-        """
-        Train Random Forest model for population prediction.
+        """Train Random Forest model for population prediction."""
 
-        Args:
-            data: DataFrame containing features and target variables
-                 Must include 'id', 'pop', 'dens' columns
-            model_path: Optional path to load pretrained model
-            scaler_path: Optional path to load fitted scaler
-            log_scale: Whether to train the model with log(dens)
-            save_model: Whether to save model after training
-
-        Raises:
-            ValueError: If input data is invalid
-            RuntimeError: If model loading fails
-        """
         logger.info("Starting model training process")
 
         data = data.dropna()
@@ -86,11 +62,10 @@ class Model:
         X = data.drop(columns=drop_cols).copy()
         y = data["dens"].values
         if log_scale:
-            y = np.log(y + 0.1)
+            y = np.log(np.maximum(y, 0.1))
         self.target_mean = y.mean()
         self.feature_names = X.columns.values
 
-        logger.debug(f"Features selected: {self.feature_names.tolist()}")
         logger.debug(f"Target mean: {self.target_mean:.4f}")
 
         if scaler_path is None:
@@ -287,7 +262,6 @@ class Model:
 
         for k in self.settings.covariate:
             src[k] = rasterio.open(self.settings.covariate[k], "r")
-            logger.debug(f"Opened covariate: {k}")
 
         mst = rasterio.open(self.settings.mastergrid, "r")
         profile = mst.profile.copy()

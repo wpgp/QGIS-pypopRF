@@ -134,7 +134,7 @@ def aggregate_table(df: pd.DataFrame, prefix: str = "", min_count: int = 1) -> p
     return out
 
 
-def get_windows(src, block_size: Optional[Tuple[int, int]] = (256, 256)):
+def get_windows(src, block_size: Optional[Tuple[int, int]] = (512, 512)):
     """
     Get block/window tiles for reading/writing raster, ensuring windows do not exceed raster dimensions.
 
@@ -145,12 +145,17 @@ def get_windows(src, block_size: Optional[Tuple[int, int]] = (256, 256)):
     Returns:
         List of windows
     """
-    windows = []
-    for y in range(0, src.height, block_size[1]):
-        for x in range(0, src.width, block_size[0]):
-            width = min(block_size[0], src.width - x)
-            height = min(block_size[1], src.height - y)
-            windows.append(rasterio.windows.Window(x, y, width, height))
+    x0 = np.arange(0, src.width, block_size[0])
+    y0 = np.arange(0, src.height, block_size[1])
+    grid = np.meshgrid(x0, y0)
+    xg = grid[0].flatten()
+    yg = grid[1].flatten()
+    xs = np.zeros(grid[0].shape) + block_size[0]
+    ys = np.zeros(grid[1].shape) + block_size[1]
+    xs[:,-1] = src.width % block_size[0]
+    ys[-1,:] = src.height % block_size[1]
+    windows = [rasterio.windows.Window(a, b, c, d)
+                for (a,b,c,d) in zip(xg,yg,xs.flatten(),ys.flatten())]
     return windows
 
 
