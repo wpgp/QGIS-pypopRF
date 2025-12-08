@@ -1,3 +1,4 @@
+---
 title: 'QGIS pypopRF Plugin: A tool for the construction of gridded population distribution maps'
 tags:
   - Python
@@ -9,44 +10,44 @@ tags:
   - machine learning
 authors:
   - name: Tom McKeen
-	orcid: 0000-0003-4499-7319
-	equal-contrib: true
-	affiliation: "1"
+    orcid: 0000-0003-4499-7319
+    equal-contrib: true
+    affiliation: "1"
   - name: Rhorom Priyatikanto
-	orcid: 0000-0003-1203-2651
-	equal-contrib: true
-	affiliation: "1"
+    orcid: 0000-0003-1203-2651
+    equal-contrib: true
+    affiliation: "1"
   - name: Borys Nosatiuk
-	orcid:
-	equal-contrib: true
-	affiliation: "1"
+    orcid:
+    equal-contrib: true
+    affiliation: "1"
   - name: Wenbin Zhang
-	orcid:
-	equal-contrib: true
-	affiliation: "1"
+    orcid:
+    equal-contrib: true
+    affiliation: "1"
   - name: Elena Vataga
-	orcid:
-	equal-contrib: true
-	affiliation: "1"
+    orcid:
+    equal-contrib: true
+    affiliation: "1"
   - name: Natalia Tejedor-Garavito
-	orcid: 0000-0002-1140-6263
-	equal-contrib: true
-	affiliation: "1"
+    orcid: 0000-0002-1140-6263
+    equal-contrib: true
+    affiliation: "1"
   - name: Andrew J. Tatem
-	orcid: 0000-0002-7270-941X
-	equal-contrib: true
-	affiliation: "1"
+    orcid: 0000-0002-7270-941X
+    equal-contrib: true
+    affiliation: "1"
   - name: Maksym Bondarenko
-	orcid: 0000-0003-4958-6551
-	equal-contrib: true
-	affiliation: "1"
-
+    orcid: 0000-0003-4958-6551
+    equal-contrib: true
+    affiliation: "1"
 affiliations:
  - name: WorldPop, School og Geography and Environmental Science, University of Southampton, Southampton SO17 1BJ, UK
    index: 1
    ror: 01ryk1543
-date: xx December 2025
+date: 08 December 2025
 bibliography: paper.bib
+---
 
 # Summary
 
@@ -67,7 +68,7 @@ The QGIS pypopRF plugin provides a user-friendly interface to the underlying pyp
 
 ![Figure 1. User interface of the pypopRF Plugin for QGIS](figure1.png)
 
-Project Initialization & Configuration
+## Project Initialization & Configuration
 
 The user begins a new project within the “Main” tab of the plugin window, by specifying the address path that the working directory should be configured within. A new project structure  including the output directory and a log file will be created at this address path location
 
@@ -81,13 +82,14 @@ The user can flexibly browse to and select input data for analysis via the “In
 | Water mask for excluding water bodies           | GeoTIFF  | Optional   |
 | Constraint raster to specify areas (e.g. human settlement) | GeoTIFF | Optional |
 | Age-sex population structure data               | CSV      | Optional   |
+
 Table 1. Summary of input data parameters.
 
-Settings Configuration
+## Settings Configuration
 
 Processing parameters and analysis options can be customized in the “Settings” tab. The plugin provides several options to improve computation performance when processing large datasets. Notably, computation can be parallelized across a user-specified number of CPU cores, whilst large datasets can be processed in smaller, adjustable blocks to improve memory-efficiency.
 
-Analysis and Interface
+## Analysis and Interface
 
 The plugin uses a Random Forest model [@Stevens et al., 2007] to perform this analysis; a gridded population density weighting layer at the target resolution is created and implemented for dasymetric disaggregation of population counts from census zones into target grid cells as supplied by the mastergrid. The model is trained at administrative unit level using the set of covariates specified by the user.
 
@@ -96,7 +98,7 @@ Population can be redistributed more realistically by using masks and constraint
 
 Analysis can be monitored in the interface by inspecting the percentage progress bar and the console area. The console also displays error messages, status updates and important notifications supporting the user with real-time feedback. This feedback can be applied via a Start / Stop button to control processing. A completion message will be displayed in the console area once the analysis has concluded.
 
-Outputs
+## Outputs
 
 Completion of the analysis generates several output rasters , capturing different levels of analysis (Figure 2).
 
@@ -107,5 +109,6 @@ When age-sex population data has been supplied, additional outputs detailing pop
 # Acknowledgements
 
 Authors should acknowledge all sources of financial support for the work and include a statement indicating whether or not the sponsor had any involvement in it. 
+
 
 # References
