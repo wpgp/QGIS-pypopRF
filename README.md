@@ -66,6 +66,7 @@ The plugin generates the following files in your project's output directory:
 - Documentation: https://wpgp.github.io/QGIS-pypopRF/
 - Issues & Support: https://github.com/wpgp/QGIS-pypopRF/issues
 - WorldPop SDI: https://sdi.worldpop.org
+- Youtube Tutorial: https://www.youtube.com/watch?v=WPStOdqE8xE&t
 
 
 ## License
