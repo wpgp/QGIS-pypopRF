@@ -42,7 +42,7 @@ authors:
     equal-contrib: true
     affiliation: "1"
 affiliations:
- - name: WorldPop, School og Geography and Environmental Science, University of Southampton, Southampton SO17 1BJ, UK
+ - name: WorldPop, School of Geography and Environmental Science, University of Southampton, Southampton SO17 1BJ, UK
    index: 1
    ror: 01ryk1543
 date: 08 December 2025
@@ -51,12 +51,12 @@ bibliography: paper.bib
 
 # Summary
 
-Accurate data on the spatial distribution of population is an essential source of information to a wide range of environmental, health and sustainable developmental applications. Consequently, there has been considerable work to develop modelled gridded datasets that accurately capture population distributions at subnational scales. However, generating these datasets generally demands specialised expertise of statistical modelling approaches and computational programming methods. To overcome these challenges, the Spatial Data Infrastructure (SDI) Team at WorldPop have developed the QGIS pypopRF Plugin, a high-resolution population mapping tool that uses machine learning and dasymetric techniques within open-source GIS software [@QGIS.org, 2025]. The QGIS pypopRF Plugin transforms input data into detailed gridded population distribution maps using a random forest (RF) dasymetric modelling approach [@Stevens et al., 2007] that combines census data, building information and various spatial constraints. The core computational functionality of the plugin is provided by the pypopRF Python package; however, to enable non-technical users without programming expertise , the QGIS pypopRF Plugin offers a suite of tools within a graphical interface to facilitate the implementation of top-down population disaggregation methods [@Wardrop et al., 
+Accurate data on the spatial distribution of population is an essential source of information to a wide range of environmental, health and sustainable developmental applications. Consequently, there has been considerable work to develop modelled gridded datasets that accurately capture population distributions at subnational scales. However, generating these datasets generally demands specialised expertise of statistical modelling approaches and computational programming methods. To overcome these challenges, the Spatial Data Infrastructure (SDI) Team at WorldPop have developed the QGIS pypopRF Plugin, a high-resolution population mapping tool that uses machine learning and dasymetric techniques within open-source GIS software [@QGIS.org, 2025]. The QGIS pypopRF Plugin transforms input data into detailed gridded population distribution maps using a random forest (RF) dasymetric modelling approach [@Stevens et al., 2007] that combines census data, building information and various spatial constraints. The core computational functionality of the plugin is provided by the pypopRF Python package; however, to enable non-technical users without programming expertise, the QGIS pypopRF Plugin offers a suite of tools within a graphical interface to facilitate the implementation of top-down population disaggregation methods [@Wardrop et al., 
 2018]. Users can easily adjust input data and settings within a customisable interface. Population modelling can be computationally intensive, therefore the plugin has been developed to subdivide work among multiple subtasks for parallel processing. This paper aims to describe the core functionality and features of the QGIS pypopRF Plugin, and how the plugin can be leveraged to create high-resolution gridded population data.
 
 # Statement of need
 
-Globally, population dynamics display considerable variation across local-regional scales due to the interface of a series of phenomena. Notable amongst these phenomena are demographic trends [@OECD, 2024], urbanization [@Sun et al., 2020], and migration patterns [@Qiao et al., 2024] which shape human population distribution and change in distinct ways across countries and regions. In this setting, subnational population datasets are essential to capturing these dynamics and therefore a swathe of applications, including public health strategy, disaster risk management, urban planning and resource allocation [@Maneepong et al., 2025; @Wardrop et al., 2018]. 
+Globally, population dynamics display considerable variation across local-regional scales due to the interface of a series of phenomena. Notable amongst these phenomena are demographic trends [@OECD, 2024], urbanisation [@Sun et al., 2020], and migration patterns [@Qiao et al., 2024] which shape human population distribution and change in distinct ways across countries and regions. In this setting, subnational population datasets are essential to capturing these dynamics and therefore a swathe of applications, including public health strategy, disaster risk management, urban planning and resource allocation [@Maneepong et al., 2025; @Wardrop et al., 2018]. 
 
 However, generating gridded population typically requires expertise in statistical methods and programming skills [@Leyk et al., 2019; Tatem et al., 2007]. In-fact tools that precede this plugin, pypopRF [@Priyatikanto et al., 2025] and popRF for R [@Bondarenko et al., 2021], are primarily operable at a command-line or scripting level, thereby limiting the accessibility of these methods from a wider community. Therefore, open-source and replicable tools for population modelling are crucial to bridging the gap between data curators and data users [@Mobasheri et al., 2020].
 
@@ -68,11 +68,13 @@ The QGIS pypopRF plugin provides a user-friendly interface to the underlying pyp
 
 ![Figure 1. User interface of the pypopRF Plugin for QGIS](figure1.png)
 
-## Project Initialization & Configuration
+## Project Initialisation & Configuration
 
 The user begins a new project within the “Main” tab of the plugin window, by specifying the address path that the working directory should be configured within. A new project structure  including the output directory and a log file will be created at this address path location
 
 The user can flexibly browse to and select input data for analysis via the “Input Data” tab. The plugin differentiates between datasets that are (i) required or (ii) optional to data analysis (Table 1). A raster file that defines zones using unique IDs, referred to here as a “mastergrid”, must be used to delineate census boundaries. Population count data must be supplied as a CSV file, with unique zone IDs that align with the mastergrid zone IDs. Optionally, additional attributes such as age-sex counts may be included in the CSV file. At least one covariate must be added to train the model. This is any geospatial variable that is related to human population distribution such as building location, infrastructure or elevation. Optional inputs allow users to refine the prediction areas to exclude uninhabited areas according to a mask (e.g. water bodies) or to constrain population disaggregation to specific areas (e.g. human settlement footprint).
+
+Table 1. Summary of input data parameters.
 
 | Data file                                       | Format   | Dependency |
 |-------------------------------------------------|----------|------------|
@@ -83,11 +85,9 @@ The user can flexibly browse to and select input data for analysis via the “In
 | Constraint raster to specify areas (e.g. human settlement) | GeoTIFF | Optional |
 | Age-sex population structure data               | CSV      | Optional   |
 
-Table 1. Summary of input data parameters.
-
 ## Settings Configuration
 
-Processing parameters and analysis options can be customized in the “Settings” tab. The plugin provides several options to improve computation performance when processing large datasets. Notably, computation can be parallelized across a user-specified number of CPU cores, whilst large datasets can be processed in smaller, adjustable blocks to improve memory-efficiency.
+Processing parameters and analysis options can be customised in the “Settings” tab. The plugin provides several options to improve computation performance when processing large datasets. Notably, computation can be parallelised across a user-specified number of CPU cores, whilst large datasets can be processed in smaller, adjustable blocks to improve memory-efficiency.
 
 ## Analysis and Interface
 
@@ -100,9 +100,9 @@ Analysis can be monitored in the interface by inspecting the percentage progress
 
 ## Outputs
 
-Completion of the analysis generates several output rasters , capturing different levels of analysis (Figure 2).
+Completion of the analysis generates several output rasters, capturing different levels of analysis (Figure 2).
 
-![Figure 2. Outputs rasters from the model. (a) normalized census adjusted values, (b), unconstrained population distribution (default), and (c) constrained population distribution (when a constraint layer is provided)](figure2.png)
+![Figure 2. Output rasters from the model. (a) normalised census adjusted values, (b), unconstrained population distribution (default), and (c) constrained population distribution (when a constraint layer is provided)](figure2.png)
 
 When age-sex population data has been supplied, additional outputs detailing population distribution of age-sex categories will be generated in the “…/agesex/” directory. Moreover, several files are created capturing different aspects of the analysis, including detailed processing logs, feature scalers and importance scores of predictor variables. The latter enables the user to assess the most influential covariates to the model. 
 
@@ -112,3 +112,4 @@ Authors should acknowledge all sources of financial support for the work and inc
 
 
 # References
+
