@@ -99,9 +99,9 @@ When age-sex population data has been supplied, additional outputs detailing pop
 
 # Acknowledgements
 
-Authors should acknowledge all sources of financial support for the work and include a statement indicating whether or not the sponsor had any involvement in it. 
-
+This work was supported by funds from the Gates Foundation (INV-045237 and INV-088965) and Wellcome Trust (308679/Z/23/Z). This work forms part of the outputs of WorldPop (www.worldpop.org). The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.
 
 # References
+
 
 
