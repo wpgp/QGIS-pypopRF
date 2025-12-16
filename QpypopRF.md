@@ -37,7 +37,7 @@ affiliations:
  - name: WorldPop, School of Geography and Environmental Science, University of Southampton, Southampton SO17 1BJ, UK
    index: 1
    ror: 01ryk1543
-date: 15 December 2025
+date: 16 December 2025
 bibliography: paper.bib
 ---
 
@@ -102,6 +102,3 @@ When age-sex population data has been supplied, additional outputs detailing pop
 This work was supported by funds from the Gates Foundation (INV-045237 and INV-088965) and Wellcome Trust (308679/Z/23/Z). This work forms part of the outputs of WorldPop (www.worldpop.org). The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.
 
 # References
-
-
-
