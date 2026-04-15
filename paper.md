@@ -53,6 +53,23 @@ However, generating gridded population typically requires expertise in statistic
 
 To address these challenges, the QGIS pypopRF plugin seeks to provide an integrated tool that is accessible to a broad range of users, including GIS practitioners, analysts and educators/students. The Plugin embeds the pypopRF package [@Priyatikanto_2025] functionality directly into QGIS, providing a single accessible environment for parameter control, model execution and output visualisation. The plugin facilitates a consistent, reproducible workflow for gridded population data creation with detailed logging options. This enhances the transparency of methods, enabling users to document and share model configurations as well as outputs.
 
+# Statement of the field
+
+There are several existing open-source tools and packages to support population disaggregation and dasymetric mapping through the implementation of RF methods. These include WorldPop’s RF methods available through the R-based popRF package [@Bondarenko_2021] and the Python-based pypopRF package [@Priyatikanto_2025]. Whilst pypopRF and popRF offer robust and reproducible implementations of RF-based population modelling, they are typically accessed via scripting or command-line workflows. This limits their accessibility to users without programming expertise, despite strong demand from GIS practitioners, analysts and students working primarily in desktop GIS environments.
+The QGIS pypopRF Plugin addresses this gap by embedding the population modelling workflow directly within QGIS, a widely adopted open-source GIS platform. Rather than duplicating modelling logic, the plugin builds upon the validated pypopRF package [@Priyatikanto_2025] while contributing a graphical interface, workflow orchestration, logging, and data management layer tailored to applied geospatial analysis. This “build-on” approach prioritises accessibility and integration with existing GIS workflows, enabling a broader community to apply advanced population modelling methods without the need to write code.
+
+# Software design
+
+Architecturally, the plugin has been developed for QGIS, an open-source software that can be freely extended by other researchers. It is built using a modular structure with a tabbed PyQt interface (including sections for project setup, inputs, settings, and a console), whilst the core functionality is provided by the pypopRF python package [@Priyatikanto_2025]. This implements the top-down dasymetric disaggregation method including census normalization, covariate stacking into arrays, RF prediction, and optionally spatial or age-sex constraints. Outputs are generated as GeoTIFF rasters, available as unconstrained and constrained populations, in addition to diagnostics stored in a user-defined workspace. The pypopRF package handles memory-efficient raster processing through chunking for large raster files (covariates) without full in-memory loads. 
+
+In developing the QGIS pypopRF plugin, key trade-offs were considered between computational efficiency, model accuracy, and geospatial usability to enable high-resolution population mapping for humanitarian applications. This design is particularly relevant for research such as WorldPop's settlement modelling, in which accessible and precise gridded population estimates (at ~100m resolution) are used for applications including tracking of internally displaced population and disaster response. The plugin is designed to be interpretable to aid peer review and transparency, whilst being scalable for iterative workflows in QGIS pipelines. Integration with QGIS’s lowers barriers to use and reliance on command-line tools, thereby promoting reproducible research in low-resource settings.
+
+# Research impact statement
+
+The QGIS pypopRF Plugin has been developed by the WorldPop Spatial Data Infrastructure team to support the production of high-resolution population datasets across low- and middle-income country contexts. It directly supports WorldPop’s mission to enable transparent, reproducible, and locally adaptable population mapping, complementing existing global datasets with a tool for country-specific or subnational analysis.
+
+The plugin is already used within WorldPop workflows for method development and has also been applied in capacity-building settings to introduce population modelling concepts to GIS practitioners without programming experience. The continued use in operations and capacity building provides ongoing user feedback, supporting ongoing  development and ensuring the tool remains relevant for applied research. Given the widespread adoption of QGIS, the plugin is well positioned for broader uptake in research, training, and collaborative settings where accessible and reproducible methods are needed.
+
 # Overview of the QGIS pypopRF Plugin Functionality
 
 The QGIS pypopRF plugin provides a user-friendly interface to the underlying pypopRF Python library \autoref{fig:user_interface}, enabling users to generate high-resolution population distribution maps using machine learning and dasymetric mapping techniques.
@@ -96,6 +113,10 @@ Completion of the analysis generates several output rasters, capturing different
 ![Output rasters from the model. (a) normalised census adjusted values, (b), unconstrained population distribution (default), and (c) constrained population distribution (when a constraint layer is provided).\label{fig:outputs}](figure2.png)
 
 When age-sex population data has been supplied, additional outputs detailing population distribution of age-sex categories will be generated in the “…/agesex/” directory. Moreover, several files are created capturing different aspects of the analysis, including detailed processing logs, feature scalers and importance scores of predictor variables. The latter enables the user to assess the most influential covariates to the model. 
+
+# AI usage disclosure
+
+No generative AI tools were used in the development of this software, the writing of this manuscript, or the preparation of supporting materials.
 
 # Acknowledgements
 
