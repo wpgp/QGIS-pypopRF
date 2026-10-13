@@ -1,4 +1,6 @@
 import hashlib
+from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -66,6 +68,8 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
     "core/__init__.py", "core/pypoprf/__main__.py", "core/pypoprf/algorithms/model.py",
     "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
     "services/engine_snapshot.py",
+    "services/project_location.py", "gui/widgets/workflow_status.py",
+    "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 ])
 def test_missing_runtime_boundary_file_cannot_publish_an_incomplete_archive(tmp_path, missing):
     source = copy_runtime_source(tmp_path / "source")
@@ -82,6 +86,33 @@ def test_relocated_upload_module_help_has_no_publication_side_effect():
                                cwd=ROOT, capture_output=True, text=True, timeout=15)
     assert completed.returncode == 0, completed.stderr
     assert "archive" in completed.stdout and "username" in completed.stdout
+
+
+def test_packaged_readme_and_guides_have_no_dangling_local_links_or_images(tmp_path):
+    archive = tmp_path / "documentation.zip"
+    build_plugin(archive)
+    with zipfile.ZipFile(archive) as package:
+        names = set(package.namelist())
+        for name in sorted(names):
+            if not name.endswith(".md"):
+                continue
+            contents = package.read(name).decode("utf-8")
+            for link in re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", contents):
+                if link.startswith(("https://", "http://", "mailto:", "#")):
+                    continue
+                target = link.split("#", 1)[0]
+                normalized = Path(name).parent.joinpath(target)
+                # Normalize ../ without using host drive/path semantics.
+                parts = []
+                for part in normalized.parts:
+                    if part == "..":
+                        assert parts, (name, link)
+                        parts.pop()
+                    elif part != ".":
+                        parts.append(part)
+                assert "/".join(parts) in names, (name, link)
+        for screenshot in ("workflow", "quality"):
+            assert package.read(f"pypopRF/docs/assets/screenshots/{screenshot}.png").startswith(b"\x89PNG\r\n\x1a\n")
 
 
 def test_password_special_characters_encoded_and_never_logged(tmp_path, capsys):

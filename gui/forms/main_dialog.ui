@@ -47,6 +47,98 @@
         </widget>
       </item>
       <item>
+        <layout class="QHBoxLayout" name="readinessRowLayout">
+          <property name="spacing">
+            <number>4</number>
+          </property>
+          <item>
+            <widget class="QLabel" name="readinessRowLabel">
+              <property name="text">
+                <string>Before running:</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="engineReadyButton">
+              <property name="text">
+                <string>Engine</string>
+              </property>
+              <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="projectReadyButton">
+              <property name="text">
+                <string>Project</string>
+              </property>
+              <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="zoneGridReadyButton">
+              <property name="text">
+                <string>Zone grid</string>
+              </property>
+              <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="censusReadyButton">
+              <property name="text">
+                <string>Census</string>
+              </property>
+              <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="covariatesReadyButton">
+              <property name="text">
+                <string>Covariates</string>
+              </property>
+              <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextBesideIcon</enum>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="readinessRowSpacer">
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+                <size>
+                  <width>20</width>
+                  <height>20</height>
+                </size>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item>
         <widget class="QTabWidget" name="mainTabWidget">
           <property name="currentIndex">
             <number>0</number>
@@ -709,12 +801,56 @@
       <item>
         <layout class="QHBoxLayout" name="runActionsLayout">
           <item>
+            <widget class="QLabel" name="statusLabel">
+              <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                </sizepolicy>
+              </property>
+              <property name="text">
+                <string>No task is running.</string>
+              </property>
+              <property name="textFormat">
+                <enum>Qt::PlainText</enum>
+              </property>
+              <property name="wordWrap">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QToolButton" name="statusDetailsButton">
+              <property name="text">
+                <string>Details</string>
+              </property>
+              <property name="toolTip">
+                <string>Show the complete processing messages</string>
+              </property>
+              <property name="autoRaise">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QProgressBar" name="mainProgressBar">
+              <property name="minimumSize">
+                <size>
+                  <width>140</width>
+                  <height>0</height>
+                </size>
+              </property>
+              <property name="maximumSize">
+                <size>
+                  <width>220</width>
+                  <height>16777215</height>
+                </size>
+              </property>
               <property name="value">
                 <number>0</number>
               </property>
               <property name="format">
-                <string>Choose a project</string>
+                <string>%p%</string>
               </property>
             </widget>
           </item>

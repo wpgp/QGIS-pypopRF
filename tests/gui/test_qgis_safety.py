@@ -183,7 +183,7 @@ def adapter(monkeypatch):
     def load(name):
         if name in {"config_manager", "file_handlers", "result_manifest"}:
             category = "services"
-        elif name == "covariate_table":
+        elif name in {"covariate_table", "workflow_status"}:
             category = "gui.widgets"
         else:
             category = "controllers"
@@ -403,21 +403,44 @@ def controller_for(adapter, tmp_path):
     project = tmp_path / "project"
     manager = config_module.ConfigManager(logging.getLogger("test"))
     manager.create_initial_config(project)
+    statuses, refreshes = [], []
     dialog = SimpleNamespace(
+        statuses=statuses, refreshes=refreshes,
+        set_task_status=lambda message, percent=None: statuses.append((message, percent)),
         is_busy=False,
         config_manager=manager,
         settings_handler=SimpleNamespace(validate_settings=lambda d: True, collect_settings=lambda d: {}),
         runtime_controller=SimpleNamespace(python=str(tmp_path / "python"),
             manager=SimpleNamespace(child_environment=lambda p: {"PATH": "isolated"})),
-        job_cache=tmp_path / "cache", plugin_root=ROOT,
+        job_cache=tmp_path / "cache" / "jobs", plugin_root=ROOT,
         console_handler=SimpleNamespace(clear=lambda: None),
         mainProgressBar=SimpleNamespace(setValue=lambda x: None, setFormat=lambda x: None),
         mainStartButton=SimpleNamespace(setEnabled=lambda x: None, setText=lambda x: None),
         addToQgisCheckBox=SimpleNamespace(isChecked=lambda: False),
-        refresh_results=lambda: None)
+        refresh_results=lambda **kwargs: refreshes.append(kwargs))
     controller = module.ProcessExecutor(dialog, logging.getLogger("test"))
     controller._set_ui_enabled = lambda enabled: None
     return module, controller
+
+
+@pytest.mark.parametrize("field", ["data_dir", "output_dir"])
+def test_manual_configured_protected_paths_fail_before_snapshot_or_process(adapter, tmp_path, monkeypatch, field):
+    module, controller = controller_for(adapter, tmp_path)
+    protected = tmp_path / "fixture-plugin"
+    protected.mkdir()
+    (protected / "canary").write_bytes(b"do not touch")
+    controller.dialog.plugin_root = protected
+    controller.dialog.config_manager.update_many({field: str(protected / "protected-user-data")})
+    config_path = Path(controller.dialog.config_manager.config_path)
+    before = config_path.read_bytes()
+    monkeypatch.setattr(module, "create_engine_snapshot", lambda *args: pytest.fail("Location check must precede snapshot"))
+    controller.start_analysis()
+    assert not controller.is_running and controller._job is None
+    assert not controller.dialog.job_cache.exists()
+    assert (protected / "canary").read_bytes() == b"do not touch"
+    assert list(protected.iterdir()) == [protected / "canary"]
+    assert config_path.read_bytes() == before
+    assert "inside the installed plugin folder" in controller.dialog.statuses[-1][0]
 
 
 def complete_run(controller):
@@ -471,12 +494,74 @@ def test_interface_refresh_failure_cannot_suppress_terminal_signal(adapter, tmp_
     controller.start_analysis()
     event = complete_run(controller)
     controller._consume_stdout(json.dumps(event).encode() + b"\n")
-    controller.dialog.refresh_results = lambda: (_ for _ in ()).throw(FileNotFoundError("config was removed"))
+    controller.dialog.refresh_results = lambda **kwargs: (_ for _ in ()).throw(FileNotFoundError("config was removed"))
     finished = []
     controller.completed.connect(lambda: finished.append(True))
     controller._finished(0, Process.ExitStatus.NormalExit)
     assert not controller.is_running and finished == [True]
     assert controller.last_result_paths
+
+
+@pytest.mark.parametrize("success", [True, False])
+def test_analysis_status_text_and_result_selection_follow_verified_outcome(adapter, tmp_path, success):
+    module, controller = controller_for(adapter, tmp_path)
+    controller.start_analysis()
+    assert controller.dialog.statuses[-1] == ("Checking input data…", 0)
+    event = complete_run(controller)
+    controller._consume_stdout(json.dumps({"event": "progress", "percent": 40,
+                                           "message": "Fitting <model>"}).encode() + b"\n")
+    assert controller.dialog.statuses[-1] == ("Fitting <model>", 40)
+    if success:
+        controller._consume_stdout(json.dumps(event).encode() + b"\n")
+    else:
+        controller._stderr = "Traceback (most recent call last):\n  ...\nValueError: census <id> missing\n"
+    controller._finished(0 if success else 1, Process.ExitStatus.NormalExit)
+    message, percent = controller.dialog.statuses[-1]
+    assert percent is None
+    if success:
+        assert controller.dialog.refreshes == [{"select": controller.last_run_dir}]
+    else:
+        assert controller.dialog.refreshes == [{"select": None}]
+        assert message == "Analysis could not be completed: ValueError: census <id> missing"
+
+
+def test_cancel_status_does_not_select_the_stopped_run(adapter, tmp_path):
+    module, controller = controller_for(adapter, tmp_path)
+    controller.start_analysis()
+    controller.stop_analysis()
+    assert controller.dialog.statuses[-1] == ("Stopping after the current operation…", None)
+    controller._finished(2, Process.ExitStatus.NormalExit)
+    assert controller.dialog.statuses[-1] == ("Analysis stopped. Previous results are preserved.", None)
+    assert controller.dialog.refreshes == [{"select": None}]
+
+
+def test_workflow_status_text_is_bounded_plain_and_escaped_for_tooltips(adapter):
+    module = adapter("workflow_status")
+    assert module.bounded_status("  Import <b>zones</b> ✓ \r\n") == "Import <b>zones</b> ✓"
+    long = module.bounded_status("first <tag>\n" + "x" * 5000 + "\nthird\nfourth\nfifth")
+    assert long.startswith("first <tag>\n") and long.endswith("See Details for the full message.")
+    assert len(long) <= 1000 and long.count("\n") <= 2
+    path = "C:\\Users\\someone\\" + "very-long-folder\\" * 10 + "проект_人口"
+    short = module.short_path(path)
+    assert len(short) == 72 and short.startswith("C:\\Users") and short.endswith("проект_人口")
+    assert module.short_path("C:\\short") == "C:\\short"
+    tip = module.plain_tooltip("Run ID: <b>x</b> & y\n/tmp/a")
+    assert tip == "<qt>Run ID: &lt;b&gt;x&lt;/b&gt; &amp; y<br>/tmp/a</qt>"
+
+
+@pytest.mark.parametrize("engine", [False, True])
+@pytest.mark.parametrize("active", [False, True])
+@pytest.mark.parametrize("filled", [(), ("mastergrid",), ("mastergrid", "census_data", "covariates")])
+def test_readiness_row_matches_run_authorization_inputs(adapter, engine, active, filled):
+    module = adapter("workflow_status")
+    config = {key: "value" for key in filled}
+    states = module.readiness_states(engine, active, config)
+    assert [key for key, _, _ in module.READINESS] == list(states)
+    ready = bool(config.get("mastergrid") and config.get("census_data") and config.get("covariates"))
+    assert all(states.values()) == (ready and active and engine)
+    assert states["mastergrid"] == (active and "mastergrid" in filled)
+    tooltip = module.readiness_tooltip("Census", "Choose a census.", False)
+    assert "needed" in tooltip and "Run still checks" in tooltip
 
 
 @pytest.mark.parametrize("fault", ["nonzero", "missing_event", "missing_file", "escaped_path"])

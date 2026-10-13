@@ -4,12 +4,31 @@ The current interface has five tabs: **Project**, **Input data**, **Settings**,
 **Results** and **Details**. Historical screenshots from earlier plugin versions
 do not describe this layout.
 
+The compact **Before running** row is visible from every tab. Engine, Project,
+Zone grid, Census and Covariates show selection readiness; click an item to
+navigate to its existing controls. These checks do not replace the engine's
+scientific validation of grid alignment, census IDs or data support.
+
+Task text appears in a separate, selectable plain-text status area. The numeric
+progress bar is shown during analysis/import/tools work and hidden when idle.
+Failures remain visible after readiness refresh; **Details** opens the complete
+diagnostics when a long message is shortened. Engine setup also has its own
+progress on the Project tab.
+
 ## Project
 
 Choose a project folder, then use **Create project** for a new folder or
 **Open project** when `config.yaml` already exists. Opening restores the saved
 inputs and settings rather than resetting the project. Merely selecting another
 folder does not switch the active project; open it explicitly.
+
+Projects and prepared output folders must be outside the installed plugin and
+engine/job-cache directories. A refused location does not move or delete existing
+data; back it up and move the complete project to an external folder yourself.
+The GUI log stays in the project's `output` folder, even when analysis uses a
+different `output_dir`. Log files must be ordinary dedicated files, not links
+to another file. Locations are checked again before imports, analysis and
+switching the log destination, including manually edited configuration paths.
 
 The **Analysis engine** area checks for the plugin's isolated Python runtime.
 Select an installed 64-bit CPython 3.12 executable and use **Set up engine**
@@ -82,6 +101,9 @@ tab lists recent runs with status and population-map count. Use **Refresh**,
 **Open result folder**, or **Add maps to QGIS**. Only complete runs with valid,
 present population-map paths can be added. Failed, running or cancelled
 attempts can be inspected for diagnostics but are not treated as finished maps.
+Run timestamps are displayed in local time; the original directory ID remains
+in the tooltip. Refresh preserves your selected run, while a newly successful
+analysis selects its own results rather than a newer failed attempt.
 
 The raw `prediction.tif` contains model density weights and is not added as a
 population-count result. The result folder also contains the effective config,

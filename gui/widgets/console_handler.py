@@ -9,6 +9,7 @@ from qgis.PyQt.QtGui import QFontDatabase, QTextCursor
 from qgis.PyQt import QtWidgets
 
 from ...services.config_manager import validate_log_filename
+from ...services.project_location import ensure_gui_log_location
 
 
 class AppLogger:
@@ -89,7 +90,8 @@ class ConsoleStream(QObject):
 
 
 class ConsoleHandler:
-    def __init__(self, parent_widget):
+    def __init__(self, parent_widget, protected_locations=None):
+        self._protected_locations = dict(protected_locations or {})
         self.console_text = QtWidgets.QPlainTextEdit(parent_widget)
         self.console_text.setReadOnly(True)
         self.console_text.document().setMaximumBlockCount(3000)
@@ -109,7 +111,7 @@ class ConsoleHandler:
         self.logger.set_level(level)
         if save_log and work_dir and filename:
             validate_log_filename(filename)
-            path = str(Path(work_dir) / "output" / filename)
+            path = str(ensure_gui_log_location(work_dir, filename, **self._protected_locations))
             if path != self._log_file:
                 self.logger.set_log_file(path)
                 self._log_file = path

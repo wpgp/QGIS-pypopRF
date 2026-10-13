@@ -1,11 +1,24 @@
 """Run history, saved output actions and diagnostic presentation."""
+from datetime import datetime, timezone
 from pathlib import Path
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import Qt
 from ...services.result_manifest import read_manifest, population_paths
 from ..dialogs.population_summary_dialog import PopulationSummaryDialog
 from ..widgets.quality_panel import QualityPanel
+from ..widgets.workflow_status import plain_tooltip
 from ..desktop import open_folder
+
+
+def run_label(name):
+    """Local start time for IDs like 20261013T210328Z-d1f333f7; otherwise the raw ID."""
+    if len(name) != 25 or name[16] != "-":
+        return name
+    try:
+        started = datetime.strptime(name[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+        return started.astimezone().strftime("%Y-%m-%d %H:%M:%S")
+    except (ValueError, OSError, OverflowError):
+        return name
 
 class ResultsPresenter:
     """Present saved runs without owning or launching analysis workers."""
@@ -33,8 +46,12 @@ class ResultsPresenter:
         view.resultsLayout.insertWidget(1, splitter, 1)
         view.quality_panel.load_run(None)
 
-    def refresh_results(self):
+    def refresh_results(self, select=None):
+        """Keep the selected run by path; otherwise select ``select`` or the newest complete run."""
         view = self.view
+        previous = self._selected_run()
+        wanted = [str(Path(select).resolve())] if select else []
+        wanted += [str(previous)] if previous else []
         view.resultsTree.clear()
         self._result_selected()
         if not view.config_manager.config_path:
@@ -55,6 +72,7 @@ class ResultsPresenter:
         except OSError as exc:
             view.logger.error(f"Could not read result history: {exc}")
             return
+        items, newest_complete = {}, None
         for directory in directories:
             if not directory.is_dir() or directory.is_symlink():
                 continue
@@ -63,14 +81,26 @@ class ResultsPresenter:
                 manifest = read_manifest(path)
                 status = manifest["status"]
                 outputs = population_paths(directory, manifest)
-                item = QtWidgets.QTreeWidgetItem([directory.name, status.capitalize(), str(len(outputs))])
+                item = QtWidgets.QTreeWidgetItem([run_label(directory.name), status.capitalize(), str(len(outputs))])
                 item.setData(0, Qt.ItemDataRole.UserRole, str(directory))
+                item.setToolTip(0, plain_tooltip(f"Run ID: {directory.name}\n{directory}"))
                 view.resultsTree.addTopLevelItem(item)
-                complete += status == "complete"
+                items[str(directory)] = item
+                if status == "complete":
+                    complete += 1
+                    if newest_complete is None and outputs:
+                        newest_complete = item
             except (OSError, ValueError, TypeError):
                 continue
-        view.resultSummaryLabel.setText(f"{complete} completed analyses. Select a run to view its results.")
-        self._result_selected()
+        view.resultSummaryLabel.setText(
+            f"{complete} completed analyses. Select a run to view its results." if complete else
+            "No completed analyses yet. Failed or stopped runs are listed for diagnosis." if items else
+            "No analyses yet. Add input data and run your first analysis.")
+        target = next((items[path] for path in wanted if path in items), newest_complete)
+        if target is not None:
+            view.resultsTree.setCurrentItem(target)  # selection signal loads the run
+        else:
+            self._result_selected()
 
     def _selected_run(self):
         view = self.view
@@ -81,6 +111,7 @@ class ResultsPresenter:
         view = self.view
         selected = view.resultsTree.selectedItems()
         view.openRunButton.setEnabled(bool(selected))
+        view.openRunButton.setToolTip(plain_tooltip(self._selected_run()) if selected else "")
         complete = False
         if selected:
             root = self._selected_run()

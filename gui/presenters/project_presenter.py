@@ -4,6 +4,9 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QSignalBlocker
 from qgis.gui import QgsFileWidget
 from ..desktop import open_folder
+from ..widgets.workflow_status import plain_tooltip, short_path
+from ...services.project_location import ensure_project_location, ensure_project_paths
+from ...services.config_manager import ConfigManager, DEFAULT_CONFIG
 
 class ProjectInputsPresenter:
     """Coordinate a coherent project view; controllers retain worker ownership.
@@ -81,6 +84,7 @@ class ProjectInputsPresenter:
         view.mainStartButton.setEnabled(False)
         view.set_input_widgets_enabled(False)
         view.set_settings_widgets_enabled(False)
+        view._refresh_readiness()
 
     def init_project(self):
         """Initialize new pypopRF project.
@@ -95,13 +99,27 @@ class ProjectInputsPresenter:
 
         if view.is_busy:
             return
-        view.console_handler.clear()
-        view.mainProgressBar.setValue(0)
-
         working_dir = view.workingDirEdit.filePath()
         if not working_dir:
             view.logger.error("Please select working directory first")
             return
+
+        try:
+            protected = dict(plugin_root=view.plugin_root, job_cache=view.job_cache,
+                runtime_cache=getattr(view.runtime_controller.manager, "cache_root", None))
+            working_dir = str(ensure_project_location(
+                working_dir, **protected))
+            existing = (Path(working_dir) / "config.yaml").is_file()
+            # Read/validate independently; never activate or initialize logging
+            # for a candidate whose configured data/output lives in protected code.
+            candidate_config = ConfigManager(view.logger).open_project(working_dir) if existing else DEFAULT_CONFIG
+            ensure_project_paths(working_dir, candidate_config, **protected)
+        except Exception as exc:
+            view.logger.error(str(exc))
+            view.set_task_status(str(exc))
+            return
+        view.console_handler.clear()
+        view.mainProgressBar.setValue(0)
 
         try:
             view._project_ready = False
@@ -109,7 +127,6 @@ class ProjectInputsPresenter:
             view.set_settings_widgets_enabled(False)
             view.mainStartButton.setEnabled(False)
             # Create project structure and config
-            existing = (Path(working_dir) / "config.yaml").is_file()
             if existing:
                 view.config_manager.open_project(working_dir)
             else:
@@ -135,7 +152,9 @@ class ProjectInputsPresenter:
                 view.set_input_widgets_enabled(True)
                 view.set_settings_widgets_enabled(True)
                 view.initProjectButton.setText("Open project")
-                view.currentProjectLabel.setText(str(Path(view.config_manager.working_dir)))
+                project = str(Path(view.config_manager.working_dir))
+                view.currentProjectLabel.setText(short_path(project))
+                view.currentProjectLabel.setToolTip(plain_tooltip(project))
                 view.refresh_results()
                 view._refresh_readiness()
 
@@ -216,7 +235,17 @@ class ProjectInputsPresenter:
         view = self.view
         if view.is_busy or not view._project_ready:
             return
-        config = view.config_manager.get_config()
+        try:
+            config = view.config_manager.get_config()
+            ensure_project_paths(view.config_manager.working_dir, config,
+                plugin_root=view.plugin_root, job_cache=view.job_cache,
+                runtime_cache=getattr(view.runtime_controller.manager, "cache_root", None))
+        except Exception as exc:
+            # Fail before UI changes or worker creation; never restore a widget
+            # by rereading the same unsafe config, or rewrite a user's edit.
+            view.logger.error(f"Import blocked: {exc}")
+            view.set_task_status(f"Import blocked: {exc}")
+            return
         view.set_input_widgets_enabled(False)
         view.set_settings_widgets_enabled(False)
         view.workingDirEdit.setEnabled(False)
@@ -224,18 +253,17 @@ class ProjectInputsPresenter:
         view.setupRuntimeButton.setEnabled(False)
         view.mainStartButton.setEnabled(True)
         view.mainStartButton.setText("Cancel import")
-        view.mainProgressBar.setValue(0)
+        view.set_task_status("Importing input data…", 0)
         view.import_controller.start(view.config_manager.working_dir,
             config.get("data_dir", "data"), paths, kind, view.logger)
 
     def _import_progress(self, percent, name):
-        view = self.view
-        view.mainProgressBar.setValue(percent)
-        view.mainProgressBar.setFormat(f"Importing {name}…")
+        self.view.set_task_status(f"Importing {name}…", percent)
 
     def _imports_finished(self, result):
         view = self.view
         kind = result["kind"]
+        problem = result["errors"][0] if result["errors"] else None
         try:
             if kind == "covariate":
                 view.covariate_handler.add_covariates(result["filenames"])
@@ -247,6 +275,7 @@ class ProjectInputsPresenter:
                 view.logger.error(error)
         except Exception as exc:
             view.logger.error(f"Could not register imported files: {exc}")
+            problem = problem or f"Could not register imported files: {exc}"
             if kind != "covariate":
                 self._restore_file_widget(kind)
         view.set_input_widgets_enabled(True)
@@ -254,5 +283,6 @@ class ProjectInputsPresenter:
         view.workingDirEdit.setEnabled(True)
         view.initProjectButton.setEnabled(True)
         view.setupRuntimeButton.setEnabled(True)
-        view.mainProgressBar.setFormat("Import completed" if not result["errors"] else "Import could not be completed; see Details")
+        view.set_task_status("Import completed" if problem is None else
+                             f"Import could not be completed: {problem}")
         view._refresh_readiness()

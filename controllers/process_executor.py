@@ -13,6 +13,7 @@ from ..services.result_manifest import read_manifest, population_paths
 from ..shared.atomic_files import atomic_replace
 from ..services.process_exit_guard import ProcessExitGuard
 from ..services.engine_snapshot import create_engine_snapshot, engine_arguments
+from ..services.project_location import ensure_project_paths
 
 
 class ProcessExecutor(QObject):
@@ -57,7 +58,9 @@ class ProcessExecutor(QObject):
             snapshot = self.dialog.config_manager.get_config()
             snapshot.update(self.dialog.settings_handler.collect_settings(self.dialog))
             snapshot["work_dir"] = str(self.dialog.config_manager.working_dir)
-            root = Path(snapshot["work_dir"])
+            root = ensure_project_paths(snapshot["work_dir"], snapshot,
+                plugin_root=self.dialog.plugin_root, job_cache=self.dialog.job_cache,
+                runtime_cache=getattr(self.dialog.runtime_controller.manager, "cache_root", None))
             output = (root / snapshot.get("output_dir", "output")).resolve()
             identifier = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
             self._expected_run = output / "runs" / identifier
@@ -99,6 +102,7 @@ class ProcessExecutor(QObject):
             process.start()
         except Exception as exc:
             self.logger.error(f"Could not start analysis: {exc}")
+            self.dialog.set_task_status(f"Could not start analysis: {exc}")
             self._release()
             self._set_ui_enabled(True)
 
@@ -113,7 +117,7 @@ class ProcessExecutor(QObject):
             self.process.kill()
         self.dialog.mainStartButton.setEnabled(False)
         self.dialog.mainStartButton.setText("Stopping…")
-        self.dialog.mainProgressBar.setFormat("Stopping after the current operation…")
+        self.dialog.set_task_status("Stopping after the current operation…")
         owned = self.process
         QTimer.singleShot(30000, lambda: self._force_stop(owned))
 
@@ -207,7 +211,7 @@ class ProcessExecutor(QObject):
         if not reaped:
             if not self._waiting_exit:
                 self._waiting_exit = True
-                self.dialog.mainProgressBar.setFormat("Waiting for the engine to exit before cleaning up…")
+                self.dialog.set_task_status("Waiting for the engine to exit before cleaning up…")
             QTimer.singleShot(20, lambda: self._finished(code, exit_status, owned))
             return
         self._read_stdout()
@@ -357,14 +361,17 @@ class ProcessExecutor(QObject):
             self.logger.info(message)
         else:
             self.logger.warning(message)
-        self.dialog.mainProgressBar.setFormat(message if len(message) < 180 and "\n" not in message
-                                             else "Analysis could not be completed; see Details")
+        if success or self._cancelled or not message.strip():
+            self.dialog.set_task_status(message)
+        else:
+            # Engine diagnostics end with the actual error; the full text is in Details.
+            self.dialog.set_task_status("Analysis could not be completed: " + message.strip().splitlines()[-1])
         if hasattr(self.dialog, "refresh_results"):
-            self.dialog.refresh_results()
+            # Only a verified run takes the selection; failed attempts stay listed.
+            self.dialog.refresh_results(select=self.last_run_dir if success else None)
 
     def update_progress(self, value, message):
-        self.dialog.mainProgressBar.setValue(value)
-        self.dialog.mainProgressBar.setFormat(message)
+        self.dialog.set_task_status(message, value)
         self.logger.info(message)
 
     def _set_ui_enabled(self, enabled):

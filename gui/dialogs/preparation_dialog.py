@@ -10,6 +10,7 @@ from qgis.PyQt.QtCore import pyqtSignal, Qt
 
 from ..layer_integration import choose_project_layer
 from ..widgets.file_choice import FileChoice
+from ...services.project_location import ensure_project_location
 
 
 class PreparationWizard(QtWidgets.QWizard):
@@ -276,9 +277,13 @@ class PreparationWizard(QtWidgets.QWizard):
                 request[key] = dict(field.record(), quantity="categorical", resampling="nearest")
         if operation == "prepare":
             path = Path(self.outputEdit.text().strip()).expanduser()
-            if not self.outputEdit.text().strip() or not path.is_absolute() or path.exists():
+            if not self.outputEdit.text().strip() or not path.is_absolute():
                 raise ValueError("Choose an absolute, new project directory that does not already exist")
-            request["output_dir"] = str(path.resolve())
+            path = ensure_project_location(path, plugin_root=self.dialog.plugin_root, job_cache=self.dialog.job_cache,
+                runtime_cache=getattr(self.dialog.runtime_controller.manager, "cache_root", None))
+            if path.exists():
+                raise ValueError("Choose an absolute, new project directory that does not already exist")
+            request["output_dir"] = str(path)
             if not self._expected_inputs:
                 raise ValueError("Check compatibility again to bind preparation to the reviewed files")
             request["expected_inputs"] = self._expected_inputs

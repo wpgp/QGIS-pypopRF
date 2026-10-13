@@ -9,7 +9,7 @@ import zipfile
 
 import pytest
 
-from scripts.build_plugin import build_plugin, package_files, verify_package
+from scripts.build_plugin import PUBLIC_DOCUMENTATION, build_plugin, package_files, verify_package
 
 ROOT = Path(__file__).resolve().parents[2]
 SCIENTIFIC = {"numpy", "pandas", "scipy", "sklearn", "rasterio", "geopandas", "shapely",
@@ -218,8 +218,9 @@ def test_distribution_excludes_audits_tests_helpers_caches_and_development_artif
     assert not set(decoys).intersection(manifest["files"])
     with zipfile.ZipFile(destination) as package:
         assert all(name.startswith("pypopRF/") for name in package.namelist())
-        assert not any(part in {"tests", "__pycache__", "docs", "case_study", ".venv", "dist", "scripts", ".local"}
+        assert not any(part in {"tests", "__pycache__", "case_study", ".venv", "dist", "scripts", ".local"}
                        for name in package.namelist() for part in Path(name).parts)
+        assert {name for name in manifest["files"] if name.startswith("docs/")} == set(PUBLIC_DOCUMENTATION)
         for expected in ("services/quality_report.py", "services/result_manifest.py",
                          "gui/widgets/quality_panel.py", "shared/runtime_environment.py",
                          "core/pypoprf/algorithms/model.py"):

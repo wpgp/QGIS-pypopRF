@@ -11,10 +11,19 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_NAME = "pypopRF"
+PUBLIC_DOCUMENTATION = (
+    "docs/index.md", "docs/development.md",
+    "docs/getting-started/installation.md", "docs/getting-started/quickstart.md",
+    "docs/user-guide/interface.md", "docs/user-guide/input-data.md",
+    "docs/user-guide/settings.md", "docs/user-guide/running-analysis.md",
+    "docs/user-guide/troubleshooting.md",
+    "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
+)
 REQUIRED_FILES = (
     "__init__.py", "qgis_pypoprf.py", "gui/dialogs/main_dialog.py",
     "gui/forms/main_dialog.ui", "services/runtime_manager.py", "shared/atomic_files.py",
-    "services/owned_process.py", "services/engine_snapshot.py", "shared/runtime_environment.py",
+    "services/owned_process.py", "services/engine_snapshot.py", "services/project_location.py",
+    "shared/runtime_environment.py", "gui/widgets/workflow_status.py",
     "core/__init__.py", "core/pypoprf/__init__.py", "core/pypoprf/__main__.py",
     "core/pypoprf/cli.py", "core/pypoprf/pipeline.py", "core/pypoprf/tools.py",
     "core/pypoprf/algorithms/model.py",
@@ -22,7 +31,7 @@ REQUIRED_FILES = (
     "metadata.txt", "icon.png", "wp_logo.png",
     "requirements.txt", "requirements-engine.lock", "requirements-engine-wheels.json",
     "LICENSE", "README.md", "CHANGELOG.md", "CITATION.cff",
-)
+) + PUBLIC_DOCUMENTATION
 RUNTIME_DIRECTORIES = ("core", "gui", "controllers", "services", "shared")
 
 

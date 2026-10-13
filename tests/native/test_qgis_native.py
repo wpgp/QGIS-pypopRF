@@ -403,7 +403,10 @@ def test_native_completed_history_loads_real_qgis_raster_provider(native_dialog,
     dialog.iface = NativeIface()
     item = dialog.resultsTree.topLevelItem(0)
     assert item is not None
+    assert dialog._selected_run() == controller.last_run_dir
     dialog.resultsTree.setCurrentItem(item)
+    # The successful run is already selected; changing iface alone emits no Qt selection signal.
+    dialog._result_selected()
     assert dialog.addRunLayersButton.isEnabled()
     try:
         dialog._add_selected_run()

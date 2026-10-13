@@ -1,6 +1,6 @@
 # Installation and updates
 
-This is the workflow development build (0.3.0), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
+This is the development build (0.3.1), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
 
 ## Two separate components
 
@@ -41,6 +41,9 @@ does not guarantee rollback for an arbitrary incomplete plugin archive. Use a
 ZIP built and verified by this repository, and keep the preceding valid ZIP.
 
 Keep analysis projects outside the plugin installation and engine-cache directories.
+The interface refuses project and preparation destinations inside these protected
+locations before creating or activating them. This is a location safeguard, not
+a substitute for backing up an existing legacy installation's data.
 QGIS manages the installed plugin folder; uninstalling/replacing a plugin is not a
 project-backup mechanism. Back up the project configuration and important completed
 runs before changing an installation.

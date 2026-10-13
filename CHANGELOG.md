@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - Unreleased
+
+### Fixed
+
+- Freeze verified engine source and dependency contracts outside the installed
+  plugin before launching an isolated child; record frozen-source provenance.
+- Keep asynchronous cancellation/disposal owned by the living Qt dialog after
+  QGIS removes the plugin instance. Close owned settings callbacks before hiding
+  or destroying widgets, preventing the reproduced Qt 5 teardown crash.
+- Restore public engine exports after the package-layout refactor.
+- Refuse project/preparation locations inside plugin and engine/job-cache folders
+  before activation or data creation; keep existing files and projects untouched.
+- Recheck current configured paths before imports and logging; reject redirected
+  GUI logs and linked log-file targets before opening or switching a file handler.
+
+### Changed
+
+- Add compact readiness navigation, bounded plain task status separate from numeric
+  progress, and persistent run selection with success-only new-result selection.
+- Document normal ZIP replacement and one-time legacy Windows DLL migration;
+  include illustrated README guides and their exact assets in the verified ZIP.
+- Qualify real installer replacement, owned-child cleanup and legacy migration
+  in isolated native-QGIS test profiles, without claiming arbitrary ZIP rollback.
+
 ## [0.3.0] - Unreleased
 
 ### Added
