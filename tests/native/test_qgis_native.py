@@ -196,13 +196,14 @@ def test_native_create_open_preserves_config_logs_and_flags(native_dialog, tmp_p
     assert dialog.preparation_presenter.view is dialog
     assert dialog.project_presenter.input_widgets["mastergrid"] is dialog.mastergridFileWidget
     assert (dialog.plugin_root / "gui" / "forms" / "main_dialog.ui").is_file()
-    assert not hasattr(dialog.file_handler, "open_folder")
+    assert not hasattr(dialog.file_handler, "open_directory")
     initialize(dialog, tmp_path / "project")
     desktop = importlib.import_module(dialog.project_presenter.__module__.rsplit(".", 2)[0] + ".desktop")
     opened = []
     monkeypatch.setattr(desktop.QDesktopServices, "openUrl", lambda url: opened.append(url) or True)
     dialog.open_project_folder()
-    assert [url.toLocalFile() for url in opened] == [str((tmp_path / "project").resolve())]
+    assert len(opened) == 1 and opened[0].isLocalFile()
+    assert Path(opened[0].toLocalFile()).resolve() == (tmp_path / "project").resolve()
     dialog.enableParallelCheckBox.setChecked(False)
     dialog.enableBlockProcessingCheckBox.setChecked(False)
     dialog.logsColumnEdit.setText("native.log")
