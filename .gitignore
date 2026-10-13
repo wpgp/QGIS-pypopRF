@@ -44,3 +44,7 @@ Thumbs.db
 /IMPLEMENTATION.md
 /STACK_MIGRATION_MODEL.md
 /benchmarks/
+/.local/
+.venv*/
+.pytest_cache/
+.ruff_cache/

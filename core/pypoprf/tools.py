@@ -10,9 +10,9 @@ import os
 # Cap native pools before importing any numerical/geospatial code, as the main
 # analysis entrypoint does. Never execute this module inside the QGIS host.
 if __package__ == "core.pypoprf":
-    from runtime_manager import NATIVE_THREAD_LIMITS
+    from shared.runtime_environment import NATIVE_THREAD_LIMITS
 else:
-    from ...runtime_manager import NATIVE_THREAD_LIMITS
+    from ...shared.runtime_environment import NATIVE_THREAD_LIMITS
 if __name__ == "__main__":
     os.environ.update(NATIVE_THREAD_LIMITS)
 

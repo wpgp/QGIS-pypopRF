@@ -16,7 +16,7 @@ def main():
             raise ValueError("PYPOPRF_TEST_DEPS must be a directory")
         sys.path.insert(0, str(path))
     import pytest
-    targets = sorted(str(path) for path in (Path(__file__).resolve().parents[1] / "tests").glob("test_*native.py"))
+    targets = sorted(str(path) for path in (Path(__file__).resolve().parents[1] / "tests" / "native").glob("test_*.py"))
     if not targets:
         raise ValueError("No native acceptance tests found")
     return pytest.main(sys.argv[1:] or [*targets, "-q", "-p", "no:cacheprovider"])

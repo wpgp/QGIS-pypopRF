@@ -11,7 +11,7 @@ markers = [
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-exclude = ["resources.py", "audit_repro_*.py"]
+exclude = [".local", "audit_repro_*.py"]
 
 [tool.ruff.lint]
 select = ["E9", "F"]

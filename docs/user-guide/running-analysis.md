@@ -40,7 +40,7 @@ Per-zone conservation is a correctness check on redistribution, not an independe
 
 Default spatial validation assigns zone centroids to a 4×4 grid over the valid mastergrid footprint and holds out blocks. It does not use a spatial buffer, prove independence, estimate pixel-level accuracy, or remove the modifiable areal unit problem. Too few occupied blocks makes validation unavailable; the engine does not silently fall back to a shuffled split.
 
-User-supplied groups and shuffled-zone diagnostic validation are explicitly labelled. Feature selection and preprocessing are refitted inside each outer training fold. Changing block scale can change model rankings: see [BENCHMARK.md](https://github.com/wpgp/QGIS-pypopRF/blob/master/BENCHMARK.md).
+User-supplied groups and shuffled-zone diagnostic validation are explicitly labelled. Feature selection and preprocessing are refitted inside each outer training fold. Changing block scale can change model rankings; use an explicitly chosen validation design rather than comparing scores from different splits as if they measured the same task.
 
 Zones in the raster without census records are excluded and reported. A positive-population census zone without positive eligible allocation support fails the run. Zero-population zones remain zero. Age-sex totals are checked against each input group separately; the plugin does not infer that independently supplied groups sum to the main census.
 

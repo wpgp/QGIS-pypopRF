@@ -7,9 +7,9 @@ import tempfile
 from threading import Event
 
 if __package__ == "core.pypoprf.utils":
-    from atomic_files import atomic_replace
+    from shared.atomic_files import atomic_replace
 else:
-    from ....atomic_files import atomic_replace
+    from ....shared.atomic_files import atomic_replace
 
 
 class CancelledError(RuntimeError):

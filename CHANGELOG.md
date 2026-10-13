@@ -16,8 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - QGIS-native local layer selection, grouped/styled population results and an
   explicit cell-centre AOI population summary with coverage/NoData reporting.
 
-Feature acceptance and limitations are recorded in IMPLEMENTATION.md. This
+The development guide documents the checks and execution boundaries. This
 unpublished build does not claim calibrated pixel uncertainty or new platforms.
+
+### Changed
+
+- Separate native views, controllers, configuration/runtime services and
+  lightweight shared contracts; keep the numerical engine independent of QGIS.
+- Organize regression tests by area and keep local audit/experiment artifacts
+  outside the versioned project and runtime archive.
 
 ## [0.2.0] - Unreleased modernization baseline
 
@@ -49,7 +56,7 @@ unpublished build does not claim calibrated pixel uncertainty or new platforms.
 - Runtime update verification/rollback, lock exclusivity and exact dependency checks.
 - Independent audit/review records and reproducible Rwanda model benchmarks.
 
-Development acceptance is recorded in IMPLEMENTATION.md. No external release has
+Verification commands are described in docs/development.md. No external release has
 been published; platform and licensing release gates must not be inferred closed.
 
 ## [0.1.1] - 2025-04-02

@@ -6,8 +6,9 @@ Census-conserving population redistribution using geospatial covariates, Random
 Forest and dasymetric mapping, with optional water/support masks and age-sex maps.
 
 This checkout is the **0.3.0 workflow development build**, not a published
-stable release. [AUDIT.md](AUDIT.md) records the original defects;
-[IMPLEMENTATION.md](IMPLEMENTATION.md) records fixes, reviews and acceptance.
+stable release. The [development guide](docs/development.md) describes the
+architecture, regression checks and packaging. Local audit/experiment evidence
+is deliberately not versioned or included in the plugin archive.
 
 ![WorldPop SDI](wp_logo.png)
 
@@ -22,8 +23,8 @@ stable release. [AUDIT.md](AUDIT.md) records the original defects;
 - Windowed raster processing, bounded task submission, cooperative cancellation
   and owned-process cleanup replace whole-raster and GUI-thread processing.
 - Default evaluation holds out spatial blocks and refits selection/preprocessing
-  inside each fold. [BENCHMARK.md](BENCHMARK.md) explains the model comparisons
-  and limitations; conservation is not proof of pixel-level accuracy.
+  inside each fold. Conservation is not proof of pixel-level accuracy; validation
+  limitations are described in the [settings guide](docs/user-guide/settings.md).
 - A native-palette interface provides Project, Input data, Settings, Results and
   Details tabs, engine setup, run history and actionable status messages.
 - Guided data preparation creates a new derived project with explicit grid,
@@ -36,8 +37,8 @@ stable release. [AUDIT.md](AUDIT.md) records the original defects;
 ## Installation
 
 QGIS 3.44–4.x is the declared range. Genuine Windows AMD64 and Linux glibc x86_64
-QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6 acceptance is recorded in
-the implementation journal. macOS, ARM and musl are not qualified by this build.
+QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6 are the local native acceptance targets.
+macOS, ARM and musl are not qualified by this build.
 
 The calculation engine requires an installed **64-bit CPython 3.12**. QGIS itself
 may use a different Python version. Enabling the plugin does not install packages
@@ -71,7 +72,7 @@ for adding population layers to QGIS.
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
 .venv\Scripts\python -m pytest -m "not qgis" -q
-.venv\Scripts\python -m ruff check atomic_files.py core q_models runtime_manager.py qgis_pypoprf.py qgis_pypoprf_dialog.py __init__.py plugin_upload.py scripts tests
+.venv\Scripts\python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
 .venv\Scripts\python scripts/build_plugin.py
 ```
 

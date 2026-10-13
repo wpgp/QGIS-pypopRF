@@ -8,25 +8,46 @@ installation.
 
 ## Architecture
 
-| Area | Responsibility |
+```text
+__init__.py, metadata.txt, qgis_pypoprf.py  QGIS plugin entrypoint
+core/pypoprf/                            isolated numerical engine
+  algorithms/                           extraction, RF and allocation
+  config/, utils/                       engine validation and raster tasks
+gui/
+  dialogs/, forms/, widgets/             native Qt views and Designer form
+  presenters/                           project, results and preparation views
+controllers/                            owned asynchronous workflows
+services/                               configuration, runtime and saved metadata
+shared/                                 stdlib atomic/environment contracts
+tests/
+  engine/, services/, gui/               focused regression suites
+  integration/, native/, packaging/     workflow, real QGIS and ZIP checks
+scripts/                                build, test, translation and upload tools
+docs/                                   maintained user/developer guides
+.local/                                 ignored reports, experiments and legacy files
+dist/                                   ignored generated plugin ZIPs
+```
+
+The required QGIS files remain at the plugin root. Internal modules are not
+compatibility aliases: update their imports when developing against this layout.
+The public engine commands remain `python -m core.pypoprf` and
+`python -m core.pypoprf.tools`.
+
+| Boundary | Rule |
 | --- | --- |
-| `__init__.py`, `qgis_pypoprf.py` | QGIS activation, toolbar action and dialog lifetime. |
-| `qgis_pypoprf_dialog.py`, `.ui` | Project/input/settings/results/details interface. |
-| `q_models/config_manager.py` | Project opening and atomic configuration updates. |
-| `q_models/import_controller.py`, `file_handlers.py` | Background staged imports and collision protection. |
-| `q_models/runtime_controller.py` | Background engine discovery, checks and setup. |
-| `runtime_manager.py` | Permanent isolated venvs, exact dependency health and atomic activation pointer. |
-| `q_models/process_executor.py` | Owned QProcess, JSON events, cancellation and terminal verification. |
-| `q_models/result_manifest.py` | Bounded shared run-metadata/path validation for completion and history. |
-| `q_models/tools_controller.py`, `preparation_dialog.py` | Owned JSON-request engine tools, guided preparation and AOI summary UI. |
-| `q_models/quality_report.py`, `quality_panel.py` | Read-only hash/bounds-checked zonal diagnostics and native Qt plotting. |
-| `q_models/layer_integration.py` | Safe local layer sources, result groups/styles and owned diagnostic centroids. |
-| `q_models/process_exit_guard.py` | Read-only Windows launcher/descendant handle reaping before GUI cleanup. |
-| `core/pypoprf/config/settings.py` | Read-only input/config validation and effective snapshots. |
-| `core/pypoprf/pipeline.py`, `cli.py` | Shared headless workflow and structured process protocol. |
-| `core/pypoprf/core/` | Feature extraction, RF validation/inference and conservative allocation. |
-| `core/pypoprf/utils/` | Bounded raster tasks, cancellation and atomic artifact publication. |
-| `core/pypoprf/tools.py`, `preparation.py`, `population_summary.py` | Safe derived projects and explicit cell-centre count estimates in the isolated engine. |
+| `core` | Numerical/geospatial computation; no Qt, GUI, controllers or provisioning services. |
+| `gui` | Widgets, dialog composition, native layer presentation and desktop actions; no numerical imports. |
+| `controllers` | Owned tasks and view coordination; no numerical imports. |
+| `services` | Config files, runtime setup/process ownership and saved artifacts; no Qt or numerical imports. |
+| `shared` | Standard library only; no engine, services or GUI dependencies. |
+
+The main dialog composes project/input, result and preparation presenters rather
+than mixing all tab behavior into one class. Dialogs and reusable widgets live
+separately. Opening folders is a GUI desktop action, not a file-copy service.
+Runtime provisioning uses the shared environment contract; importing that
+contract does not start setup, mutate the parent environment or import numerical
+libraries. `services/owned_process.py` implements platform process ownership;
+`services/process_exit_guard.py` verifies actual Windows launch descendants.
 
 QProcess stdout carries newline-delimited JSON progress/result events; stderr
 carries diagnostics. A successful result requires normal exit, a matching
@@ -49,7 +70,7 @@ Use an independent environment, not the QGIS interpreter:
 py -3.12 -m venv .venv-dev
 .\.venv-dev\Scripts\python -m pip install -r requirements-dev.txt
 .\.venv-dev\Scripts\python -m pytest -m "not qgis" -q
-.\.venv-dev\Scripts\python -m ruff check atomic_files.py core q_models qgis_pypoprf.py qgis_pypoprf_dialog.py __init__.py runtime_manager.py plugin_upload.py scripts tests
+.\.venv-dev\Scripts\python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
 ```
 
 On Linux use an installed `python3.12`, then `.venv-dev/bin/python` for the
@@ -71,12 +92,12 @@ atomic failures and provenance. The bundled Rwanda test checks extraction and
 
 Qt doubles exercise controller state and error paths; they do not validate
 native Qt ownership or widget binding compatibility. Run
-`tests/test_*native.py` in a genuine QGIS application/runtime with an
+`tests/native/` in a genuine QGIS application/runtime with an
 available separate engine. Offscreen container acceptance is useful, but it
 does not replace an interactive operating-system smoke test. CI configuration
 in `.github/workflows/test.yml` declares the actual current test matrix.
 
-`scripts/run_native_tests.py` discovers all `test_*native.py` modules by default;
+`scripts/run_native_tests.py` discovers all test modules in `tests/native/` by default;
 this includes the original adapter, preparation/layer/AOI workflow and quality
 widget tests. Windows launcher termination is not itself proof that the redirected
 Python child has exited: the adapter asynchronously checks held, birth-identified
@@ -97,12 +118,22 @@ The research command compares predeclared candidates on identical spatial
 outer folds and saves the predictions, source hashes and split provenance:
 
 ```powershell
-python -m scripts.benchmark_models --output benchmarks/new_comparison --trees 100 --spatial-grid 4 4
+python -m scripts.benchmark_models --output .local/benchmarks/new_comparison --trees 100 --spatial-grid 4 4
 ```
 
 It requires a fresh output directory and does not change the production model.
-See the repository's `BENCHMARK.md` for measured results and limitations. Do
-not turn an improvement on one block partition into a pixel-accuracy guarantee.
+Experiment results and qualification evidence belong under ignored `.local/`,
+not in Git or the runtime ZIP. Do not turn an improvement on one block partition
+into a pixel-accuracy guarantee. Old generated resources and historical
+screenshots are archived locally; the live interface uses filesystem icons and
+the maintained Designer form, not a PyQt5-only generated resources module.
+
+`tests/packaging/test_architecture.py` checks import boundaries, canonical and
+plugin-alias loading, and an extracted ZIP without repository paths. Tests,
+maintained documentation, dependency locks, scripts and CI are project sources;
+private audits/reviews, run outputs, caches, environments and experiments are not.
+Commit a coherent tested stage with explicit paths; never force-add `.local/` or
+`dist/`, and do not push without the owner's request.
 
 ## Numerical and lifecycle invariants
 
@@ -129,7 +160,7 @@ python scripts/build_plugin.py --output dist/pypopRF.zip
 
 The builder uses an explicit runtime allowlist, deterministic ZIP metadata and
 a hashed package manifest. User data, tests, benchmark outputs and local engine
-environments do not belong in the distributable. `plugin_upload.py` is an
+environments do not belong in the distributable. `python -m scripts.plugin_upload` is an
 explicit maintainer publishing command; normal builds and activation do not
 upload anything.
 

@@ -32,7 +32,7 @@ jobs:
             requirements-dev.txt
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest -m "not qgis" -q
-      - run: python -m ruff check atomic_files.py core q_models runtime_manager.py qgis_pypoprf.py qgis_pypoprf_dialog.py __init__.py plugin_upload.py scripts tests
+      - run: python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
       - run: python scripts/build_plugin.py
 
   native-qgis:
@@ -60,10 +60,10 @@ jobs:
               /tmp/ui-tests/bin/uv python install 3.12
               PYPOPRF_BASE_PYTHON=$(/tmp/ui-tests/bin/uv python find 3.12)
               export PYPOPRF_BASE_PYTHON
-              PYPOPRF_TEST_ENGINE=$(python3 -c "import os; from runtime_manager import RuntimeManager; print(RuntimeManager(\"/workspace\", \"/tmp/engine-cache\").setup(os.environ[\"PYPOPRF_BASE_PYTHON\"]))")
+              PYPOPRF_TEST_ENGINE=$(python3 -c "import os; from services.runtime_manager import RuntimeManager; print(RuntimeManager(\"/workspace\", \"/tmp/engine-cache\").setup(os.environ[\"PYPOPRF_BASE_PYTHON\"]))")
               export PYPOPRF_TEST_ENGINE
               python3 scripts/build_plugin.py --output /tmp/plugin.zip
               python3 -m zipfile -e /tmp/plugin.zip /tmp/plugin-package
               export PYPOPRF_TEST_PLUGIN_ROOT=/tmp/plugin-package/pypopRF
-              /tmp/ui-tests/bin/python -m pytest tests/test_*native.py -q -p no:cacheprovider
+              /tmp/ui-tests/bin/python -m pytest tests/native -q -p no:cacheprovider
             '

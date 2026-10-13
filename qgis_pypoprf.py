@@ -30,7 +30,7 @@ try:
 except ImportError:
     from qgis.PyQt.QtWidgets import QAction
 
-from .qgis_pypoprf_dialog import PyPopRFDialog
+from .gui.dialogs.main_dialog import PyPopRFDialog
 
 
 class PyPopRF:

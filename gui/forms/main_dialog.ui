@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui version="4.0">
+  <class>PyPopRFDialogBase</class>
+  <widget class="QDialog" name="PyPopRFDialogBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>920</width>
+        <height>720</height>
+      </rect>
+    </property>
+    <property name="minimumSize">
+      <size>
+        <width>720</width>
+        <height>520</height>
+      </size>
+    </property>
+    <property name="windowTitle">
+      <string>pypopRF · Population mapping</string>
+    </property>
+    <layout class="QVBoxLayout" name="mainLayout">
+      <property name="spacing">
+        <number>12</number>
+      </property>
+      <item>
+        <widget class="QLabel" name="titleLabel">
+          <property name="text">
+            <string>Population mapping</string>
+          </property>
+          <property name="font">
+            <font>
+              <pointsize>16</pointsize>
+              <bold>true</bold>
+            </font>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QLabel" name="subtitleLabel">
+          <property name="text">
+            <string>Build population maps from census totals and geospatial covariates.</string>
+          </property>
+          <property name="wordWrap">
+            <bool>true</bool>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <widget class="QTabWidget" name="mainTabWidget">
+          <property name="currentIndex">
+            <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab_main">
+            <attribute name="title">
+              <string>Project</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="projectLayout">
+              <item>
+                <widget class="QGroupBox" name="projectGroup">
+                  <property name="title">
+                    <string>Project folder</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="projectFolderLayout">
+                    <item>
+                      <layout class="QHBoxLayout" name="projectPathLayout">
+                        <item>
+                          <widget class="QgsFileWidget" name="workingDirEdit"></widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="initProjectButton">
+                            <property name="text">
+                              <string>Create project</string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="openProjectFolder">
+                            <property name="text">
+                              <string>Open folder</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="currentProjectLabel">
+                        <property name="text">
+                          <string>Choose a folder to create or open a project.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="runtimeGroup">
+                  <property name="title">
+                    <string>Analysis engine</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="runtimeLayout">
+                    <item>
+                      <widget class="QLabel" name="runtimeStatusLabel">
+                        <property name="text">
+                          <string>Checking the analysis engine…</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <layout class="QHBoxLayout" name="runtimePathLayout">
+                        <item>
+                          <widget class="QLineEdit" name="pythonPathEdit">
+                            <property name="text">
+                              <string></string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="browsePythonButton">
+                            <property name="text">
+                              <string>Browse…</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <layout class="QHBoxLayout" name="runtimeActionsLayout">
+                        <item>
+                          <widget class="QPushButton" name="setupRuntimeButton">
+                            <property name="text">
+                              <string>Set up engine</string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="cancelSetupButton">
+                            <property name="text">
+                              <string>Cancel setup</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <widget class="QProgressBar" name="runtimeProgressBar">
+                        <property name="value">
+                          <number>0</number>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="runtimeHelpLabel">
+                        <property name="text">
+                          <string>Prepare the analysis engine once before running calculations.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="workflowGroup">
+                  <property name="title">
+                    <string>Your next steps</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="workflowLayout">
+                    <item>
+                      <widget class="QLabel" name="readinessLabel">
+                        <property name="text">
+                          <string>Create or open a project, add input data, then review settings.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="workflowHint">
+                        <property name="text">
+                          <string>Each analysis keeps its own results. Earlier runs remain available in Results.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <spacer name="projectSpacer">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_inputs">
+            <attribute name="title">
+              <string>Input data</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="inputLayout">
+              <item>
+                <layout class="QFormLayout" name="requiredInputs">
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="requiredInputsLabel0">
+                      <property name="text">
+                        <string>Zone grid</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="QgsFileWidget" name="mastergridFileWidget"></widget>
+                  </item>
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="requiredInputsLabel1">
+                      <property name="text">
+                        <string>Population census</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="1">
+                    <widget class="QgsFileWidget" name="populationCensusFileWidget"></widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="optionalGroup">
+                  <property name="title">
+                    <string>Optional data</string>
+                  </property>
+                  <layout class="QFormLayout" name="optionalInputs">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel0">
+                        <property name="text">
+                          <string>Water mask (1 = exclude)</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QgsFileWidget" name="maskFileWidget"></widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel1">
+                        <property name="text">
+                          <string>Population support (1 = include)</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QgsFileWidget" name="constrainFileWidget"></widget>
+                    </item>
+                    <item row="2" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel2">
+                        <property name="text">
+                          <string>Age and sex census</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="2" column="1">
+                      <widget class="QgsFileWidget" name="agesexCensusFileWidget"></widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="covariateHeader">
+                  <item>
+                    <widget class="QLabel" name="covariateHeading">
+                      <property name="text">
+                        <string>Covariates</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="addCovariateButton">
+                      <property name="text">
+                        <string>Add raster files…</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QTableWidget" name="covariatesTable">
+                  <property name="alternatingRowColors">
+                    <bool>true</bool>
+                  </property>
+                  <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
+                  <property name="selectionMode">
+                    <enum>QAbstractItemView::ExtendedSelection</enum>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QLabel" name="inputHint">
+                  <property name="text">
+                    <string>Input files are copied into the project. Files with the same name are never overwritten.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_settings">
+            <attribute name="title">
+              <string>Settings</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="settingsLayout">
+              <item>
+                <widget class="QGroupBox" name="censusColumnsGroup">
+                  <property name="title">
+                    <string>Census columns</string>
+                  </property>
+                  <layout class="QFormLayout" name="censusColumns">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="censusColumnsLabel0">
+                        <property name="text">
+                          <string>Zone identifier</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QLineEdit" name="idColumnEdit">
+                        <property name="text">
+                          <string>id</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="censusColumnsLabel1">
+                        <property name="text">
+                          <string>Population total</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QLineEdit" name="popColumnEdit">
+                        <property name="text">
+                          <string>pop</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="processingGroup">
+                  <property name="title">
+                    <string>Processing</string>
+                  </property>
+                  <layout class="QFormLayout" name="processingSettings">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel0">
+                        <property name="text">
+                          <string>Parallel processing</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QCheckBox" name="enableParallelCheckBox">
+                        <property name="text">
+                          <string>Use multiple CPU cores</string>
+                        </property>
+                        <property name="checked">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel1">
+                        <property name="text">
+                          <string>CPU cores</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QComboBox" name="cpuCoresComboBox">
+                        <item>
+                          <property name="text">
+                            <string>1</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="2" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel2">
+                        <property name="text">
+                          <string>Raster processing</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="2" column="1">
+                      <widget class="QCheckBox" name="enableBlockProcessingCheckBox">
+                        <property name="text">
+                          <string>Process raster tiles in parallel</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="3" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel3">
+                        <property name="text">
+                          <string>Tile size</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="3" column="1">
+                      <widget class="QComboBox" name="blockSizeComboBox">
+                        <item>
+                          <property name="text">
+                            <string>256,256</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>512,512</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>1024,1024</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="4" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel4">
+                        <property name="text">
+                          <string>Density model</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="4" column="1">
+                      <widget class="QCheckBox" name="logScaleCheckBox">
+                        <property name="text">
+                          <string>Use log-transformed population density</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="5" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel5">
+                        <property name="text">
+                          <string>Feature selection threshold</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="5" column="1">
+                      <widget class="QDoubleSpinBox" name="selectionThresholdLimit">
+                        <property name="decimals">
+                          <number>3</number>
+                        </property>
+                        <property name="maximum">
+                          <double>1</double>
+                        </property>
+                        <property name="singleStep">
+                          <double>0.005</double>
+                        </property>
+                        <property name="value">
+                          <double>0.01</double>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="6" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel6">
+                        <property name="text">
+                          <string>After a successful run</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="6" column="1">
+                      <widget class="QCheckBox" name="addToQgisCheckBox">
+                        <property name="text">
+                          <string>Add population maps to QGIS</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="loggingGroup">
+                  <property name="title">
+                    <string>Diagnostics</string>
+                  </property>
+                  <layout class="QFormLayout" name="loggingSettings">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="loggingSettingsLabel0">
+                        <property name="text">
+                          <string>Detail level</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QComboBox" name="comboBox">
+                        <item>
+                          <property name="text">
+                            <string>INFO</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>DEBUG</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>WARNING</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>ERROR</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="loggingSettingsLabel1">
+                        <property name="text">
+                          <string>Log filename</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QLineEdit" name="logsColumnEdit">
+                        <property name="text">
+                          <string>logs_pypoprf.log</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QLabel" name="validationHint">
+                  <property name="text">
+                    <string>Population totals are checked in every output zone. Model scores describe zone density, not pixel accuracy.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <spacer name="settingsSpacer">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_results">
+            <attribute name="title">
+              <string>Results</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="resultsLayout">
+              <item>
+                <widget class="QLabel" name="resultSummaryLabel">
+                  <property name="text">
+                    <string>Completed analyses will appear here.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QTreeWidget" name="resultsTree">
+                  <property name="alternatingRowColors">
+                    <bool>true</bool>
+                  </property>
+                  <property name="rootIsDecorated">
+                    <bool>false</bool>
+                  </property>
+                  <property name="columnCount">
+                    <number>3</number>
+                  </property>
+                  <column>
+                    <property name="text">
+                      <string>Run</string>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Status</string>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Maps</string>
+                    </property>
+                  </column>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="resultActions">
+                  <item>
+                    <widget class="QPushButton" name="refreshResultsButton">
+                      <property name="text">
+                        <string>Refresh</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="openRunButton">
+                      <property name="text">
+                        <string>Open result folder</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="addRunLayersButton">
+                      <property name="text">
+                        <string>Add maps to QGIS</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QLabel" name="resultsHint">
+                  <property name="text">
+                    <string>Only completed runs can be added to QGIS. Failed or stopped runs remain available for diagnosis.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_details">
+            <attribute name="title">
+              <string>Details</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="detailsLayout">
+              <item>
+                <widget class="QLabel" name="detailsLabel">
+                  <property name="text">
+                    <string>Processing messages and setup diagnostics.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QWidget" name="scrollAreaWidgetContents"></widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="detailsActions">
+                  <item>
+                    <widget class="QPushButton" name="clearLogButton">
+                      <property name="text">
+                        <string>Clear view</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="copyLogButton">
+                      <property name="text">
+                        <string>Copy diagnostics</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout" name="runActionsLayout">
+          <item>
+            <widget class="QProgressBar" name="mainProgressBar">
+              <property name="value">
+                <number>0</number>
+              </property>
+              <property name="format">
+                <string>Choose a project</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="mainStartButton">
+              <property name="text">
+                <string>Run analysis</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <customwidgets>
+    <customwidget>
+      <class>QgsFileWidget</class>
+      <extends>QWidget</extends>
+      <header>qgsfilewidget.h</header>
+    </customwidget>
+  </customwidgets>
+  <resources />
+  <connections />
+</ui>

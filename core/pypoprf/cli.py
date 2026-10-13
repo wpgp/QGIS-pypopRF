@@ -138,7 +138,8 @@ def main(argv=None):
         manifest["packaged_dependency_lock_sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()
         manifest["engine_adapter_source_sha256"] = {
             name: hashlib.sha256((module_root.parents[1] / name).read_bytes()).hexdigest()
-            for name in ("runtime_manager.py", "atomic_files.py")
+            for name in ("services/runtime_manager.py", "services/owned_process.py",
+                         "shared/atomic_files.py", "shared/runtime_environment.py")
         }
         manifest["engine_source_sha256"] = {
             path.relative_to(module_root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()

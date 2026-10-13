@@ -77,8 +77,9 @@ with an explanation; there is no automatic random fallback.
 
 The run's `cv_metrics.json`, `cv_predictions.csv` and `cv_zone_geometry.csv`
 record the actual validation. Scores describe held-out zone-average density,
-not independent fine-pixel accuracy. The repository's `BENCHMARK.md` records
-the fixed-fold Rwanda comparison and its limits.
+not independent fine-pixel accuracy. Compare candidate models only under the
+same explicitly recorded folds and support rules; a single block partition is
+not a general fine-pixel accuracy benchmark.
 
 ## Paths, logs and model files
 

@@ -20,8 +20,8 @@ from sklearn.preprocessing import RobustScaler
 from threadpoolctl import threadpool_limits
 
 from core.pypoprf.config.settings import Settings
-from core.pypoprf.core.feature_extraction import FeatureExtractor
-from core.pypoprf.core.model import Model
+from core.pypoprf.algorithms.feature_extraction import FeatureExtractor
+from core.pypoprf.algorithms.model import Model
 
 ROOT = Path(__file__).resolve().parents[1]
 

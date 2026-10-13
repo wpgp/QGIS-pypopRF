@@ -6,7 +6,7 @@ This is the workflow development build (0.3.0), not a published stable release. 
 
 The interface runs inside QGIS. Numerical processing runs in a dedicated, per-user **64-bit CPython 3.12** virtual environment. Enabling the plugin never runs pip, modifies QGIS Python, or imports the numerical libraries.
 
-The declared range is QGIS 3.44–4.x. Native acceptance covers Windows AMD64 and Linux glibc x86_64 QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6, each with a separate engine. macOS, ARM and musl are not qualified by this build. See [IMPLEMENTATION.md](https://github.com/wpgp/QGIS-pypopRF/blob/master/IMPLEMENTATION.md) for the exact acceptance record.
+The declared range is QGIS 3.44–4.x. Native acceptance targets Windows AMD64 and Linux glibc x86_64 QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6, each with a separate engine. macOS, ARM and musl are not qualified by this build. The [development guide](../development.md) explains the reproducible checks; private local qualification reports are not published as repository files.
 
 ## Install the development ZIP
 

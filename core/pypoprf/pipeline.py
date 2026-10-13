@@ -6,9 +6,9 @@ import re
 import tempfile
 import time
 
-from .core.dasymetric import DasymetricMapper
-from .core.feature_extraction import FeatureExtractor
-from .core.model import Model
+from .algorithms.dasymetric import DasymetricMapper
+from .algorithms.feature_extraction import FeatureExtractor
+from .algorithms.model import Model
 from .utils.raster import remask_layer
 from .utils.runtime import check_cancelled
 

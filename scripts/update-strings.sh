@@ -9,10 +9,10 @@ translation_updater=$1
 shift
 plugin_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd -- "$plugin_root"
-sources=(qgis_pypoprf.py qgis_pypoprf_dialog.py qgis_pypoprf_dialog_base.ui)
+sources=(qgis_pypoprf.py gui/forms/main_dialog.ui)
 while IFS= read -r -d '' source; do
     sources+=("$source")
-done < <(find q_models -type f -name '*.py' -print0)
+done < <(find gui controllers services -type f -name '*.py' -print0)
 mkdir -p i18n
 for locale in "$@"; do
     if [[ ! "$locale" =~ ^[A-Za-z0-9_@-]+$ ]]; then
