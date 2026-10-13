@@ -2,6 +2,8 @@ from logging import Logger
 from typing import Any, Optional
 
 import yaml
+from qgis.PyQt.QtCore import QSignalBlocker
+from .config_manager import validate_log_filename
 
 
 class SettingsError(Exception):
@@ -77,7 +79,10 @@ class SettingsHandler:
             SettingsError: If update fails
         """
         try:
+            if not self.config_manager.config_path:
+                return
             if self._pending_log_filename is not None:
+                validate_log_filename(self._pending_log_filename)
                 self.config_manager.update_config(
                     "logging",
                     {
@@ -89,23 +94,27 @@ class SettingsHandler:
                 dialog.console_handler.update_logging_settings(
                     level=dialog.comboBox.currentText(),
                     save_log=True,
-                    work_dir=dialog.workingDirEdit.filePath(),
+                    work_dir=self.config_manager.working_dir,
                     filename=self._pending_log_filename,
                 )
 
                 self._pending_log_filename = None
         except Exception as e:
-            raise SettingsError(f"Failed to update log filename: {str(e)}")
+            self.logger.error(f"Failed to update log filename: {str(e)}")
 
     def _apply_census_update(self):
         """Apply census fields changes when editing is finished."""
-        if hasattr(self, "_pending_pop_column") and self._pending_pop_column is not None:
-            self.config_manager.update_config("census_pop_column", self._pending_pop_column)
-            self._pending_pop_column = None
-
-        if hasattr(self, "_pending_id_column") and self._pending_id_column is not None:
-            self.config_manager.update_config("census_id_column", self._pending_id_column)
-            self._pending_id_column = None
+        if not self.config_manager.config_path:
+            return
+        try:
+            if self._pending_pop_column is not None:
+                self.config_manager.update_config("census_pop_column", self._pending_pop_column)
+                self._pending_pop_column = None
+            if self._pending_id_column is not None:
+                self.config_manager.update_config("census_id_column", self._pending_id_column)
+                self._pending_id_column = None
+        except Exception as exc:
+            self.logger.error(f"Could not save census columns: {exc}")
 
     def load_settings(self, dialog):
         """
@@ -114,6 +123,10 @@ class SettingsHandler:
         Args:
             dialog: Main dialog instance
         """
+        names = ("logsColumnEdit", "comboBox", "enableParallelCheckBox",
+                 "enableBlockProcessingCheckBox", "cpuCoresComboBox", "blockSizeComboBox",
+                 "popColumnEdit", "idColumnEdit", "logScaleCheckBox", "selectionThresholdLimit")
+        blockers = [QSignalBlocker(getattr(dialog, name)) for name in names]
         try:
             with open(self.config_manager.config_path, "r") as f:
                 config = yaml.safe_load(f)
@@ -128,7 +141,11 @@ class SettingsHandler:
                         dialog.comboBox.setCurrentIndex(index)
 
             # Load processing settings
-            dialog.enableParallelCheckBox.setChecked(True)
+            workers = int(config.get("max_workers", 1))
+            dialog.enableParallelCheckBox.setChecked(workers > 1)
+            if dialog.cpuCoresComboBox.findText(str(workers)) < 0:
+                dialog.cpuCoresComboBox.addItem(str(workers))
+            dialog.cpuCoresComboBox.setCurrentText(str(workers))
 
             dialog.enableBlockProcessingCheckBox.setChecked(config.get("by_block", True))
             block_size = f"{config['block_size'][0]},{config['block_size'][1]}"
@@ -146,12 +163,42 @@ class SettingsHandler:
             dialog.logScaleCheckBox.setChecked(config.get("log_scale", True))
 
             # Load selection threshold setting
-            dialog.selectionThresholdLimit.setValue(config.get("selection_threshold", 0.01))
+            threshold = config.get("selection_threshold", 0.01)
+            dialog.selectionThresholdLimit.setMaximum(max(dialog.selectionThresholdLimit.maximum(), threshold))
+            dialog.selectionThresholdLimit.setValue(threshold)
+            self._loaded_threshold = (dialog.selectionThresholdLimit.value(), threshold)
 
             self.logger.info("Settings loaded successfully")
+            return True
 
         except Exception as e:
             self.logger.error(f"Failed to load settings: {str(e)}")
+            return False
+        finally:
+            del blockers
+            self._pending_log_filename = None
+            self._pending_pop_column = None
+            self._pending_id_column = None
+
+    def collect_settings(self, dialog):
+        filename = validate_log_filename(dialog.logsColumnEdit.text())
+        w, h = map(int, dialog.blockSizeComboBox.currentText().split(","))
+        threshold = dialog.selectionThresholdLimit.value()
+        loaded = getattr(self, "_loaded_threshold", None)
+        if loaded and threshold == loaded[0]:
+            # Unrelated UI changes must not round a precise saved threshold.
+            threshold = loaded[1]
+        return {
+            "logging": {"level": dialog.comboBox.currentText(), "file": filename},
+            "max_workers": int(dialog.cpuCoresComboBox.currentText())
+                           if dialog.enableParallelCheckBox.isChecked() else 1,
+            "by_block": dialog.enableBlockProcessingCheckBox.isChecked(),
+            "block_size": [w, h],
+            "census_pop_column": dialog.popColumnEdit.text().strip(),
+            "census_id_column": dialog.idColumnEdit.text().strip(),
+            "log_scale": dialog.logScaleCheckBox.isChecked(),
+            "selection_threshold": threshold,
+        }
 
     def save_settings(self, dialog):
         """
@@ -161,15 +208,7 @@ class SettingsHandler:
             dialog: Main dialog instance
         """
         try:
-            settings = {
-                "logging": {"level": dialog.comboBox.currentText(), "file": "pypoprf.log"},
-                "max_workers": int(dialog.cpuCoresComboBox.currentText()),
-                "by_block": dialog.enableBlockProcessingCheckBox.isChecked(),
-                "census_pop_column": dialog.popColumnEdit.text(),
-                "census_id_column": dialog.idColumnEdit.text(),
-                "log_scale": dialog.logScaleCheckBox.isChecked(),
-                "selection_threshold": dialog.selectionThresholdLimit.value(),
-            }
+            settings = self.collect_settings(dialog)
 
             # Handle block size
             block_size_text = dialog.blockSizeComboBox.currentText()
@@ -180,8 +219,7 @@ class SettingsHandler:
                 self.logger.warning("Invalid block size format, using default 512,512")
                 settings["block_size"] = [512, 512]
 
-            for key, value in settings.items():
-                self.config_manager.update_config(key, value)
+            self.config_manager.update_many(settings)
 
             self.logger.debug("Settings saved successfully")
             return True
@@ -207,6 +245,7 @@ class SettingsHandler:
         errors = []
 
         try:
+            validate_log_filename(dialog.logsColumnEdit.text())
             # Validate census columns
             pop_column = dialog.popColumnEdit.text().strip()
             id_column = dialog.idColumnEdit.text().strip()

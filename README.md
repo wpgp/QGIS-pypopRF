@@ -1,81 +1,97 @@
 [![DOI](https://zenodo.org/badge/913350629.svg)](https://doi.org/10.5281/zenodo.14867059)
 
-# QGIS pypopRF Plugin
+# QGIS pypopRF
 
-A QGIS plugin for high-resolution population mapping using machine learning and dasymetric techniques. Create detailed population distribution maps by combining census data with geospatial covariates.
+Census-conserving population redistribution using geospatial covariates, Random
+Forest and dasymetric mapping, with optional water/support masks and age-sex maps.
+
+This checkout is the **0.3.0 workflow development build**, not a published
+stable release. [AUDIT.md](AUDIT.md) records the original defects;
+[IMPLEMENTATION.md](IMPLEMENTATION.md) records fixes, reviews and acceptance.
 
 ![WorldPop SDI](wp_logo.png)
 
-## Features
+## What changed
 
-- Create high-resolution population maps from census data
-- Use building data and other geospatial information as predictive variables
-- Automated machine learning workflow with Random Forest
-- User-friendly interface integrated into QGIS
-- Parallel processing support for large datasets
-- Real-time progress monitoring and logging
-- Support for age-sex population structure mapping
-
-## Requirements
-
-- QGIS 3.0 or later
-- Python 3.9 - 3.12
-- Plugin dependencies will be installed automatically during installation
+- A headless numerical engine runs in its own Python process, separate from QGIS.
+- Every analysis has a new run directory, manifest, effective settings and input
+  fingerprints. Source files and earlier results are not overwritten.
+- Population sums are verified against each census zone and demographic group
+  before a map is published. Invalid grids or unsupported positive-population
+  zones fail explicitly.
+- Windowed raster processing, bounded task submission, cooperative cancellation
+  and owned-process cleanup replace whole-raster and GUI-thread processing.
+- Default evaluation holds out spatial blocks and refits selection/preprocessing
+  inside each fold. [BENCHMARK.md](BENCHMARK.md) explains the model comparisons
+  and limitations; conservation is not proof of pixel-level accuracy.
+- A native-palette interface provides Project, Input data, Settings, Results and
+  Details tabs, engine setup, run history and actionable status messages.
+- Guided data preparation creates a new derived project with explicit grid,
+  quantity/resampling choices and diagnostics, preserving the original sources.
+- A quality dashboard distinguishes held-out zone-density validation from census
+  conservation, with OOF plots, a fold-training baseline and error-zone centroids.
+- Local QGIS layers can be selected as inputs; completed maps receive run groups,
+  a population style and an explicit cell-centre area-of-interest summary tool.
 
 ## Installation
 
-1. Download the plugin ZIP file from the [GitHub repository](https://github.com/wpgp/QGIS-pypopRF/releases)
-2. In QGIS, go to "Plugins" → "Manage and Install Plugins" → "Install from ZIP"
-3. Select the downloaded ZIP file
-4. During installation, a console window will open showing the automatic installation of required Python packages. Please do not interrupt this process as it may take several minutes.
+QGIS 3.44–4.x is the declared range. Genuine Windows AMD64 and Linux glibc x86_64
+QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6 acceptance is recorded in
+the implementation journal. macOS, ARM and musl are not qualified by this build.
 
-Note: Installation through the official QGIS Plugin Repository will be available soon.
+The calculation engine requires an installed **64-bit CPython 3.12**. QGIS itself
+may use a different Python version. Enabling the plugin does not install packages
+into QGIS or download an interpreter.
 
-## Input Data Requirements
+1. Build a development ZIP: `python scripts/build_plugin.py` → `dist/pypopRF.zip`.
+2. In QGIS: Plugins → Manage and Install Plugins → Install from ZIP.
+3. Open pypopRF, choose Python 3.12 if needed, then set up the isolated engine.
+4. Create/open a project and follow the [quick start](docs/getting-started/quickstart.md).
 
-### Required Files:
-- **Mastergrid**: GeoTIFF file defining analysis zones
-- **Census Data**: CSV file with population counts
-- **Covariates**: One or more GeoTIFF files (e.g., building data)
+First-time setup downloads SHA-256-verified binary wheels from the packaged lock. Failed/cancelled updates
+cannot replace a healthy engine. ZIP packaging excludes case-study data, tests,
+developer environments and audit files. See [installation and updates](docs/getting-started/installation.md).
 
-### Optional Files:
-- **Age-Sex Data**: CSV file with age-sex population structure
-- **Water Mask**: For excluding water bodies
-- **Constraints**: Additional spatial constraints
+## Inputs and outputs
 
-## Outputs
+Required: a single-band aligned zone GeoTIFF, a census CSV with unique integer IDs
+and nonnegative population, and at least one named aligned covariate GeoTIFF.
+Optional: water mask (1 excludes), support constraint (1 includes), and age-sex
+CSV. See the strict [input contract](docs/user-guide/input-data.md).
 
-The plugin generates the following files in your project's output directory:
+Each `output/runs/<id>/` contains a status manifest, full effective configuration,
+SHA-256 provenance, model bundle, feature/CV artifacts and verified TIFF maps.
+Final population maps contain **persons per pixel**. `prediction.tif` is an
+allocation-weight surface, not a population map. Only completed runs are offered
+for adding population layers to QGIS.
 
-### Population Distribution:
-- **normalized_census.tif**: Normalized census values
-- **population_unconstrained.tif**: Default population distribution output
-- **population_constrained.tif**: Distribution with constraints (when provided)
+## Development and verification
 
-### Machine Learning:
-- **model.pkl.gz**: Trained Random Forest model
-- **scaler.pkl.gz**: Feature scaler
-- **features.csv**: Extracted features with importance metrics
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements-dev.txt
+.venv\Scripts\python -m pytest -m "not qgis" -q
+.venv\Scripts\python -m ruff check atomic_files.py core q_models runtime_manager.py qgis_pypoprf.py qgis_pypoprf_dialog.py __init__.py plugin_upload.py scripts tests
+.venv\Scripts\python scripts/build_plugin.py
+```
 
-### Additional Outputs:
-- **agesex/**: Age-sex structure outputs (when age-sex data provided)
-- Detailed processing logs
+Use Python 3.12. Native QGIS tests require genuine bindings and a separate prepared
+engine; CI exercises both Qt generations. [Development guide](docs/development.md)
+documents those commands and the JSON-event headless CLI.
 
-## Getting Help
+## Help and licensing
 
-- Documentation: https://wpgp.github.io/QGIS-pypopRF/
-- Issues & Support: https://github.com/wpgp/QGIS-pypopRF/issues
-- WorldPop SDI: https://sdi.worldpop.org
-- Youtube Tutorial: https://www.youtube.com/watch?v=WPStOdqE8xE&t
+- [Documentation](https://wpgp.github.io/QGIS-pypopRF/) and [local guides](docs/index.md).
+- [Issues](https://github.com/wpgp/QGIS-pypopRF/issues); attach the run manifest and
+  logs without disclosing private census data.
+- [WorldPop SDI](https://sdi.worldpop.org).
 
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The repository contains [MIT LICENSE](LICENSE) and GPL notices in generated
+QGIS-plugin files. Those notices are retained. Reconciling copyright provenance
+and distribution licensing is a release gate; this build does not silently
+relicense third-party/generated code or claim that the conflict is resolved.
 
 ## Citation
-
-If you use QGIS-pypopRF in your research, please cite:
 
 ```bibtex
 @software{QGIS-pypopRF,
@@ -86,11 +102,11 @@ If you use QGIS-pypopRF in your research, please cite:
 }
 ```
 
-
-## Development Team
+## Development team
 
 Developed by the WorldPop SDI Team:
-- Borys Nosatiuk (b.nosatiuk@soton.ac.uk) - Project Lead
+
+- Borys Nosatiuk (b.nosatiuk@soton.ac.uk) — Project Lead
 - Rhorom Priyatikanto (rhorom.priyatikanto@soton.ac.uk)
 - Maksym Bondarenko (m.bondarenko@soton.ac.uk)
 - Wenbin Zhang (wb.zhang@soton.ac.uk)

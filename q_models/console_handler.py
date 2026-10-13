@@ -1,188 +1,115 @@
-# -*- coding: utf-8 -*-
-import os
-from typing import Optional
+"""Bounded, plain-text QGIS diagnostics without numerical-engine imports."""
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+import sys
 
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QFont
+from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtGui import QFontDatabase, QTextCursor
 from qgis.PyQt import QtWidgets
 
-from ..core.pypoprf.utils.logger import get_logger
-
-# Constants
-DEFAULT_FONT_FAMILY = "Consolas"
-DEFAULT_FONT_SIZE = 10
-DEFAULT_LOG_LEVEL = "INFO"
-CONSOLE_STYLE = """
-    QTextEdit {
-        background-color: white;
-        color: black;
-        font-family: 'Consolas', monospace;
-        border: 1px solid #ccc;
-        padding: 5px;
-    }
-"""
+from .config_manager import validate_log_filename
 
 
-class ConsoleStreamError(Exception):
-    """Custom exception for console stream operations."""
+class AppLogger:
+    """The GUI owns this logger; the engine writes its own run log."""
+    def __init__(self):
+        self.logger = logging.Logger("pypopRF interface")
+        self.logger.setLevel(logging.INFO)
+        self.console_handler = None
+        self.file_handler = None
 
-    pass
+    def set_level(self, level):
+        self.logger.setLevel(level.upper())
+
+    def set_output_stream(self, stream=sys.stdout):
+        if self.console_handler:
+            self.logger.removeHandler(self.console_handler)
+            self.console_handler.close()
+        self.console_handler = logging.StreamHandler(stream)
+        self.console_handler.setFormatter(logging.Formatter("%(levelname)s · %(message)s"))
+        self.logger.addHandler(self.console_handler)
+
+    def set_log_file(self, filepath):
+        if self.file_handler:
+            self.logger.removeHandler(self.file_handler)
+            self.file_handler.close()
+            self.file_handler = None
+        if filepath:
+            Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+            self.file_handler = RotatingFileHandler(
+                filepath, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
+            self.file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+            self.logger.addHandler(self.file_handler)
+
+    def close(self):
+        for handler in list(self.logger.handlers):
+            self.logger.removeHandler(handler)
+            handler.close()
+        self.console_handler = self.file_handler = None
+
+    def debug(self, message):
+        self.logger.debug(message)
+
+    def info(self, message):
+        self.logger.info(message)
+
+    def warning(self, message):
+        self.logger.warning(message)
+
+    def error(self, message):
+        self.logger.error(message)
+
+    def critical(self, message):
+        self.logger.critical(message)
 
 
 class ConsoleStream(QObject):
-    """Stream handler for QGIS console output.
-
-    A custom stream handler that formats and displays text in the QGIS console
-    while maintaining scroll position and text formatting.
-
-    Attributes:
-        text_widget: QTextEdit widget for displaying console output
-        messageReceived: Signal emitted when new text is received
-    """
-
     messageReceived = pyqtSignal(str)
 
-    def __init__(
-        self, text_widget: QtWidgets.QTextEdit, parent: Optional[QObject] = None
-    ) -> None:
-        """Initialize the console stream.
-
-        Args:
-            text_widget: QTextEdit widget for displaying console output
-            parent: Parent QObject for Qt hierarchy
-        """
+    def __init__(self, text_widget, parent=None):
         super().__init__(parent)
         self.text_widget = text_widget
         self.messageReceived.connect(self._append_text)
 
     def _append_text(self, text):
-        """Append text to console widget while maintaining scroll position.
-
-        Args:
-            text: Text to append to console
-        """
-
         scrollbar = self.text_widget.verticalScrollBar()
-        was_at_bottom = scrollbar.value() == scrollbar.maximum()
-
-        self.text_widget.append(text)
-
-        if was_at_bottom:
+        bottom = scrollbar.value() == scrollbar.maximum()
+        self.text_widget.moveCursor(QTextCursor.MoveOperation.End)
+        self.text_widget.insertPlainText(text + "\n")
+        if bottom:
             scrollbar.setValue(scrollbar.maximum())
 
-    def write(self, text: str) -> None:
-        """Write formatted text to console.
+    def write(self, text):
+        if text.strip():
+            self.messageReceived.emit(text.rstrip())
 
-        Args:
-            text: Text to write to console
-        """
-        text = text.strip()
-        if text:
-            self.messageReceived.emit(text)
+    def flush(self):
+        pass
 
 
 class ConsoleHandler:
-    """Handler for QGIS plugin console output.
-
-    Manages console widget setup, logging configuration, and text display
-    in the QGIS plugin interface.
-
-    Attributes:
-        console_text: QTextEdit widget for console display
-        logger: Logger instance
-        stream: ConsoleStream instance
-        _log_file: Current log file path
-        _log_level: Current logging level
-    """
-
-    def __init__(self, parent_widget: QtWidgets.QWidget) -> None:
-        """Initialize console handler.
-
-        Args:
-            parent_widget: Parent widget for console display
-
-        Raises:
-            ConsoleStreamError: If console initialization fails
-        """
-        try:
-            self._setup_console_widget(parent_widget)
-            self._setup_logger(parent_widget)
-
-            # Store settings
-            self._log_file: Optional[str] = None
-            self._log_level: str = DEFAULT_LOG_LEVEL
-
-        except Exception as e:
-            raise ConsoleStreamError(f"Console initialization failed: {str(e)}")
-
-    def _setup_console_widget(self, parent_widget: QtWidgets.QWidget) -> None:
-        """Setup console widget with proper styling.
-
-        Args:
-            parent_widget: Parent widget for console
-        """
-        # Setup console widget
-        self.console_text = QtWidgets.QTextEdit(parent_widget)
+    def __init__(self, parent_widget):
+        self.console_text = QtWidgets.QPlainTextEdit(parent_widget)
         self.console_text.setReadOnly(True)
-        self.console_text.setAcceptRichText(True)
-
-        # Setup font
-        font = QFont(DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE)
-        self.console_text.setFont(font)
-        self.console_text.setStyleSheet(CONSOLE_STYLE)
-
-        # Setup layout
-        layout = QtWidgets.QVBoxLayout(parent_widget)
+        self.console_text.document().setMaximumBlockCount(3000)
+        self.console_text.setFont(QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont))
+        layout = parent_widget.layout() or QtWidgets.QVBoxLayout(parent_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.console_text)
-
-    def _setup_logger(self, parent_widget: QtWidgets.QWidget) -> None:
-        """Setup logger with console stream.
-
-        Args:
-            parent_widget: Parent widget for stream
-        """
-        self.logger = get_logger()
+        self.logger = AppLogger()
         self.stream = ConsoleStream(self.console_text, parent=parent_widget)
         self.logger.set_output_stream(self.stream)
+        self._log_file = None
 
-    def clear(self) -> None:
-        """Clear console content."""
-        try:
-            self.console_text.clear()
-        except Exception as e:
-            raise ConsoleStreamError(f"Failed to clear console: {str(e)}")
+    def clear(self):
+        self.console_text.clear()
 
-    def update_logging_settings(
-        self,
-        level: str,
-        save_log: bool,
-        work_dir: Optional[str] = None,
-        filename: Optional[str] = None,
-    ) -> None:
-        """Update logging settings.
-
-        Args:
-            level: Logging level (INFO, DEBUG, etc.)
-            save_log: Whether to save logs to file
-            work_dir: Working directory for log file
-            filename: Log file name
-
-        Raises:
-            ConsoleStreamError: If logging settings update fails
-        """
-
-        # Update level if changed
-        if level != self._log_level:
-            self._log_level = level
-            self.logger.set_level(level)
-
-        if work_dir and filename:
-            log_file = os.path.join(work_dir, "output", filename)
-            if log_file != self._log_file:
-                try:
-                    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-                    self._log_file = log_file
-                    self.logger.set_log_file(log_file)
-                    self.logger.info(f"Log file set to: {log_file}")
-                except Exception as e:
-                    raise ConsoleStreamError(f"Failed to set log file: {str(e)}")
+    def update_logging_settings(self, level, save_log, work_dir=None, filename=None):
+        self.logger.set_level(level)
+        if save_log and work_dir and filename:
+            validate_log_filename(filename)
+            path = str(Path(work_dir) / "output" / filename)
+            if path != self._log_file:
+                self.logger.set_log_file(path)
+                self._log_file = path

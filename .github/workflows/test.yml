@@ -1,0 +1,69 @@
+name: Test engine and packaged QGIS plugin
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-engine.lock
+            requirements-dev.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -m "not qgis" -q
+      - run: python -m ruff check atomic_files.py core q_models runtime_manager.py qgis_pypoprf.py qgis_pypoprf_dialog.py __init__.py plugin_upload.py scripts tests
+      - run: python scripts/build_plugin.py
+
+  native-qgis:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - qgis/qgis:3.44-noble@sha256:497c1629c68ced7735dc25c25e33ada0040f5144099e92b78fae978bdf233466
+          - qgis/qgis:4.2-trixie@sha256:56c69c92e316aa679e5c30ebf7fcfd89fd1124ec728106ec0cced1c71a28d877
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Test a built ZIP with genuine QGIS, Qt and a separate engine
+        env:
+          QGIS_IMAGE: ${{ matrix.image }}
+        run: |
+          docker run --rm --memory 4g --cpus 2 \
+            -e QT_QPA_PLATFORM=offscreen \
+            --mount "type=bind,source=$PWD,target=/workspace,readonly" \
+            -w /workspace "$QGIS_IMAGE" \
+            bash -ec '
+              python3 -m venv --system-site-packages /tmp/ui-tests
+              /tmp/ui-tests/bin/python -m pip install --ignore-installed pytest==9.1.1 uv==0.13.0
+              export UV_PYTHON_INSTALL_DIR=/tmp/engine-python
+              /tmp/ui-tests/bin/uv python install 3.12
+              PYPOPRF_BASE_PYTHON=$(/tmp/ui-tests/bin/uv python find 3.12)
+              export PYPOPRF_BASE_PYTHON
+              PYPOPRF_TEST_ENGINE=$(python3 -c "import os; from runtime_manager import RuntimeManager; print(RuntimeManager(\"/workspace\", \"/tmp/engine-cache\").setup(os.environ[\"PYPOPRF_BASE_PYTHON\"]))")
+              export PYPOPRF_TEST_ENGINE
+              python3 scripts/build_plugin.py --output /tmp/plugin.zip
+              python3 -m zipfile -e /tmp/plugin.zip /tmp/plugin-package
+              export PYPOPRF_TEST_PLUGIN_ROOT=/tmp/plugin-package/pypopRF
+              /tmp/ui-tests/bin/python -m pytest tests/test_*native.py -q -p no:cacheprovider
+            '

@@ -1,8 +1,9 @@
 [general]
 name=pypopRF
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.44
+qgisMaximumVersion=4.99
 description=A plugin for population prediction and dasymetric mapping using machine learning
-version=0.1.0
+version=0.3.0
 author=WorldPop SDI Team:
     Borys Nosatiuk (Project Lead),
     Rhorom Priyatikanto,
@@ -11,11 +12,21 @@ author=WorldPop SDI Team:
     Tom McKeen,
     Elena Vataga
 email=b.nosatiuk@soton.ac.uk
-about=The QGIS PyPopRF plugin provides tools for high-resolution population prediction and dasymetric mapping. Using machine learning techniques, it processes geospatial data to generate accurate population distribution models. It is ideal for researchers and planners working with population and spatial data.
+about=Create gridded population maps from census counts and aligned raster covariates. Calculations run in an isolated 64-bit Python 3.12 environment managed by the plugin. Initial engine setup downloads locked Python packages; activation never installs packages into QGIS. Census totals are verified separately for every zone. Model validation describes held-out census zones and does not establish pixel-level accuracy. This is an unpublished development build; qualification and remaining release gates are documented in the repository.
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
 hasProcessingProvider=no
-changelog=Version 0.1.1:
+changelog=Version 0.3.0 (development):
+    * Safe data preparation wizard with explicit grid and raster semantics
+    * Held-out zone-density quality dashboard and error-centroid map
+    * QGIS layer selection, grouped result styling and cell-centre population summaries
+Version 0.2.0 (development):
+    * Isolated hash-verified Python 3.12 engine, no QGIS package injection
+    * Refreshed Qt5/Qt6 interface, asynchronous setup/import/cancellation and run history
+    * Verified keyed census conservation, immutable inputs and atomic output publication
+    * Spatial-block CV, complete model bundles and run provenance
+    * Regression/native QGIS tests and deterministic packaging
+Version 0.1.1:
     * Added logarithmic scale option
     * Added configurable feature selection threshold
     * Improved configuration management
@@ -30,6 +41,6 @@ tags=population, mapping, dasymetric, machine learning, GIS, Python
 homepage=https://wpgp.github.io/QGIS-pypopRF
 category=Raster
 icon=icon.png
-experimental=False
+experimental=True
 deprecated=False
 server=False

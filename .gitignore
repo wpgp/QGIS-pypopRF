@@ -33,3 +33,14 @@ wheels/
 .DS_Store
 Thumbs.db
 /deps/
+
+# Local-only audit, qualification and experiment evidence (not project sources)
+/AUDIT*.md
+/audit_*.md
+/audit_repro_*.py
+/REVIEW_*.md
+/ACCEPTANCE*.json
+/BENCHMARK.md
+/IMPLEMENTATION.md
+/STACK_MIGRATION_MODEL.md
+/benchmarks/

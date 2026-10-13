@@ -1,839 +1,289 @@
+"""Conservative dasymetric population mapping, independent of Qt/QGIS."""
 from pathlib import Path
-from typing import Optional, Tuple, Any
+import re
 
 import numpy as np
-import pandas as pd
 import rasterio
-from qgis.PyQt.QtCore import QThreadPool
-from rasterio.windows import Window
 
 from ..config.settings import Settings
 from ..utils.logger import get_logger
-from ..utils.raster import raster_stat
-from ..utils.workers import NormalizationWorker, DasymetricWorker, ScaledRasterWorker
+from ..utils.raster import (raster_stat, get_windows, bounded_window_map, check_cancel,
+                            validate_alignment, validate_census, valid_mask, protect_output)
+from ..utils.runtime import atomic_output
+from ..utils.workers import NormalizationWorker, DasymetricWorker
 
 logger = get_logger()
 
 
 class DasymetricMapper:
-    """
-    Handle dasymetric mapping for population distribution.
+    """Allocate census totals proportionally to finite, nonnegative predictions.
 
-    This class manages the process of dasymetric mapping, which redistributes
-    population data from census units to a finer grid based on ancillary data.
+    mastergrid and constrain are zone-ID rasters. Raw binary masks must first
+    be transformed using remask_layer (water=1 excluded; constrain=0 excluded).
+    Positive totals without positive weights fail; zero totals produce zeros.
+    Every population artifact is read back and verified before publication.
     """
+    AGE_COLUMN = re.compile(r"^[fm](?:_)?\d+(?:[_-]\d+|\+)?$", re.IGNORECASE)
 
     def __init__(self, settings: Settings):
-        """
-        Initialize the DasymetricMapper.
-
-        Args:
-            settings: Settings object containing configuration parameters
-        """
         self.settings = settings
-        self.output_dir = Path(settings.work_dir) / "output"
-        self.output_dir.mkdir(exist_ok=True)
+        self.output_dir = Path(getattr(settings, "output_dir", Path(settings.work_dir) / "output"))
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self._expectations = {}
+        self._normalization_stats = {}
+        self.diagnostics = {}
+        self._input_paths = [settings.mastergrid, settings.constrain, settings.census.get("path"),
+                             *getattr(settings, "covariate", {}).values(), getattr(settings, "mask", None),
+                             getattr(settings, "agesex_data", None)]
+
+    @property
+    def _token(self):
+        return getattr(self.settings, "cancellation_token", None)
 
     @staticmethod
-    def _validate_census(
-        census: pd.DataFrame, kwargs: dict, simple: bool = False
-    ) -> Tuple[pd.DataFrame, str, str]:
-        """
-        Validate census data and extract column names.
-
-        Args:
-            census: Census DataFrame with population data
-            kwargs: Dictionary with parameters including column names
-            simple: If True, return simplified DataFrame with only ID and population columns
-
-        Returns:
-            Tuple containing:
-            - Validated census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If required columns are not found
-        """
-        logger.info("Validating census data")
-
-        # Get column names from DataFrame
-        cols = census.columns.values
-        logger.debug(f"Available columns: {cols.tolist()}")
-
-        # Get column names from kwargs with defaults
-        pop_column = kwargs.get("pop_column", "pop")
+    def _validate_census(census, kwargs, simple=False):
         id_column = kwargs.get("id_column", "id")
-        logger.debug(f"Using columns: id={id_column}, population={pop_column}")
-
-        # Validate required columns exist
-        missing_cols = []
-        if id_column not in cols:
-            missing_cols.append(f'ID column "{id_column}"')
-        if pop_column not in cols:
-            missing_cols.append(f'Population column "{pop_column}"')
-
-        if missing_cols:
-            error_msg = f"Missing required columns in census data: {', '.join(missing_cols)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Validate population values
-        if (census[pop_column] < 0).any():
-            logger.error("Found negative population values in census data")
-            raise ValueError("Found negative population values in census data")
-
-        # Optionally return simplified DataFrame
+        pop_column = kwargs.get("pop_column", "pop")
+        result = validate_census(census, id_column, pop_column)
         if simple:
-            logger.debug("Returning simplified DataFrame with only ID and population columns")
-            census = census[[id_column, pop_column]]
-
-        logger.info("Census data validation completed successfully")
-        return census, id_column, pop_column
+            result = result[[id_column, pop_column]]
+        return result, id_column, pop_column
 
     @staticmethod
-    def _check_compatibility(src_profile, tgt_profile, labels: Tuple[str, str]) -> None:
-
-        logger.info(f"Checking compatibility between {labels[0]} and {labels[1]}")
-
-        # Check for compatible CRS
-        if tgt_profile["crs"] != src_profile["crs"]:
-            error_msg = f"CRS mismatch between {labels[1]} and {labels[0]}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Check for compatible dimensions
-        if (
-            tgt_profile["width"] != src_profile["width"]
-            or tgt_profile["height"] != src_profile["height"]
-        ):
-            error_msg = f"Dimension mismatch between {labels[1]} and {labels[0]}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Check for compatible transforms
-        if tgt_profile["transform"] != src_profile["transform"]:
-            error_msg = f"Transform mismatch between {labels[1]} and {labels[0]}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        logger.info("Compatibility check passed successfully")
-
-    def _get_raster_type_description(self, file_path: Path) -> str:
-        """Get descriptive name for raster type based on filename."""
-        name = file_path.stem
-        if "normalized_census_constrained" in name:
-            if "_f" in name or "_m" in name:
-                return f"Normalized constrained census raster ({name.split('_')[-1]})"
-            return "Normalized constrained census raster"
-        elif "normalized_census" in name:
-            if "_f" in name or "_m" in name:
-                return f"Normalized census raster ({name.split('_')[-1]})"
-            return "Normalized census raster"
-        elif "population_constrained" in name:
-            if "_f" in name or "_m" in name:
-                return f"Constrained population raster ({name.split('_')[-1]})"
-            return "Constrained population raster"
-        elif "population" in name:
-            if "_f" in name or "_m" in name:
-                return f"Population raster ({name.split('_')[-1]})"
-            return "Population raster"
-        return "Raster"
-
-    def _validate_inputs(
-        self,
-        prediction_path: str,
-        mastergrid_path: str,
-        constrain_path: Optional[str] = None,
-    ) -> None:
-        """
-        Validate input files and their compatibility.
-
-        Args:
-            prediction_path: Path to prediction raster
-            mastergrid_path: Path to mastergrid raster
-            constrain_path: Path to constraining raster
-
-        Raises:
-            ValueError: If files are incompatible or contain invalid data
-        """
-        logger.info("Starting input validation")
-
-        input_files = {"Prediction": prediction_path, "Mastergrid": mastergrid_path}
-
-        if constrain_path:
-            input_files["Constrain"] = constrain_path
-
-        for file_type, path in input_files.items():
-            if not Path(path).exists():
-                error_msg = f"{file_type} raster not found at: {path}"
-                logger.error(error_msg)
-                raise FileNotFoundError(error_msg)
-
-        # Load and check prediction raster
-        logger.info("Validating prediction raster")
-        with rasterio.open(prediction_path) as pred:
-            pred_profile = pred.profile
-            pred_data = pred.read(1)
-            pred_nodata = pred.nodata
-
-            # Validate prediction values
-            valid_pred = pred_data[pred_data != pred_nodata]
-            if len(valid_pred) == 0:
-                error_msg = "Prediction raster contains no valid data"
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-
-            logger.info("Prediction raster statistics:")
-            logger.info(f"- Shape: {pred_data.shape}")
-            logger.info(f"- Valid pixels: {len(valid_pred)}")
-            logger.info(f"- Value range: [{valid_pred.min():.2f}, {valid_pred.max():.2f}]")
-            logger.info(f"- NoData value: {pred_nodata}")
-
-        # Load and check mastergrid
-        logger.info("Validating mastergrid")
-        with rasterio.open(mastergrid_path) as mst:
-            mst_profile = mst.profile
-            mst_data = mst.read(1)
-            mst_nodata = mst.nodata
-
-            self._check_compatibility(
-                mst_profile, pred_profile, labels=("mastergrid", "prediction")
-            )
-
-            # Analyze mastergrid content
-            unique_zones = np.unique(mst_data[mst_data != mst_nodata])
-            if len(unique_zones) == 0:
-                error_msg = "Mastergrid contains no valid zones"
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-
-            logger.info("Mastergrid statistics:")
-            logger.info(f"- Shape: {mst_data.shape}")
-            logger.info(f"- Unique zones: {len(unique_zones)}")
-            logger.info(f"- Zone ID range: [{unique_zones.min()}, {unique_zones.max()}]")
-            logger.info(f"- NoData value: {mst_nodata}")
-
-        # Load and check mastergrid
-        if constrain_path:
-            logger.info("Validating constraining raster")
-            with rasterio.open(constrain_path) as con:
-                con_profile = con.profile
-                con_data = con.read(1)
-                con_nodata = con.nodata
-
-                # Check compatibility
-                self._check_compatibility(
-                    con_profile, pred_profile, labels=("constraining", "prediction")
-                )
-
-                # Analyze mastergrid content
-                valid_con = np.unique(con_data[con_data != con_nodata])
-                if len(valid_con) == 0:
-                    error_msg = "Constraining raster contains no valid data"
-                    logger.error(error_msg)
-                    raise ValueError(error_msg)
-
-                logger.info("Constraining raster statistics:")
-                logger.info(f"- Shape: {con_data.shape}")
-                logger.info(f"- Valid pixels: {len(valid_con)}")
-                logger.info(f"- NoData value: {con_nodata}")
-
-        logger.info("Input validation completed successfully")
-
-    def _validate_agesex(census: pd.DataFrame, id_column: str) -> tuple[Any, str, list[Any]]:
-        """
-        Validate census data and extract column names.
-
-        Args:
-            census: Census DataFrame with population data
-            id_column: Column name containing region IDs
-
-        Returns:
-            Tuple containing:
-            - Validated census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If required columns are not found
-        """
-        logger.info("Validating census data with age-sex structure")
-
-        # Get column names from DataFrame
-        cols = census.columns.values
-        logger.debug(f"Available columns: {cols.tolist()}")
-
-        # Get column names from kwargs with defaults
-        pop_columns = [c for c in cols if c[0] in ["f", "F", "m", "M"]]
-
-        # Validate required columns exist
-        missing_cols = []
-        if id_column not in cols:
-            missing_cols.append(f'ID column "{id_column}"')
-            error_msg = f"Missing required columns in census data: {', '.join(missing_cols)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        logger.info("Census data validation completed successfully")
-        return census, id_column, pop_columns
-
-    def _load_census(self, census_path: str, **kwargs) -> Tuple[pd.DataFrame, str, str]:
-        """
-        Load and validate census data.
-
-        Args:
-            census_path: Path to census data file
-            **kwargs: Additional arguments passed to census validation
-
-        Returns:
-            Tuple containing:
-            - Processed census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If census data is invalid or cannot be loaded
-        """
-        logger.info("Loading census data")
-
-        # Load census data based on file extension
-        file_ext = Path(census_path).suffix.lower()
-        try:
-            if file_ext == ".csv":
-                logger.debug(f"Loading CSV file: {census_path}")
-                census = pd.read_csv(census_path)
-            else:
-                error_msg = f"Unsupported census file format: {file_ext}"
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-        except Exception as e:
-            error_msg = f"Failed to load census data: {str(e)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        logger.info(f"Census data loaded: {len(census)} rows")
-        logger.debug(f"Available columns: {census.columns.tolist()}")
-
-        # Validate census data
-        try:
-            census, id_column, pop_column = self._validate_census(census, kwargs)
-        except ValueError as e:
-            error_msg = f"Census validation failed: {str(e)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Basic data quality checks
-        total_pop = census[pop_column].sum()
-        if total_pop <= 0:
-            error_msg = "Total population must be greater than 0"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        logger.info("Census data summary:")
-        logger.info(f"- Total population: {total_pop:,}")
-        logger.info(f"- Number of zones: {len(census)}")
-        logger.info(f"- Using columns: id={id_column}, population={pop_column}")
-
-        return census, id_column, pop_column
-
-    def _load_agesex(self, census_path: str, id_column: str) -> tuple[Any, str, list[Any]]:
-        """
-        Load and validate census data with age-sex structure.
-
-        Args:
-            census_path: Path to census data file
-            id_column: Column name containing region IDs
-
-        Returns:
-            Tuple containing:
-            - Processed census DataFrame
-            - ID column name
-            - Population column name
-
-        Raises:
-            ValueError: If census data is invalid or cannot be loaded
-        """
-        logger.info("Loading census data with age-sex structure")
-
-        # Load census data based on file extension
-        file_ext = Path(census_path).suffix.lower()
-        try:
-            if file_ext == ".csv":
-                logger.debug(f"Loading CSV file: {census_path}")
-                census = pd.read_csv(census_path)
-                cols = census.columns.values
-                pop_columns = [c for c in cols if c[0] in ["f", "F", "m", "M"]]
-
-            else:
-                error_msg = f"Unsupported census file format: {file_ext}"
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-        except Exception as e:
-            error_msg = f"Failed to load census data: {str(e)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        logger.info(f"Census data loaded: {len(census)} rows")
-
-        # Basic data quality checks
-        logger.info("Census data summary:")
-        logger.info(f"- Number of zones: {len(census)}")
-
-        return census, id_column, pop_columns
-
-    def _calculate_normalization(
-        self,
-        census: pd.DataFrame,
-        prediction_path: str,
-        id_column: str,
-        pop_column: str,
-        constrained: bool = False,
-    ) -> pd.DataFrame:
-        """
-        Calculate normalization factors with detailed diagnostics.
-
-        Args:
-            census: Census DataFrame with population data
-            prediction_path: Path to prediction raster
-            id_column: Column name containing region IDs
-            pop_column: Column name containing population values
-            constrained: Whether to use constrained mastergrid for calculation
-
-        Returns:
-            DataFrame with normalization factors
-        """
-        logger.info("Calculating normalization factors")
-
-        if constrained and self.settings.constrain:
-            logger.info("Using constrained mastergrid for normalization")
-            reference_grid = self.settings.constrain
-        else:
-            logger.info("Using standard mastergrid for normalization")
-            reference_grid = self.settings.mastergrid
-
-        sum_prob = raster_stat(
-            prediction_path,
-            reference_grid,
-            by_block=self.settings.by_block,
-            max_workers=self.settings.max_workers,
-            block_size=self.settings.block_size,
-        )
-
-        stats_summary = f"""
-            Number of zones: {len(sum_prob)}
-            Sample zones:
-            {sum_prob[['id', 'sum']].head().to_string()}
-            Distribution:
-            {sum_prob['sum'].describe().to_string()}
-            """
-        logger.debug(stats_summary)
-        logger.info(f"Number of zones found: {len(sum_prob)}")
-        logger.info(
-            f"Sample zones (top 5) - ID: {sum_prob['id'].head().tolist()}, "
-            f"Sum: {sum_prob['sum'].head().round(2).tolist()}"
-        )
-
-        # Merge Results
-        pre_merge_pop = census[pop_column].sum()
-
-        merged = pd.merge(
-            census,
-            sum_prob[["id", "sum"]],
-            left_on=id_column,
-            right_on="id",
-            how="outer",
-        )
-
-        unmatched_census = merged[merged["sum"].isna()]
-        unmatched_stats = merged[merged[pop_column].isna()]
-
-        logger.info(f"Census zones: {len(unmatched_census)} {unmatched_census['id'].tolist()}")
-        logger.info(
-            f"Statistics zones: {len(unmatched_stats)} {unmatched_stats['id'].tolist()}"
-        )
-        logger.info(
-            f"Census rows: {len(census)}, Statistics rows: {len(sum_prob)}, Merged rows: {len(merged)}"
-        )
-
-        # Normalization Results
-        valid = merged["sum"].values > 0
-        merged["norm"] = np.divide(
-            merged[pop_column],
-            merged["sum"],
-            where=valid,
-            out=np.full_like(merged["sum"], np.nan),
-        )
-        total_pop_check = (merged["sum"] * merged["norm"]).sum()
-
-        constraint_type = "constrained" if constrained else "unconstrained"
-        logger.info(f"Normalization factors summary ({constraint_type}):")
-        logger.info(f"- Range: [{merged['norm'].min():.4f}, {merged['norm'].max():.4f}]")
-        logger.info(f"- Mean: {merged['norm'].mean():.4f}")
-        logger.info(f"- Median: {merged['norm'].median():.4f}")
-        logger.info(f"- Std: {merged['norm'].std():.4f}")
-
-        logger.info(f"Population Verification ({constraint_type}):")
-        logger.info(f"Original: {pre_merge_pop:,}")
-        logger.info(f"After normalization: {total_pop_check:,.0f}")
-        logger.info(
-            f"Difference: {abs(total_pop_check - pre_merge_pop):,} "
-            f"({abs(total_pop_check - pre_merge_pop) / pre_merge_pop:.2%})"
-        )
-
-        logger.info(f"Valid normalizations: {valid.sum()} of {len(merged)} zones")
-        logger.info(f"Zones with zero sums: {len(merged[merged['sum'] == 0])}")
-
-        if abs(total_pop_check - pre_merge_pop) / pre_merge_pop > 0.01:
-            logger.warning(
-                f"Population difference after normalization exceeds 1% ({constraint_type})"
-            )
-
-        invalid_norms = len(merged[merged["norm"].isna()])
-        if invalid_norms > 0:
-            logger.warning(
-                f"Found {invalid_norms} invalid normalization factors ({constraint_type})"
-            )
-
+    def _check_compatibility(src_profile, tgt_profile, labels):
+        validate_alignment(src_profile, tgt_profile, labels)
+
+    def _grid(self, constrained):
+        if constrained and not self.settings.constrain:
+            raise ValueError("Constrained mapping requires a constrained zone grid")
+        return self.settings.constrain if constrained else self.settings.mastergrid
+
+    def _windows(self, src):
+        # Legacy by_block=False requests serial execution, never an unbounded read.
+        return get_windows(src, self.settings.block_size)
+
+    def _validate_inputs(self, prediction_path, mastergrid_path, constrain_path=None):
+        """Check alignment and values without loading a complete raster."""
+        check_cancel(self._token)
+        self._input_paths.append(prediction_path)
+        with rasterio.open(mastergrid_path) as mst, rasterio.open(prediction_path) as pred:
+            validate_alignment(mst.profile, pred.profile, ("mastergrid", "prediction"))
+            if constrain_path:
+                with rasterio.open(constrain_path) as con:
+                    validate_alignment(mst.profile, con.profile, ("mastergrid", "constrained zones"))
+            for window in get_windows(mst, self.settings.block_size):
+                check_cancel(self._token)
+                weights = pred.read(1, window=window, masked=True)
+                known = ~np.ma.getmaskarray(weights)
+                data = np.ma.getdata(weights)
+                if ((~np.isfinite(data) | (data < 0)) & known).any():
+                    raise ValueError(f"Prediction contains nonfinite or negative weights in window {window}")
+                if constrain_path:
+                    with rasterio.open(constrain_path) as con:
+                        zones = mst.read(1, window=window, masked=True)
+                        constrained = con.read(1, window=window, masked=True)
+                    eligible = valid_mask(constrained)
+                    if (eligible & (~valid_mask(zones) | (np.asarray(zones) != np.asarray(constrained)))).any():
+                        raise ValueError("Constrained raster must preserve mastergrid zone IDs and coverage")
+
+    def _load_census(self, census_path, **kwargs):
+        # Keep the same CSV/vector formats as feature extraction.
+        from .feature_extraction import FeatureExtractor
+        census = FeatureExtractor(self.settings).load_table(census_path)
+        return self._validate_census(census, kwargs)
+
+    @staticmethod
+    def _validate_agesex(census, id_column):
+        columns = [column for column in census if column != id_column and
+                   isinstance(column, str) and DasymetricMapper.AGE_COLUMN.fullmatch(column)]
+        if not columns:
+            raise ValueError("No age-sex columns found; use f0, m0, f_0_4, m_5_9, f65+ style names")
+        if len({column.casefold() for column in columns}) != len(columns):
+            raise ValueError("Age-sex group names must be unique ignoring case")
+        result = census.copy()
+        for column in columns:
+            result = validate_census(result, id_column, column)
+        return result, id_column, columns
+
+    def _load_agesex(self, census_path, id_column):
+        from .feature_extraction import FeatureExtractor
+        census = FeatureExtractor(self.settings).load_table(census_path)
+        return self._validate_agesex(census, id_column)
+
+    def _calculate_normalization(self, census, prediction_path, id_column, pop_column, constrained=False):
+        census = validate_census(census, id_column, pop_column)
+        key = (str(prediction_path), str(self._grid(constrained)))
+        if key not in self._normalization_stats:
+            self._normalization_stats[key] = raster_stat(prediction_path, self._grid(constrained), self.settings.by_block,
+                                                       self.settings.max_workers, self.settings.block_size, self._token)
+        stats = self._normalization_stats[key]
+        # Standardized keys prevent accidental positional broadcasting and ID-column collisions.
+        totals = census[[id_column, pop_column]].rename(columns={id_column: "id", pop_column: "_population"})
+        unknown = stats.loc[~stats["id"].isin(totals["id"]), "id"].tolist()
+        self.diagnostics["constrained" if constrained else "unconstrained"] = {
+            "excluded_grid_zone_ids": unknown,
+            "excluded_prediction_pixels": int(stats.loc[~stats["id"].isin(totals["id"]), "count"].sum()),
+        }
+        if unknown:
+            logger.warning(f"Grid zones without census are excluded from population output: {unknown}")
+        merged = totals.merge(stats[["id", "sum"]], on="id", how="left", validate="one_to_one")
+        positive = merged["_population"].to_numpy(dtype=float) > 0
+        weights = merged["sum"].to_numpy(dtype=float)
+        unsupported = positive & (~np.isfinite(weights) | (weights <= 0))
+        if unsupported.any():
+            raise ValueError(f"Positive population has no positive eligible prediction support in zones: {merged.loc[unsupported, 'id'].tolist()}")
+        factors = np.zeros(len(merged), dtype=np.float64)
+        with np.errstate(over="raise", invalid="raise", divide="raise"):
+            factors[positive] = merged.loc[positive, "_population"].to_numpy(dtype=float) / weights[positive]
+        if not np.isfinite(factors).all():
+            raise ValueError("Nonfinite normalization coefficients")
+        merged["norm"] = factors
         return merged
 
-    def _create_normalized_raster(
-        self,
-        normalized_data: pd.DataFrame,
-        constrained: bool = False,
-        suffix: Optional[str] = None,
-    ) -> str:
-        """
-        Create raster of normalization factors.
-
-        Args:
-            normalized_data: DataFrame with normalization factors
-            constrained: Whether this is for constrained output
-            suffix: Optional suffix for agesex files
-
-        Returns:
-            Path to normalized raster
-        """
-
-        mastergrid = self.settings.constrain if constrained else self.settings.mastergrid
-
-        if suffix:
-            output_dir = self.output_dir / "agesex" / "additional_files"
-            output_dir.mkdir(parents=True, exist_ok=True)
-            if constrained:
-                output_path = output_dir / f"normalized_census_constrained_{suffix}.tif"
-            else:
-                output_path = output_dir / f"normalized_census_{suffix}.tif"
+    def _artifact_path(self, kind, constrained=False, suffix=None):
+        if suffix is not None and not self.AGE_COLUMN.fullmatch(suffix):
+            raise ValueError(f"Unsafe or unsupported age-sex suffix: {suffix}")
+        if kind == "normalized":
+            directory = self.output_dir / "agesex" / "additional_files" if suffix else self.output_dir
+            name = "normalized_census" + ("_constrained" if constrained else "") + (f"_{suffix}" if suffix else "")
         else:
-            if constrained:
-                output_path = self.output_dir / "normalized_census_constrained.tif"
-            else:
-                output_path = self.output_dir / "normalized_census.tif"
+            directory = self.output_dir / "agesex" if suffix else self.output_dir
+            name = (f"population_{suffix}" + ("_constrained" if constrained else "") if suffix
+                    else "population_" + ("constrained" if constrained else "unconstrained"))
+        directory.mkdir(parents=True, exist_ok=True)
+        path = directory / f"{name}.tif"
+        protect_output(path, self._input_paths)
+        return path
 
-        logger.debug(f"Output path set to: {output_path}")
-        raster_type = self._get_raster_type_description(output_path)
-        logger.info(f"Creating {raster_type.lower()}")
+    @staticmethod
+    def _output_profile(profile, dtype):
+        profile = profile.copy()
+        profile.update(driver="GTiff", count=1, dtype=dtype, nodata=-99, compress="deflate",
+                       tiled=True, blockxsize=256, blockysize=256, BIGTIFF="IF_SAFER")
+        return profile
 
-        # Get profile from mastergrid
-        with rasterio.open(mastergrid) as src:
-            profile = src.profile.copy()
-            profile.update(
-                {
-                    "dtype": "float32",
-                    "nodata": -99,
-                    "blockxsize": self.settings.block_size[0],
-                    "blockysize": self.settings.block_size[1],
-                }
-            )
-            logger.debug("Raster profile created from mastergrid")
-
-        # Create a mapping from zone IDs to normalization factors
-        norm_mapping = {
-            row["id"]: row["norm"]
-            for _, row in normalized_data.iterrows()
-            if not np.isnan(row["norm"])
-        }
-
-        with rasterio.open(mastergrid) as mst, rasterio.open(
-            str(output_path), "w", **profile
-        ) as dst:
-
-            if self.settings.by_block:
-                logger.info("Processing by blocks")
-                windows = [window[1] for window in dst.block_windows()]
-
-                executor = QThreadPool.globalInstance()
-                executor.setMaxThreadCount(self.settings.max_workers)
-
-                workers = []
-                total_valid_mappings = 0
-
-                NormalizationWorker.init_progress(len(windows), logger)
-
-                for i, window in enumerate(windows):
-                    worker = NormalizationWorker(
-                        window=window,
-                        mastergrid_path=str(mastergrid),
-                        norm_mapping=norm_mapping,
-                        profile=profile,
-                        idx=i,
-                    )
-                    worker.setAutoDelete(False)
-                    workers.append(worker)
-                    executor.start(worker)
-
-                executor.waitForDone()
-
-                # Collect results and count valid mappings
-                for i, worker in enumerate(workers):
-                    if worker.result is not None:
-                        dst.write(worker.result, window=windows[i])
-                        total_valid_mappings += worker.valid_mappings
-
-                logger.info(f"\nNormalization summary:")
-                logger.info(f"- Total windows processed: {len(windows)}")
-                logger.info(f"- Total valid mappings: {total_valid_mappings}")
-                logger.info(
-                    f"- Percentage of valid mappings: {total_valid_mappings / len(norm_mapping) * 100:.2f}%"
-                )
-
-                workers.clear()
-            else:
-                logger.info("Processing entire raster at once")
-                window = Window(0, 0, dst.width, dst.height)
-                worker = NormalizationWorker(
-                    window=window,
-                    mastergrid_path=str(mastergrid),
-                    norm_mapping=norm_mapping,
-                    profile=profile,
-                )
-                worker.run()
-                if worker.result is not None:
-                    dst.write(worker.result)
-                    logger.info(f"Valid mappings: {worker.valid_mappings}")
-
-        raster_type = self._get_raster_type_description(output_path)
-        logger.info(f"{raster_type} created successfully: {output_path}")
+    def _create_normalized_raster(self, normalized_data, constrained=False, suffix=None):
+        grid = self._grid(constrained)
+        output_path = self._artifact_path("normalized", constrained, suffix)
+        if normalized_data["id"].duplicated().any():
+            raise ValueError("Duplicate normalization zone IDs")
+        mapping = dict(zip(normalized_data["id"], normalized_data["norm"]))
+        with rasterio.open(grid) as src:
+            # Coefficients use float64 so tiny weights and large totals do not overflow float32.
+            profile = self._output_profile(src.profile, "float64")
+            windows = self._windows(src)
+        def process(window):
+            check_cancel(self._token)
+            worker = NormalizationWorker(window, grid, mapping, profile)
+            return worker.run()
+        with atomic_output(output_path, self._token) as temporary:
+            with rasterio.open(temporary, "w", **profile) as dst:
+                for window, data in bounded_window_map(process, windows, self.settings.max_workers if self.settings.by_block else 1, self._token):
+                    dst.write(data, window=window)
+        self._expectations[str(output_path)] = normalized_data[["id", "_population"]].copy()
         return str(output_path)
 
-    def _create_dasymetric_raster(
-        self,
-        prediction_path: str,
-        norm_raster_path: str,
-        constrained: bool = False,
-        suffix: Optional[str] = None,
-    ) -> Path:
-        """Create final dasymetric population raster.
+    def _verify_population(self, output_path, expected, constrained=False):
+        """Independent on-disk conservation check; no table algebra shortcut."""
+        grid = self._grid(constrained)
+        with rasterio.open(output_path) as out, rasterio.open(grid) as mst:
+            validate_alignment(mst.profile, out.profile, ("mastergrid", "population"))
+            for window in get_windows(out, self.settings.block_size):
+                check_cancel(self._token)
+                population = out.read(1, window=window, masked=True)
+                known = ~np.ma.getmaskarray(population)
+                values = np.ma.getdata(population)
+                if (known & (~np.isfinite(values) | (values < 0))).any():
+                    raise ValueError("Population raster contains invalid values")
+                zones = mst.read(1, window=window, masked=True)
+                if (known & ~valid_mask(zones)).any():
+                    raise ValueError("Population written outside eligible zone coverage")
+        actual = raster_stat(output_path, grid, True, self.settings.max_workers, self.settings.block_size, self._token)
+        extra = actual.loc[~actual["id"].isin(expected["id"]), "id"].tolist()
+        if extra:
+            raise ValueError(f"Unexpected population zones: {extra}")
+        comparison = expected.merge(actual[["id", "sum"]], on="id", how="left", validate="one_to_one")
+        sums = comparison["sum"].fillna(0).to_numpy(dtype=float)
+        totals = comparison["_population"].to_numpy(dtype=float)
+        good = np.isclose(sums, totals, rtol=1e-6, atol=1e-5)
+        if not good.all():
+            rows = comparison.loc[~good, ["id", "_population", "sum"]].to_dict("records")
+            raise ValueError(f"Population conservation failed by zone: {rows}")
+        logger.info(f"Verified population conservation for {len(expected)} zones: total {float(sums.sum()):,.3f}")
 
-        Args:
-            prediction_path: Path to prediction raster
-            norm_raster_path: Path to normalization raster
-            constrained: Whether this is constrained output
-            suffix: Optional suffix for agesex files
-        """
-        # Determine output path based on parameters
-        if suffix:
-            # Agesex output
-            output_dir = self.output_dir / "agesex"
-            output_dir.mkdir(exist_ok=True)
-            if constrained:
-                output_path = output_dir / f"population_{suffix}_constrained.tif"
-            else:
-                output_path = output_dir / f"population_{suffix}.tif"
-        else:
-            # Regular output
-            if constrained:
-                output_path = self.output_dir / "population_constrained.tif"
-            else:
-                output_path = self.output_dir / "population_unconstrained.tif"
-
-        logger.debug(f"Output path set to: {output_path}")
-        raster_type = self._get_raster_type_description(output_path)
-        logger.info(f"Creating {raster_type.lower()}")
-
+    def _create_dasymetric_raster(self, prediction_path, norm_raster_path, constrained=False, suffix=None):
+        output_path = self._artifact_path("population", constrained, suffix)
+        protect_output(output_path, [prediction_path, norm_raster_path])
+        if str(norm_raster_path) not in self._expectations:
+            raise ValueError("Population output requires census expectations for on-disk verification")
         with rasterio.open(prediction_path) as src:
-            profile = src.profile.copy()
-            profile.update(
-                {
-                    "dtype": "float32",
-                    "nodata": -99,
-                    "blockxsize": 256,
-                    "blockysize": 256,
-                }
-            )
-
-        with rasterio.open(str(output_path), "w", **profile) as dst:
-            if self.settings.by_block:
-                output_data = np.full(
-                    (dst.height, dst.width), profile["nodata"], dtype=profile["dtype"]
-                )
-                windows = [window[1] for window in dst.block_windows()]
-
-                executor = QThreadPool.globalInstance()
-                executor.setMaxThreadCount(self.settings.max_workers)
-                workers = []
-
-                DasymetricWorker.init_progress(len(windows), logger)
-
-                for i, window in enumerate(windows):
-                    worker = DasymetricWorker(
-                        window=window,
-                        file_paths={
-                            "prediction": prediction_path,
-                            "normalization": norm_raster_path,
-                        },
-                        profile=profile,
-                        idx=i,
-                    )
-                    worker.setAutoDelete(False)
-                    workers.append(worker)
-                    executor.start(worker)
-
-                executor.waitForDone()
-
-                for i, worker in enumerate(workers):
-                    if worker.result is not None:
-                        window = windows[i]
-                        result_data = worker.result[0]
-                        output_data[
-                            window.row_off : window.row_off + window.height,
-                            window.col_off : window.col_off + window.width,
-                        ] = result_data
-
-                valid_mask = output_data != profile["nodata"]
-                if np.any(valid_mask):
-                    logger.info("Final data statistics before writing:")
-                    logger.info(
-                        f"- Range: [{output_data[valid_mask].min():.2f}, "
-                        f"{output_data[valid_mask].max():.2f}]"
-                    )
-                    logger.info(f"- Mean: {output_data[valid_mask].mean():.2f}")
-                    logger.info(f"- Valid pixels: {np.sum(valid_mask)}")
-
-                dst.write(output_data, indexes=1)
-                workers.clear()
-
-            else:
-                logger.info("Processing entire raster at once")
-                window = Window(0, 0, dst.width, dst.height)
-                worker = DasymetricWorker(
-                    window=window,
-                    file_paths={
-                        "prediction": prediction_path,
-                        "normalization": norm_raster_path,
-                    },
-                    profile=profile,
-                )
-                worker.run()
-                if worker.result is not None:
-                    dst.write(worker.result)
-
-        raster_type = self._get_raster_type_description(output_path)
-        logger.info(f"{raster_type} created successfully: {output_path}")
+            profile = self._output_profile(src.profile, "float64")
+            windows = self._windows(src)
+        def process(window):
+            check_cancel(self._token)
+            worker = DasymetricWorker(window, {"prediction": prediction_path, "normalization": norm_raster_path}, profile)
+            return worker.run()
+        with atomic_output(output_path, self._token) as temporary:
+            with rasterio.open(temporary, "w", **profile) as dst:
+                for window, data in bounded_window_map(process, windows, self.settings.max_workers if self.settings.by_block else 1, self._token):
+                    dst.write(data, window=window)
+            self._verify_population(temporary, self._expectations[str(norm_raster_path)], constrained)
         return output_path
 
-    def map(self, prediction_path: str) -> dict[str, Path]:
-        """
-        Perform dasymetric mapping using prediction raster and census data.
+    def map(self, prediction_path):
+        self._normalization_stats.clear()
+        self._validate_inputs(prediction_path, self.settings.mastergrid, self.settings.constrain)
+        census, id_column, pop_column = self._load_census(self.settings.census["path"], **self.settings.census)
+        # Preflight both variants before producing any result.
+        modes = [False, True] if self.settings.constrain else [False]
+        normalized = {mode: self._calculate_normalization(census, prediction_path, id_column, pop_column, mode) for mode in modes}
+        paths = {}
+        for mode, table in normalized.items():
+            factors = self._create_normalized_raster(table, mode)
+            paths["constrained" if mode else "unconstrained"] = self._create_dasymetric_raster(prediction_path, factors, mode)
+        return paths
 
-        Args:
-            prediction_path: Path to prediction raster from model
-
-        Returns:
-            Path to final dasymetric population raster
-        """
-
-        # Load and validate inputs
-        self._validate_inputs(
-            prediction_path, self.settings.mastergrid, self.settings.constrain
-        )
-
-        census, id_column, pop_column = self._load_census(
-            self.settings.census["path"], **self.settings.census
-        )
-
-        normalized_data = self._calculate_normalization(
-            census, prediction_path, id_column, pop_column, constrained=False
-        )
-
-        norm_raster_path = self._create_normalized_raster(normalized_data, constrained=False)
-
-        final_unconstrained_path = self._create_dasymetric_raster(
-            prediction_path, norm_raster_path, constrained=False
-        )
-
-        final_paths = {"unconstrained": final_unconstrained_path}
-
-        if self.settings.constrain:
-            normalized_data_c = self._calculate_normalization(
-                census, prediction_path, id_column, pop_column, constrained=True
-            )
-
-            norm_raster_path_c = self._create_normalized_raster(
-                normalized_data_c, constrained=True
-            )
-
-            final_constrained_path = self._create_dasymetric_raster(
-                prediction_path, norm_raster_path_c, constrained=True
-            )
-
-            final_paths["constrained"] = final_constrained_path
-
-        return final_paths
-
-    def map_agesex(self, prediction_path: str, agesex_path: str) -> None:
-
-        # Load and validate inputs
-        self._validate_inputs(
-            prediction_path, self.settings.mastergrid, self.settings.constrain
-        )
-
-        agesex_dir = self.output_dir / "agesex"
-        agesex_dir.mkdir(exist_ok=True)
-
-        census, id_column, pop_columns = self._load_agesex(
-            agesex_path, self.settings.census["id_column"]
-        )
-        norm = census[[id_column]].copy()
-        norm["one"] = 1
-
-        # Perform zonal statistics to get normalization factor
-        normalized_data = self._calculate_normalization(
-            norm, prediction_path, id_column, "one", constrained=False
-        )
-
-        for pop_column in pop_columns:
-            normalized = normalized_data.copy()
-            normalized["norm"] *= census[pop_column].values
-
-            # Create normalized raster
-            norm_raster_path = self._create_normalized_raster(
-                normalized, constrained=False,
-            )
-
-            self._create_dasymetric_raster(
-                prediction_path, norm_raster_path, constrained=False,
-                suffix=pop_column
-            )
-
-        if self.settings.constrain:
-            normalized_data_c = self._calculate_normalization(
-                norm, prediction_path, id_column, "one", constrained=True
-            )
-
-            for pop_column in pop_columns:
-                normalized = normalized_data_c.copy()
-                normalized["norm"] *= census[pop_column].values
-
-                norm_raster_path = self._create_normalized_raster(
-                    normalized, constrained=True,
-                )
-
-                self._create_dasymetric_raster(
-                    prediction_path,
-                    norm_raster_path,
-                    constrained=True,
-                    suffix=pop_column,
-                )
-
-        return
+    def map_agesex(self, prediction_path, agesex_path):
+        self._normalization_stats.clear()
+        self._input_paths.append(agesex_path)
+        self._validate_inputs(prediction_path, self.settings.mastergrid, self.settings.constrain)
+        census, id_column, columns = self._load_agesex(agesex_path, self.settings.census["id_column"])
+        main, main_id, main_pop = self._load_census(self.settings.census["path"], **self.settings.census)
+        totals = main[[main_id, main_pop]].rename(columns={main_id: "id", main_pop: "census_population"})
+        groups = census[[id_column]].rename(columns={id_column: "id"}).copy()
+        groups["age_sex_population"] = census[columns].sum(axis=1).to_numpy(dtype=float)
+        if not np.isfinite(groups["age_sex_population"]).all():
+            raise ValueError("Age-sex population totals exceed the numeric range")
+        comparison = totals.merge(groups, on="id", how="outer", validate="one_to_one")
+        common = comparison["census_population"].notna() & comparison["age_sex_population"].notna()
+        comparison["difference"] = comparison["age_sex_population"] - comparison["census_population"]
+        mismatch = common & ~np.isclose(comparison["age_sex_population"], comparison["census_population"], rtol=1e-6, atol=1e-5)
+        differences = comparison.loc[mismatch, ["id", "census_population", "age_sex_population", "difference"]]
+        missing_groups = comparison.loc[comparison["age_sex_population"].isna(), "id"].tolist()
+        missing_main = comparison.loc[comparison["census_population"].isna(), "id"].tolist()
+        self.diagnostics["age_sex_totals"] = {
+            "mismatch_count": len(differences), "mismatched_zone_ids": differences["id"].tolist(),
+            "differences": differences.head(100).to_dict("records"),
+            "differences_truncated": len(differences) > 100,
+            "missing_age_sex_zone_ids": missing_groups, "missing_census_zone_ids": missing_main,
+            "policy": "Groups are allocated independently; totals are not forced to match census",
+        }
+        if len(differences) or missing_groups or missing_main:
+            logger.warning(f"Age-sex group totals differ from census in {len(differences)} zones; "
+                           f"{len(missing_groups)} zones lack groups and {len(missing_main)} lack main census. "
+                           "Groups are allocated independently; review the age-sex totals diagnostic.")
+        diagnostic_path = self.output_dir / "agesex" / "age_sex_totals.csv"
+        protect_output(diagnostic_path, self._input_paths)
+        diagnostic_path.parent.mkdir(parents=True, exist_ok=True)
+        with atomic_output(diagnostic_path, self._token) as temporary:
+            comparison.to_csv(temporary, index=False)
+        self.diagnostics["age_sex_totals"]["table"] = str(diagnostic_path.relative_to(self.output_dir))
+        # Validate all groups/support first, so a late invalid group cannot leave an apparently complete result set.
+        modes = [False, True] if self.settings.constrain else [False]
+        tables = {(mode, column): self._calculate_normalization(census, prediction_path, id_column, column, mode)
+                  for mode in modes for column in columns}
+        paths = {}
+        for (mode, column), table in tables.items():
+            factors = self._create_normalized_raster(table, mode, column)
+            paths[("constrained" if mode else "unconstrained") + "_" + column] = self._create_dasymetric_raster(prediction_path, factors, mode, column)
+        return paths

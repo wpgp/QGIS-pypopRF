@@ -1,104 +1,70 @@
-import sys
+"""Explicit maintainer upload command; never invoked by the plugin or CI build."""
+
+import argparse
 import getpass
+from pathlib import Path
+import sys
+from urllib.parse import quote, urlsplit, urlunsplit
 import xmlrpc.client
-from optparse import OptionParser
 
-standard_library.install_aliases()
-
-# Configuration
-PROTOCOL = 'https'
-SERVER = 'plugins.qgis.org'
-PORT = '443'
-ENDPOINT = '/plugins/RPC2/'
-VERBOSE = False
+SERVER = "plugins.qgis.org"
+ENDPOINT = "/plugins/RPC2/"
 
 
-def main(parameters, arguments):
-    """Main entry point.
+def hide_password(url, start=None):
+    """Remove all userinfo from a diagnostic URL, including the username."""
+    parts = urlsplit(url)
+    authority = parts.netloc.rsplit("@", 1)[-1]
+    return urlunsplit((parts.scheme, authority, parts.path, "", ""))
 
-    :param parameters: Command line parameters.
-    :param arguments: Command line arguments.
-    """
-    address = "{protocol}://{username}:{password}@{server}:{port}{endpoint}".format(
-        protocol=PROTOCOL,
-        username=parameters.username,
-        password=parameters.password,
-        server=parameters.server,
-        port=parameters.port,
-        endpoint=ENDPOINT)
-    print("Connecting to: %s" % hide_password(address))
 
-    server = xmlrpc.client.ServerProxy(address, verbose=VERBOSE)
+def upload(archive, username, password, server=SERVER, port=443, proxy_factory=None):
+    """Upload explicitly supplied credentials without logging them."""
+    if not server or any(c in server for c in "/:@?#\\"):
+        raise ValueError("Server must be a hostname without a URL or credentials")
+    if not 1 <= int(port) <= 65535:
+        raise ValueError("Invalid server port")
+    archive = Path(archive)
+    if not archive.is_file() or archive.suffix.lower() != ".zip":
+        raise ValueError("Supply an existing plugin ZIP archive")
+    if archive.stat().st_size > 25_000_000:
+        raise ValueError("Plugin archive exceeds the repository size limit")
+    address = (
+        f"https://{quote(username, safe='')}:{quote(password, safe='')}"
+        f"@{server}:{int(port)}{ENDPOINT}"
+    )
+    proxy_factory = proxy_factory or xmlrpc.client.ServerProxy
+    print(f"Connecting to: {hide_password(address)}")
+    with proxy_factory(address, verbose=False) as proxy:
+        return proxy.plugin.upload(xmlrpc.client.Binary(archive.read_bytes()))
 
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Publish a prepared QGIS plugin ZIP")
+    parser.add_argument("archive", type=Path)
+    parser.add_argument("--username", "-u")
+    parser.add_argument("--server", default=SERVER)
+    parser.add_argument("--port", type=int, default=443)
+    options = parser.parse_args(argv)
+    username = options.username or input(f"Username [{getpass.getuser()}]: ").strip() \
+        or getpass.getuser()
+    password = getpass.getpass("QGIS repository password: ")
     try:
-        with open(arguments[0], 'rb') as handle:
-            plugin_id, version_id = server.plugin.upload(
-                xmlrpc.client.Binary(handle.read()))
-        print("Plugin ID: %s" % plugin_id)
-        print("Version ID: %s" % version_id)
-    except xmlrpc.client.ProtocolError as err:
-        print("A protocol error occurred")
-        print("URL: %s" % hide_password(err.url, 0))
-        print("HTTP/HTTPS headers: %s" % err.headers)
-        print("Error code: %d" % err.errcode)
-        print("Error message: %s" % err.errmsg)
-    except xmlrpc.client.Fault as err:
-        print("A fault occurred")
-        print("Fault code: %d" % err.faultCode)
-        print("Fault string: %s" % err.faultString)
-
-
-def hide_password(url, start=6):
-    """Returns the http url with password part replaced with '*'.
-
-    :param url: URL to upload the plugin to.
-    :type url: str
-
-    :param start: Position of start of password.
-    :type start: int
-    """
-    start_position = url.find(':', start) + 1
-    end_position = url.find('@')
-    return "%s%s%s" % (
-        url[:start_position],
-        '*' * (end_position - start_position),
-        url[end_position:])
+        plugin_id, version_id = upload(
+            options.archive, username, password, options.server, options.port,
+        )
+    except xmlrpc.client.ProtocolError as exc:
+        print(f"Upload failed: HTTP status {exc.errcode}", file=sys.stderr)
+        return 1
+    except xmlrpc.client.Fault as exc:
+        print(f"Upload rejected: XML-RPC fault {exc.faultCode}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError) as exc:
+        print(f"Upload failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"Plugin ID: {plugin_id}; version ID: {version_id}")
+    return 0
 
 
 if __name__ == "__main__":
-    parser = OptionParser(usage="%prog [options] plugin.zip")
-    parser.add_option(
-        "-w", "--password", dest="password",
-        help="Password for plugin site", metavar="******")
-    parser.add_option(
-        "-u", "--username", dest="username",
-        help="Username of plugin site", metavar="user")
-    parser.add_option(
-        "-p", "--port", dest="port",
-        help="Server port to connect to", metavar="80")
-    parser.add_option(
-        "-s", "--server", dest="server",
-        help="Specify server name", metavar="plugins.qgis.org")
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        print("Please specify zip file.\n")
-        parser.print_help()
-        sys.exit(1)
-    if not options.server:
-        options.server = SERVER
-    if not options.port:
-        options.port = PORT
-    if not options.username:
-        # interactive mode
-        username = getpass.getuser()
-        print("Please enter user name [%s] :" % username, end=' ')
-
-        res = input()
-        if res != "":
-            options.username = res
-        else:
-            options.username = username
-    if not options.password:
-        # interactive mode
-        options.password = getpass.getpass()
-    main(options, args)
+    raise SystemExit(main())

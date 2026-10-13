@@ -22,80 +22,18 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
-import importlib
-import os
-import subprocess
-import sys
-from pathlib import Path
-import platform
-
-
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load PyPopRF class from file PyPopRF.
+    """Load the plugin without changing the host Python environment.
 
-    :param iface: A QGIS interface instance.
-    :type iface: QgsInterface
+    Activation never runs pip, selects another Python from PATH, or adds binary
+    packages to QGIS sys.path. Dependency setup is a separate explicit workflow.
     """
-
-    plugin_dir = Path(__file__).parent
-    deps_path = os.path.join(plugin_dir, "deps")
-
-    if not os.path.exists(deps_path):
-        requirements_path = os.path.join(plugin_dir, "requirements.txt")
-
-        # Determine OS and Python executable
-        system = platform.system().lower()
-        if system == "windows":
-            python = os.path.join(os.environ.get("PYTHONHOME"), "python.exe")
-            platform_tag = "win_amd64"
-        elif system == "linux":
-            python = "python3"
-            platform_tag = "manylinux2014_x86_64"
-        elif system == "darwin":
-            python = "python3"
-            platform_tag = "macosx_10_14_x86_64"
-        else:
-            raise OSError(f"Unsupported operating system: {system}")
-
-        try:
-            # First attempt: with platform-specific wheels
-            subprocess.check_call(
-                [
-                    python,
-                    "-m",
-                    "pip",
-                    "install",
-                    "-r",
-                    requirements_path,
-                    "--platform",
-                    platform_tag,
-                    "--only-binary=:all:",
-                    f"--target={deps_path}",
-                ]
-            )
-        except subprocess.CalledProcessError as e:
-            try:
-                # Second attempt: without platform specifications
-                subprocess.check_call(
-                    [
-                        python,
-                        "-m",
-                        "pip",
-                        "install",
-                        "-r",
-                        requirements_path,
-                        f"--target={deps_path}",
-                    ]
-                )
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(
-                    f"Failed to install dependencies for {system} ({platform_tag}). Error: {str(e)}"
-                )
-
-    if deps_path not in sys.path:
-        sys.path.insert(1, deps_path)
-        importlib.invalidate_caches()
-
-    from .qgis_pypoprf import PyPopRF
-
+    try:
+        from .qgis_pypoprf import PyPopRF
+    except (ImportError, OSError) as exc:
+        raise RuntimeError(
+            "pypopRF could not load its runtime. No packages were installed or "
+            "changed in QGIS. See the installation guide and include the "
+            f"underlying error in diagnostics: {exc}"
+        ) from exc
     return PyPopRF(iface)

@@ -1,4 +1,6 @@
 import logging
+from logging.handlers import RotatingFileHandler
+from html import escape
 import sys
 from typing import Optional, TextIO
 from pathlib import Path
@@ -10,7 +12,6 @@ class PopRFLogger:
     def __init__(self, name: str = "pypopRF"):
         # Initialize base logger
         self.logger = logging.getLogger(name)
-        self.logger.handlers.clear()
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False
 
@@ -42,7 +43,7 @@ class PopRFLogger:
             def format(self, record):
                 timestamp = self.formatTime(record, self.datefmt)
                 level = record.levelname
-                msg = record.getMessage()
+                msg = escape(record.getMessage())
 
                 color = self.COLORS.get(record.levelno, "#000000")
                 return (
@@ -76,18 +77,25 @@ class PopRFLogger:
         self.console_handler.setFormatter(self._get_formatter(colored=True))
         self.logger.addHandler(self.console_handler)
 
-    def set_log_file(self, filepath: str) -> None:
+    def set_log_file(self, filepath: Optional[str]) -> None:
         """Set file output."""
         # Remove existing handler
         if self.file_handler:
             self.file_handler.close()
             self.logger.removeHandler(self.file_handler)
+            self.file_handler = None
+
+        if filepath is None:
+            return
 
         # Create directory if needed
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
         # Create new handler
-        self.file_handler = logging.FileHandler(filepath, mode="w")
+        self.file_handler = RotatingFileHandler(
+            filepath, mode="a", maxBytes=5 * 1024 * 1024, backupCount=3,
+            encoding="utf-8",
+        )
         self.file_handler.setFormatter(self._get_formatter())
         self.logger.addHandler(self.file_handler)
 
@@ -96,8 +104,11 @@ class PopRFLogger:
         if self.file_handler:
             self.file_handler.close()
             self.logger.removeHandler(self.file_handler)
+            self.file_handler = None
         if self.console_handler:
+            self.console_handler.close()
             self.logger.removeHandler(self.console_handler)
+            self.console_handler = None
 
     def __del__(self):
         """Cleanup on deletion."""

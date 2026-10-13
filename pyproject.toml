@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+  "qgis: requires a genuine QGIS application and its Python runtime",
+  "integration: exercises several production pipeline stages",
+  "slow: representative data benchmark or full training",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+exclude = ["resources.py", "audit_repro_*.py"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]

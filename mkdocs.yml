@@ -40,6 +40,7 @@ nav:
     - Input Data: user-guide/input-data.md
     - Settings: user-guide/settings.md
     - Running Analysis: user-guide/running-analysis.md
+    - Troubleshooting: user-guide/troubleshooting.md
   - Development: development.md
 
 markdown_extensions:

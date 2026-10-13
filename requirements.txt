@@ -1,4 +1,7 @@
-numpy==1.26.4
-rasterio==1.4.3
-geopandas==1.0.1
-scikit-learn==1.4.2
+numpy==2.5.4
+rasterio==1.5.2
+geopandas==1.2.0
+scikit-learn==1.9.1
+pandas==3.0.6
+joblib==1.6.0
+PyYAML==6.0.3

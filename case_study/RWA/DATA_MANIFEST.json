@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-10-12",
+  "provenance_status": "Bundled historical files; original download URLs, per-layer licences and release provenance not supplied in repository. Do not infer permission to redistribute.",
+  "files": [
+    {
+      "name": "RWA_2026.csv",
+      "sha256": "00f5ada9b3cb50497d0f7eed672f22d1390d3b44b72cbd0297c0a799109f8056",
+      "bytes": 9954
+    },
+    {
+      "name": "rwa_buildings_count_2023_glv2_5_t0_5_S_C_100m_v1.tif",
+      "sha256": "74de77aedce8c8c6f12fa70d4a89fd946407a7d53fb7428c469b9dd248ec8a0e",
+      "bytes": 3985401
+    },
+    {
+      "name": "rwa_buildings_perimeter_2023_glv2_5_t0_5_S_C_100m_v1.tif",
+      "sha256": "4d03e0885939ce4f02cbe173d51dc3657f266ca681c863d439227afa8db69e3c",
+      "bytes": 5463705
+    },
+    {
+      "name": "rwa_buildings_surface_2023_glv2_5_t0_5_S_C_100m_v1.tif",
+      "sha256": "a6ea59ed9c36e07db3a6b4d0ce271fca17e39caa0af9f67ab23547981a05f3d4",
+      "bytes": 5242403
+    },
+    {
+      "name": "rwa_buildings_volume_2023_glv2_5_t0_5_S_C_100m_v1.tif",
+      "sha256": "e47fbf12dbb069f81d1df90d256483ce37d2d26a88a43d7eb143cc713dced16b",
+      "bytes": 5296207
+    },
+    {
+      "name": "rwa_built_S_GHS_U_wFGW_100m_v1_2026.tif",
+      "sha256": "03d26e35dabba6f11366421627592feac089b17a1b73f9b3634970dbf8f08a00",
+      "bytes": 6960703
+    },
+    {
+      "name": "rwa_dist_inland_water_100m_esa_2021_v1.tif",
+      "sha256": "93dda8d63dae08774f58e7ebcb7a05c6ce6c30c92cf0df926d421a582c334ab1",
+      "bytes": 8071107
+    },
+    {
+      "name": "rwa_mastergrid.tif",
+      "sha256": "a1e3cf81baa82f5ad55ca7c0ef04cf16404f3f4866cb5c648707ca8c4f9814d8",
+      "bytes": 546204
+    },
+    {
+      "name": "rwa_viirs_fvf_2023_100m_v1.tif",
+      "sha256": "d0916202545a9ada10376629bc511f09e8578db87fa82d459a158e5cd13b9efc",
+      "bytes": 2874945
+    }
+  ]
+}

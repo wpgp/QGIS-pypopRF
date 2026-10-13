@@ -1,120 +1,36 @@
-# Installing QGIS pypopRF Plugin
+# Installation and updates
 
-This guide walks you through the process of installing the pypopRF plugin for QGIS. The plugin provides advanced population mapping capabilities with support for age-sex structure analysis, water masking, and spatial constraints.  
-  
-## System Requirements
+This is the workflow development build (0.3.0), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
 
-### QGIS Version  
- - QGIS 3.10 or later (recommended: QGIS 3.28 or later)  
- - Both Long Term Release (LTR) and latest versions are supported  
- - Python 3.9 - 3.12 compatibility  
-  
-### Operating Systems  
- - Windows 10/11 (64-bit)  
- - Ubuntu 20.04/22.04 or other Linux distributions  
- - macOS 11 (Big Sur) or later  
-  
-### Hardware Requirements  
- - Minimum 8GB RAM (16GB recommended for large datasets)  
- - Multi-core processor recommended for parallel processing  
- - SSD storage recommended for better performance  
- - Sufficient free disk space for analysis outputs  
-  
-## Installation Methods
+## Two separate components
 
-### Method 1: Install from QGIS Plugin Repository (Recommended)  
-  
- - Open QGIS  
- - Go to `Plugins` → `Manage and Install Plugins`  
- - In the Plugins dialog:  
-	- Select `All` or `Not installed` from the left sidebar  
-	- Type "pypopRF" in the search bar  
-	- Find "pypopRF Population Mapping" in the list  
-	- Click `Install Plugin`  
- - Wait for automatic dependency installation  
- - Click `Close` when complete  
-  
-The plugin will appear in your `Plugins` menu and toolbar as "pypopRF Population Mapping".  
-  
-### Method 2: Manual Installation  
-  
-For offline installation or specific versions:  
-  
- - Download the plugin ZIP file:  
-	- Visit [GitHub Releases](https://github.com/wpgp/QGIS-pypopRF/releases)  
-	- Download the latest release ZIP file  
-  
- - Install in QGIS:  
-	- Go to `Plugins` → `Manage and Install Plugins`  
- - Select `Install from ZIP` from the left sidebar  
-	- Click `Browse` and select the downloaded ZIP file  
-	- Click `Install Plugin`  
-  
- - Plugin Location:  
- - Windows: `C:/Users/<username>/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/`  
- - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`  
- - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`  
-  
-## Dependencies  
-  
-**The plugin automatically installs required Python packages:** 
+The interface runs inside QGIS. Numerical processing runs in a dedicated, per-user **64-bit CPython 3.12** virtual environment. Enabling the plugin never runs pip, modifies QGIS Python, or imports the numerical libraries.
 
- - numpy (1.26.4)   
- - rasterio (1.4.3)
- - geopandas (1.0.1)
- - scikit-learn (1.4.2)
+The declared range is QGIS 3.44–4.x. Native acceptance covers Windows AMD64 and Linux glibc x86_64 QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6, each with a separate engine. macOS, ARM and musl are not qualified by this build. See [IMPLEMENTATION.md](https://github.com/wpgp/QGIS-pypopRF/blob/master/IMPLEMENTATION.md) for the exact acceptance record.
 
-## Post-Installation Steps
+## Install the development ZIP
 
-**Enable the Plugin:**  
+1. Build with `python scripts/build_plugin.py` from the repository root, using a development Python. The resulting ZIP excludes datasets, tests and developer environments.
+2. In QGIS, choose **Plugins → Manage and Install Plugins → Install from ZIP** and select the generated ZIP.
+3. Enable pypopRF and open its dialog.
+4. On **Project**, wait for the engine readiness check. Choose an installed 64-bit CPython 3.12 executable if discovery does not find one, then choose **Set up engine**.
+5. Wait for binary-wheel SHA-256 verification, exact package-version, native-import and dependency checks to finish. Start analysis only when the engine is ready.
 
- - Go to `Plugins` → `Manage and Install Plugins`  
- - Find "pypopRF Population Mapping" in the list  
- - Check the box next to it to enable  
-  
-**Verify Installation:**  
+Setup downloads the locked binary dependencies and needs network access, sufficient disk space and permission to write to the user's QGIS cache. It does not automatically download a Python interpreter. Install Python 3.12 separately from [python.org](https://www.python.org/downloads/) if necessary. On Windows, select `python.exe`, not `pythonw.exe` or the Microsoft Store alias.
 
- - The pypopRF icon should appear in your QGIS toolbar  
- - The plugin should be listed under `Plugins` → `pypopRF`  
- - Test plugin launch to ensure all dependencies are installed  
-  
-**First Launch:**  
+The initial package installation can take several minutes. You can cancel it from the dialog. A failed or cancelled setup cannot replace a previously verified engine. The setup lock prevents two QGIS processes installing into the same cache concurrently.
 
- - Click the pypopRF icon or find it in the Plugins menu  
- - The plugin interface should open showing all available tabs:  
-	 - Project  
-	 - Input Data  
-	 - Settings  
-	 - Console  
-  
-### Getting Help  
+## Update safely
 
-- Check [GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues) for known problems  
-- Search existing solutions in the documentation  
-- Create a new issue with detailed error information  
-- Contact the WorldPop SDI team for support  
-  
-## Updating the Plugin  
-  
-The plugin includes automatic update notifications:  
-  
-**Automatic Updates:**  
+Finish or cancel the current analysis before updating the plugin. Install a newly built ZIP through QGIS, then reopen the dialog. If the packaged dependency lock changed, set up the new engine. The active environment switches only after successful verification; old environments are retained for recovery, not recursively deleted.
 
- - QGIS will notify you when updates are available  
- - Click "Update" when prompted  
-  
-**Manual Updates:**  
+Keep analysis projects outside the plugin installation and engine-cache directories.
+QGIS manages the installed plugin folder; uninstalling/replacing a plugin is not a
+project-backup mechanism. Back up the project configuration and important completed
+runs before changing an installation.
 
- - Go to `Plugins` → `Manage and Install Plugins`  
- - Select `Installed` from the left sidebar  
- - Click `Upgrade All` or find pypopRF and click `Upgrade Plugin`  
- - Wait for dependency updates to complete  
+Existing project input files and earlier run directories are not replaced by an engine update. Model bundles have a strict schema and environment contract; old separate model/scaler files are deliberately not loaded. Retrain when moving to the new engine.
 
-  
-<div align="right">  
-  <a href="#top">↑ Back to Top</a>  
-</div>  
-  
----  
-  
-*Next: [Quick Start Guide](quickstart.md)*
+This build does not claim publication in the QGIS repository, automatic self-updates, or offline first-time dependency installation. Do not install dependencies into the QGIS Python environment to work around a setup error; use [troubleshooting](../user-guide/troubleshooting.md).
+
+Next: [Quick start](quickstart.md).

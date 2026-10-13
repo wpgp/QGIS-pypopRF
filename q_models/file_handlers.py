@@ -1,6 +1,7 @@
 import platform
+import os
 import shutil
-import subprocess
+import tempfile
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -33,6 +34,7 @@ class FileHandler:
             FileHandlerError: If initialization fails
         """
         self.working_dir = working_dir
+        self.data_dir = "data"
         self.logger = logger
         self._validate_logger()
 
@@ -47,7 +49,7 @@ class FileHandler:
                 f"Logger missing required methods: {', '.join(missing_methods)}"
             )
 
-    def set_working_dir(self, working_dir: str) -> None:
+    def set_working_dir(self, working_dir: str, data_dir: str = "data") -> None:
         """Set working directory.
 
         Args:
@@ -61,10 +63,12 @@ class FileHandler:
             if not path.exists():
                 path.mkdir(parents=True)
             self.working_dir = str(path)
+            self.data_dir = data_dir
         except Exception as e:
             raise FileHandlerError(f"Failed to set working directory: {str(e)}")
 
-    def copy_to_data_dir(self, source_path: str, file_type: str) -> Optional[str]:
+    def copy_to_data_dir(self, source_path: str, file_type: str, cancellation_token=None,
+                         progress=None) -> Optional[str]:
         """Copy file to project's data directory.
 
         Args:
@@ -79,21 +83,70 @@ class FileHandler:
         """
         try:
             source_file = Path(source_path)
-            if not source_file.exists():
+            if not source_file.is_file():
                 self.logger.error(f"Source file not found: {source_path}")
                 raise FileNotFoundError(f"Source file not found: {source_path}")
 
-            data_dir = Path(self.working_dir) / "data"
-            data_dir.mkdir(exist_ok=True)
+            data_dir = Path(self.working_dir) / self.data_dir
+            data_dir.mkdir(parents=True, exist_ok=True)
 
             dest_file = data_dir / source_file.name
             # Check if destination exists
+            # GDAL resolves sidecars beside the selected pathname, not by inode.
+            # An outside hardlink/symlink can therefore have a different mask.
+            if (dest_file.exists() and source_file.samefile(dest_file)
+                    and source_file.parent.resolve() == dest_file.parent.resolve()):
+                return source_file.name
             if dest_file.exists():
-                self.logger.warning(
-                    f"Destination file already exists, overwriting: {dest_file}"
-                )
+                raise FileExistsError(f"Import would overwrite an existing input: {dest_file}")
 
-            shutil.copy2(source_path, str(dest_file))
+            sidecars = []
+            if source_file.suffix.lower() in {".tif", ".tiff"}:
+                sidecars = [Path(str(source_file) + suffix) for suffix in (".msk", ".aux.xml")]
+                sidecars += [source_file.with_suffix(suffix) for suffix in (".tfw", ".tifw", ".wld", ".prj")]
+                self._reject_sidecars(sidecars)
+
+            descriptor, pending_name = tempfile.mkstemp(prefix=".import-", suffix=".tmp", dir=data_dir)
+            os.close(descriptor)
+            pending = Path(pending_name)
+            original_metadata = source_file.stat()
+            try:
+                if cancellation_token is None and progress is None:
+                    shutil.copy2(source_path, str(pending))
+                else:
+                    total, copied = source_file.stat().st_size, 0
+                    with source_file.open("rb") as source, pending.open("wb") as target:
+                        while chunk := source.read(1024 * 1024):
+                            if cancellation_token:
+                                cancellation_token.check()
+                            target.write(chunk)
+                            copied += len(chunk)
+                            if progress:
+                                progress(int(100 * copied / max(total, 1)), source_file.name)
+                        target.flush()
+                        os.fsync(target.fileno())
+                    shutil.copystat(source_file, pending)
+                    if cancellation_token:
+                        cancellation_token.check()
+                current_metadata = source_file.stat()
+                if (original_metadata.st_size, original_metadata.st_mtime_ns) != (current_metadata.st_size, current_metadata.st_mtime_ns):
+                    raise FileHandlerError("Source changed during import; retry after it finishes updating")
+                # A writer can create a GDAL mask/metadata file without changing
+                # the TIFF's size or timestamp while our staged copy is running.
+                self._reject_sidecars(sidecars)
+                # Publishing a hard link is atomic and refuses concurrent collisions.
+                # Windows rename also refuses an existing destination on filesystems
+                # that do not support hard links.
+                try:
+                    os.link(pending, dest_file)
+                except FileExistsError:
+                    raise
+                except OSError:
+                    if platform.system() != "Windows":
+                        raise
+                    os.rename(pending, dest_file)
+            finally:
+                pending.unlink(missing_ok=True)
 
             self.logger.info(f"Copied {file_type} file to data directory: {source_file.name}")
             return source_file.name
@@ -101,6 +154,14 @@ class FileHandler:
         except Exception as e:
             self.logger.error(f"Failed to copy file: {str(e)}")
             raise FileHandlerError(f"Failed to copy file: {str(e)}")
+
+    @staticmethod
+    def _reject_sidecars(paths):
+        present = [path.name for path in paths if path.is_file()]
+        if present:
+            raise FileHandlerError(
+                "This raster depends on external mask or metadata files: " + ", ".join(present)
+                + ". Export a GeoTIFF with internal masks and georeferencing before importing.")
 
     def validate_inputs(
         self,
@@ -174,20 +235,10 @@ class FileHandler:
 
         if folder_path and Path(folder_path).exists():
             try:
-                if platform.system() == "Windows":
-                    subprocess.run(["explorer", folder_path])
-                elif platform.system() == "Darwin":  # macOS
-                    subprocess.run(["open", folder_path])
-                else:  # Linux
-                    subprocess.run(["xdg-open", folder_path])
-            except subprocess.CalledProcessError as e:
-                self.logger.error(
-                    f"Failed to open folder with error code " f"{e.returncode}: {str(e)}"
-                )
-                raise FileHandlerError(
-                    f"Failed to open folder. Command failed with code {e.returncode}: "
-                    f"{e.stderr or str(e)}"
-                )
+                from qgis.PyQt.QtCore import QUrl
+                from qgis.PyQt.QtGui import QDesktopServices
+                if not QDesktopServices.openUrl(QUrl.fromLocalFile(str(Path(folder_path).resolve()))):
+                    raise FileHandlerError("The system could not open this folder")
             except Exception as e:
                 self.logger.error(f"Failed to open folder: {str(e)}")
                 raise FileHandlerError(f"Failed to open folder: {str(e)}")

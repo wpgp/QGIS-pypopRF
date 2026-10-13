@@ -1,10 +1,9 @@
 from logging import Logger
-from logging import Logger
 from pathlib import Path
 from typing import Any, List
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QTableWidgetItem, QTableWidget
 from qgis.PyQt import QtWidgets, QtCore
 
 
@@ -65,10 +64,10 @@ class CovariateTableHandler:
             header = self.table.horizontalHeader()
 
             # Set column resize modes
-            header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-            header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-            header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-            header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+            header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
         except Exception as e:
             raise CovariateTableError(f"Failed to setup table: {str(e)}")
@@ -86,7 +85,7 @@ class CovariateTableHandler:
             return
 
         try:
-            data_dir = Path(self.config_manager.working_dir) / "data"
+            data_dir = Path(self.config_manager.working_dir) / self.config_manager.get_config().get("data_dir", "data")
 
             for filename in filenames:
                 if self.check_duplicate(filename):
@@ -98,7 +97,7 @@ class CovariateTableHandler:
         except Exception as e:
             raise CovariateTableError(f"Failed to add covariates: {str(e)}")
 
-    def _add_covariate_row(self, filename: str, data_dir: Path) -> None:
+    def _add_covariate_row(self, filename: str, data_dir: Path, name=None, update=True) -> None:
         """Add a single covariate row to the table.
 
         Args:
@@ -108,19 +107,25 @@ class CovariateTableHandler:
         row = self.table.rowCount()
         self.table.insertRow(row)
 
-        name = Path(filename).stem
+        name = name or Path(filename).stem
         file_path = data_dir / filename
 
         # Add name
-        self.table.setItem(row, 0, QTableWidgetItem(name))
+        name_item = QTableWidgetItem(name)
+        name_item.setData(Qt.ItemDataRole.UserRole, name)
+        self.table.setItem(row, 0, name_item)
 
         # Add size
-        size_item = QTableWidgetItem(self.format_size(file_path.stat().st_size))
-        size_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        size_item = QTableWidgetItem(self.format_size(file_path.stat().st_size)
+                                    if file_path.is_file() else "Missing")
+        size_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.table.setItem(row, 1, size_item)
 
         # Add path
         self.table.setItem(row, 2, QTableWidgetItem(str(file_path)))
+        for column in range(3):
+            item = self.table.item(row, column)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
 
         # Add delete button
         delete_button = QtWidgets.QPushButton("Delete")
@@ -129,7 +134,8 @@ class CovariateTableHandler:
         self.table.setCellWidget(row, 3, delete_button)
 
         # Update config
-        self.config_manager.update_config(f"covariate_{name}", filename)
+        if update:
+            self.config_manager.update_config(f"covariate_{name}", filename)
 
     def _create_delete_button(self, row: int, button: QtWidgets.QPushButton) -> None:
         """Create delete button with proper connection.
@@ -138,8 +144,14 @@ class CovariateTableHandler:
             row: Row index for button
             button: Button widget to configure
         """
-        button.row = row
-        button.clicked.connect(lambda checked, r=row: self.remove_covariate(r))
+        key = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        button.clicked.connect(lambda checked=False, key=key: self._remove_by_key(key))
+
+    def _remove_by_key(self, key):
+        for row in range(self.table.rowCount()):
+            if self.table.item(row, 0).data(Qt.ItemDataRole.UserRole) == key:
+                self.remove_covariate(row)
+                return
 
     def remove_covariate(self, row: int) -> None:
         """Remove covariate from table and config.
@@ -154,13 +166,14 @@ class CovariateTableHandler:
             if not 0 <= row < self.table.rowCount():
                 raise ValueError(f"Invalid row index: {row}")
 
-            name = self.table.item(row, 0).text()
+            name = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
             self.logger.debug(f"Removing covariate '{name}' from row {row}")
 
             self.config_manager.clear_config_value(f"covariate_{name}")
             self.table.removeRow(row)
+            if hasattr(self, "on_changed"):
+                self.on_changed()
 
-            self._update_delete_buttons(row)
             self.logger.info(f"Successfully removed covariate: {name}")
 
         except Exception as e:
@@ -188,9 +201,7 @@ class CovariateTableHandler:
             return
 
         for row in selected_rows:
-            name = self.table.item(row, 0).text()
-            self.table.removeRow(row)
-            self.config_manager.clear_config_value(f"covariate_{name}")
+            self.remove_covariate(row)
 
         self.logger.info("Removed selected covariates")
 
@@ -206,8 +217,9 @@ class CovariateTableHandler:
         """
         name = Path(filename).stem
         for row in range(self.table.rowCount()):
-            existing_name = self.table.item(row, 0).text()
-            if existing_name == name:
+            existing_name = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            existing_path = self.table.item(row, 2).text()
+            if existing_name.casefold() == name.casefold() or Path(existing_path).stem.casefold() == name.casefold():
                 return True
         return False
 
@@ -217,7 +229,7 @@ class CovariateTableHandler:
         Args:
             event: QKeyEvent instance
         """
-        if event.key() == QtCore.Qt.Key_Delete:
+        if event.key() == QtCore.Qt.Key.Key_Delete:
             self.remove_selected_covariates()
         else:
             QTableWidget.keyPressEvent(self.table, event)

@@ -1,117 +1,47 @@
-# Running Analysis
+# Running and interpreting an analysis
 
-This guide explains how to run population analysis using the pypopRF plugin and interpret the results.
+## Before Start
 
-## Before Starting
+The project, engine, mastergrid, census and named covariates must be ready. Full numerical validation happens in the isolated child process: CSV schema, finite values, raster alignment and eligible support. GUI readiness is not a substitute for this validation.
 
-### Quick Checklist
+All rasters must share grid dimensions, CRS and affine geometry. The plugin does not automatically resample or reproject incompatible inputs. Preserve source NoData and validity masks.
 
-- ✓ All required files loaded
-- ✓ Optional files prepared (if using)
-- ✓ Settings configured
-- ✓ Sufficient disk space (3-4x input data size)
-- ✓ Adequate memory available
-- ✓ Column names verified
+Do not edit or regenerate project input files during import or analysis. Fingerprint
+checks detect observed changes; they are not a point-in-time filesystem snapshot
+against a separate process continuously replacing and restoring the same inputs.
 
-### Data Verification
-- Census data columns match settings
-- Mastergrid IDs match census data
-- Covariates cover study area
-- Optional files properly configured:
-  - Water mask (if using)
-  - Constraints (if using)
-  - Age-sex data (if using)
+## Processing and cancellation
 
-## Running the Analysis
+The engine applies the water/constraint eligibility rules, extracts zonal covariate statistics, trains a deterministic Random Forest, predicts a nonnegative allocation surface, then redistributes each census zone's population over valid eligible pixels. Age-sex columns are joined by zone ID, never by row order.
 
-### 1. Starting the Process
+Use **Stop** to request cooperative cancellation. The interface remains asynchronous and retains ownership of the child until it actually exits. If the child does not exit within the grace period, only that owned process is forcibly stopped. Closing or unloading follows the same ownership rule.
 
-The Start button will be enabled when:
+Files are published individually through temporary files and atomic replacement after successful close and validation. Cancellation can leave a partial run for diagnosis, but its manifest cannot be complete. Previous runs and source files are preserved. Progress is stage-based, not an accurate time estimate.
 
-- All required files are loaded
-- Settings are properly configured
-- Project is initialized
+## Run products
 
-Click the green "Start" button to begin analysis.
+Each run is under `output/runs/<timestamp-id>/`. Important files include:
 
-### 2. Processing Stages
+- `manifest.json`: terminal status, effective engine source/version, input SHA-256 fingerprints, immutable artifact inventory, diagnostics and metrics.
+- `run_config.yaml`: all effective settings, including defaults and resolved input paths.
+- `prediction.tif`: model allocation weights; **not a population-count output**.
+- `population_unconstrained.tif` and, when requested, `population_constrained.tif`: persons per pixel.
+- `normalized_census*.tif`: zone normalization coefficients, not final population.
+- `agesex/population_<group>*.tif`: independently conserved age-sex population maps.
+- `model_bundle.pkl.gz`: one validated bundle with model, preprocessing and schema. Load only trusted bundles; pickle is not a safe interchange format.
+- `cv_metrics.json`, `cv_predictions.csv`, `cv_zone_geometry.csv` and feature artifacts: inspect these to understand model evaluation.
+- The configured log file, if enabled.
 
-The analysis runs through several stages:
+The manifest distinguishes raster outputs for display from the complete immutable artifact inventory. Input dataset resources, including external GDAL validity masks, are fingerprinted and rechecked before a run can be completed.
 
-#### Feature Extraction (20%)
-- Processing covariates
-- Calculating zonal statistics
-- Extracting predictive features
+## Scientific limits
 
-#### Model Training (40%)
-- Training Random Forest model
-- Calculating feature importance
-- Validating model performance
+Per-zone conservation is a correctness check on redistribution, not an independent accuracy estimate. Training labels are zone population divided by eligible pixel count. A degree-based CRS does not turn that target into physical-area density.
 
-#### Population Prediction (60%)
-- Generating probability surface
-- Applying water mask (if enabled)
-- Processing spatial constraints (if enabled)
+Default spatial validation assigns zone centroids to a 4×4 grid over the valid mastergrid footprint and holds out blocks. It does not use a spatial buffer, prove independence, estimate pixel-level accuracy, or remove the modifiable areal unit problem. Too few occupied blocks makes validation unavailable; the engine does not silently fall back to a shuffled split.
 
-#### Distribution Mapping (80%)
-- Creating normalized census
-- Generating population distribution
-- Processing age-sex structure (if enabled)
+User-supplied groups and shuffled-zone diagnostic validation are explicitly labelled. Feature selection and preprocessing are refitted inside each outer training fold. Changing block scale can change model rankings: see [BENCHMARK.md](https://github.com/wpgp/QGIS-pypopRF/blob/master/BENCHMARK.md).
 
-#### Finalization (100%)
-- Saving output files
-- Loading results in QGIS
-- Cleaning temporary files
+Zones in the raster without census records are excluded and reported. A positive-population census zone without positive eligible allocation support fails the run. Zero-population zones remain zero. Age-sex totals are checked against each input group separately; the plugin does not infer that independently supplied groups sum to the main census.
 
-## Monitoring Progress
-
-### Console Output
-The console shows:
-
-- Current processing stage
-- Progress information
-- Warnings or errors
-- Processing statistics
-
-### Progress Bar
-- Shows overall completion
-- Displays current stage
-- Updates in real-time
-
-### Process Control
-- Use Stop button to cancel (red)
-- Processing will complete current stage
-- Results up to stop point are saved
-
-## Output Files
-
-### Main Outputs
-1. **normalized_census.tif**
-    - Census values adjusted to raster format
-    - Shows population distribution zones
-
-2. **population_unconstrained.tif**
-    - Basic population distribution
-    - Without spatial constraints
-
-3. **population_constrained.tif**
-    - Population distribution with constraints
-    - Only if constraints enabled
-
-### Additional Outputs
-**Age-sex maps** (if enabled)
-
-   - Separate maps for each age-sex group
-   - Located in 'agesex' folder
-
-**Model files**
-
-   - model.pkl.gz: Trained model
-   - scaler.pkl.gz: Data scaler
-   - features.csv: Feature importance
-
----
-
-<div align="right">
-  <a href="#top">↑ Back to Top</a>
-</div>
+Do not report prediction or aggregate cross-validation scores as validated high-resolution population accuracy without independent data and an appropriate spatial study design.

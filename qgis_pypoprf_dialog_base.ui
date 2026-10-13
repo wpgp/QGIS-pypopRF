@@ -1,729 +1,741 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ui version="4.0">
- <class>PyPopRFDialogBase</class>
- <widget class="QDialog" name="PyPopRFDialogBase">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>910</width>
-    <height>855</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>pypopRF</string>
-  </property>
-  <layout class="QGridLayout" name="gridLayout_10">
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBoxConsol">
-     <property name="title">
-      <string>Console</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="1">
-       <widget class="QPushButton" name="mainStartButton">
-        <property name="text">
-         <string>Start</string>
-        </property>
-       </widget>
+  <class>PyPopRFDialogBase</class>
+  <widget class="QDialog" name="PyPopRFDialogBase">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>920</width>
+        <height>720</height>
+      </rect>
+    </property>
+    <property name="minimumSize">
+      <size>
+        <width>720</width>
+        <height>520</height>
+      </size>
+    </property>
+    <property name="windowTitle">
+      <string>pypopRF · Population mapping</string>
+    </property>
+    <layout class="QVBoxLayout" name="mainLayout">
+      <property name="spacing">
+        <number>12</number>
+      </property>
+      <item>
+        <widget class="QLabel" name="titleLabel">
+          <property name="text">
+            <string>Population mapping</string>
+          </property>
+          <property name="font">
+            <font>
+              <pointsize>16</pointsize>
+              <bold>true</bold>
+            </font>
+          </property>
+        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QProgressBar" name="mainProgressBar">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
+      <item>
+        <widget class="QLabel" name="subtitleLabel">
+          <property name="text">
+            <string>Build population maps from census totals and geospatial covariates.</string>
+          </property>
+          <property name="wordWrap">
+            <bool>true</bool>
+          </property>
+        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QScrollArea" name="mainConsole">
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>870</width>
-           <height>272</height>
-          </rect>
-         </property>
+      <item>
+        <widget class="QTabWidget" name="mainTabWidget">
+          <property name="currentIndex">
+            <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab_main">
+            <attribute name="title">
+              <string>Project</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="projectLayout">
+              <item>
+                <widget class="QGroupBox" name="projectGroup">
+                  <property name="title">
+                    <string>Project folder</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="projectFolderLayout">
+                    <item>
+                      <layout class="QHBoxLayout" name="projectPathLayout">
+                        <item>
+                          <widget class="QgsFileWidget" name="workingDirEdit"></widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="initProjectButton">
+                            <property name="text">
+                              <string>Create project</string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="openProjectFolder">
+                            <property name="text">
+                              <string>Open folder</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="currentProjectLabel">
+                        <property name="text">
+                          <string>Choose a folder to create or open a project.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="runtimeGroup">
+                  <property name="title">
+                    <string>Analysis engine</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="runtimeLayout">
+                    <item>
+                      <widget class="QLabel" name="runtimeStatusLabel">
+                        <property name="text">
+                          <string>Checking the analysis engine…</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <layout class="QHBoxLayout" name="runtimePathLayout">
+                        <item>
+                          <widget class="QLineEdit" name="pythonPathEdit">
+                            <property name="text">
+                              <string></string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="browsePythonButton">
+                            <property name="text">
+                              <string>Browse…</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <layout class="QHBoxLayout" name="runtimeActionsLayout">
+                        <item>
+                          <widget class="QPushButton" name="setupRuntimeButton">
+                            <property name="text">
+                              <string>Set up engine</string>
+                            </property>
+                          </widget>
+                        </item>
+                        <item>
+                          <widget class="QPushButton" name="cancelSetupButton">
+                            <property name="text">
+                              <string>Cancel setup</string>
+                            </property>
+                          </widget>
+                        </item>
+                      </layout>
+                    </item>
+                    <item>
+                      <widget class="QProgressBar" name="runtimeProgressBar">
+                        <property name="value">
+                          <number>0</number>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="runtimeHelpLabel">
+                        <property name="text">
+                          <string>Prepare the analysis engine once before running calculations.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="workflowGroup">
+                  <property name="title">
+                    <string>Your next steps</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="workflowLayout">
+                    <item>
+                      <widget class="QLabel" name="readinessLabel">
+                        <property name="text">
+                          <string>Create or open a project, add input data, then review settings.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="workflowHint">
+                        <property name="text">
+                          <string>Each analysis keeps its own results. Earlier runs remain available in Results.</string>
+                        </property>
+                        <property name="wordWrap">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <spacer name="projectSpacer">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_inputs">
+            <attribute name="title">
+              <string>Input data</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="inputLayout">
+              <item>
+                <layout class="QFormLayout" name="requiredInputs">
+                  <item row="0" column="0">
+                    <widget class="QLabel" name="requiredInputsLabel0">
+                      <property name="text">
+                        <string>Zone grid</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="0" column="1">
+                    <widget class="QgsFileWidget" name="mastergridFileWidget"></widget>
+                  </item>
+                  <item row="1" column="0">
+                    <widget class="QLabel" name="requiredInputsLabel1">
+                      <property name="text">
+                        <string>Population census</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item row="1" column="1">
+                    <widget class="QgsFileWidget" name="populationCensusFileWidget"></widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="optionalGroup">
+                  <property name="title">
+                    <string>Optional data</string>
+                  </property>
+                  <layout class="QFormLayout" name="optionalInputs">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel0">
+                        <property name="text">
+                          <string>Water mask (1 = exclude)</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QgsFileWidget" name="maskFileWidget"></widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel1">
+                        <property name="text">
+                          <string>Population support (1 = include)</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QgsFileWidget" name="constrainFileWidget"></widget>
+                    </item>
+                    <item row="2" column="0">
+                      <widget class="QLabel" name="optionalInputsLabel2">
+                        <property name="text">
+                          <string>Age and sex census</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="2" column="1">
+                      <widget class="QgsFileWidget" name="agesexCensusFileWidget"></widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="covariateHeader">
+                  <item>
+                    <widget class="QLabel" name="covariateHeading">
+                      <property name="text">
+                        <string>Covariates</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="addCovariateButton">
+                      <property name="text">
+                        <string>Add raster files…</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QTableWidget" name="covariatesTable">
+                  <property name="alternatingRowColors">
+                    <bool>true</bool>
+                  </property>
+                  <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
+                  <property name="selectionMode">
+                    <enum>QAbstractItemView::ExtendedSelection</enum>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QLabel" name="inputHint">
+                  <property name="text">
+                    <string>Input files are copied into the project. Files with the same name are never overwritten.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_settings">
+            <attribute name="title">
+              <string>Settings</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="settingsLayout">
+              <item>
+                <widget class="QGroupBox" name="censusColumnsGroup">
+                  <property name="title">
+                    <string>Census columns</string>
+                  </property>
+                  <layout class="QFormLayout" name="censusColumns">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="censusColumnsLabel0">
+                        <property name="text">
+                          <string>Zone identifier</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QLineEdit" name="idColumnEdit">
+                        <property name="text">
+                          <string>id</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="censusColumnsLabel1">
+                        <property name="text">
+                          <string>Population total</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QLineEdit" name="popColumnEdit">
+                        <property name="text">
+                          <string>pop</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="processingGroup">
+                  <property name="title">
+                    <string>Processing</string>
+                  </property>
+                  <layout class="QFormLayout" name="processingSettings">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel0">
+                        <property name="text">
+                          <string>Parallel processing</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QCheckBox" name="enableParallelCheckBox">
+                        <property name="text">
+                          <string>Use multiple CPU cores</string>
+                        </property>
+                        <property name="checked">
+                          <bool>false</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel1">
+                        <property name="text">
+                          <string>CPU cores</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QComboBox" name="cpuCoresComboBox">
+                        <item>
+                          <property name="text">
+                            <string>1</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="2" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel2">
+                        <property name="text">
+                          <string>Raster processing</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="2" column="1">
+                      <widget class="QCheckBox" name="enableBlockProcessingCheckBox">
+                        <property name="text">
+                          <string>Process raster tiles in parallel</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="3" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel3">
+                        <property name="text">
+                          <string>Tile size</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="3" column="1">
+                      <widget class="QComboBox" name="blockSizeComboBox">
+                        <item>
+                          <property name="text">
+                            <string>256,256</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>512,512</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>1024,1024</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="4" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel4">
+                        <property name="text">
+                          <string>Density model</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="4" column="1">
+                      <widget class="QCheckBox" name="logScaleCheckBox">
+                        <property name="text">
+                          <string>Use log-transformed population density</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="5" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel5">
+                        <property name="text">
+                          <string>Feature selection threshold</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="5" column="1">
+                      <widget class="QDoubleSpinBox" name="selectionThresholdLimit">
+                        <property name="decimals">
+                          <number>3</number>
+                        </property>
+                        <property name="maximum">
+                          <double>1</double>
+                        </property>
+                        <property name="singleStep">
+                          <double>0.005</double>
+                        </property>
+                        <property name="value">
+                          <double>0.01</double>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="6" column="0">
+                      <widget class="QLabel" name="processingSettingsLabel6">
+                        <property name="text">
+                          <string>After a successful run</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="6" column="1">
+                      <widget class="QCheckBox" name="addToQgisCheckBox">
+                        <property name="text">
+                          <string>Add population maps to QGIS</string>
+                        </property>
+                        <property name="checked">
+                          <bool>true</bool>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QGroupBox" name="loggingGroup">
+                  <property name="title">
+                    <string>Diagnostics</string>
+                  </property>
+                  <layout class="QFormLayout" name="loggingSettings">
+                    <item row="0" column="0">
+                      <widget class="QLabel" name="loggingSettingsLabel0">
+                        <property name="text">
+                          <string>Detail level</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="0" column="1">
+                      <widget class="QComboBox" name="comboBox">
+                        <item>
+                          <property name="text">
+                            <string>INFO</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>DEBUG</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>WARNING</string>
+                          </property>
+                        </item>
+                        <item>
+                          <property name="text">
+                            <string>ERROR</string>
+                          </property>
+                        </item>
+                      </widget>
+                    </item>
+                    <item row="1" column="0">
+                      <widget class="QLabel" name="loggingSettingsLabel1">
+                        <property name="text">
+                          <string>Log filename</string>
+                        </property>
+                      </widget>
+                    </item>
+                    <item row="1" column="1">
+                      <widget class="QLineEdit" name="logsColumnEdit">
+                        <property name="text">
+                          <string>logs_pypoprf.log</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </widget>
+              </item>
+              <item>
+                <widget class="QLabel" name="validationHint">
+                  <property name="text">
+                    <string>Population totals are checked in every output zone. Model scores describe zone density, not pixel accuracy.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <spacer name="settingsSpacer">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                    <size>
+                      <width>20</width>
+                      <height>20</height>
+                    </size>
+                  </property>
+                </spacer>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_results">
+            <attribute name="title">
+              <string>Results</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="resultsLayout">
+              <item>
+                <widget class="QLabel" name="resultSummaryLabel">
+                  <property name="text">
+                    <string>Completed analyses will appear here.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QTreeWidget" name="resultsTree">
+                  <property name="alternatingRowColors">
+                    <bool>true</bool>
+                  </property>
+                  <property name="rootIsDecorated">
+                    <bool>false</bool>
+                  </property>
+                  <property name="columnCount">
+                    <number>3</number>
+                  </property>
+                  <column>
+                    <property name="text">
+                      <string>Run</string>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Status</string>
+                    </property>
+                  </column>
+                  <column>
+                    <property name="text">
+                      <string>Maps</string>
+                    </property>
+                  </column>
+                </widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="resultActions">
+                  <item>
+                    <widget class="QPushButton" name="refreshResultsButton">
+                      <property name="text">
+                        <string>Refresh</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="openRunButton">
+                      <property name="text">
+                        <string>Open result folder</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="addRunLayersButton">
+                      <property name="text">
+                        <string>Add maps to QGIS</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <widget class="QLabel" name="resultsHint">
+                  <property name="text">
+                    <string>Only completed runs can be added to QGIS. Failed or stopped runs remain available for diagnosis.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QWidget" name="tab_details">
+            <attribute name="title">
+              <string>Details</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="detailsLayout">
+              <item>
+                <widget class="QLabel" name="detailsLabel">
+                  <property name="text">
+                    <string>Processing messages and setup diagnostics.</string>
+                  </property>
+                  <property name="wordWrap">
+                    <bool>true</bool>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QWidget" name="scrollAreaWidgetContents"></widget>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="detailsActions">
+                  <item>
+                    <widget class="QPushButton" name="clearLogButton">
+                      <property name="text">
+                        <string>Clear view</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QPushButton" name="copyLogButton">
+                      <property name="text">
+                        <string>Copy diagnostics</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
         </widget>
-       </widget>
       </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QTabWidget" name="mainTabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab_main">
-      <attribute name="title">
-       <string>Main</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_9">
-       <item row="1" column="0">
-        <widget class="QTextEdit" name="quickStartGuide">
-         <property name="html">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:11pt; font-weight:600; color:#2c3e50;&quot;&gt;Quick Start Guide&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Steps to Get Started&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;1.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Initialize Project&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Select working directory and create project structure&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;2.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Configure Data&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Upload required files and configure covariates:&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Mastergrid (required)&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Population census (required)&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Covariates (at least one)&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Optional: Water mask, Constrain layer, Age-sex data&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;3.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Adjust Settings&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Configure processing options:&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;CPU cores and parallel processing&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Block size for large datasets&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Census column names&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:45px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;4.&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#34495e;&quot;&gt; Run Analysis&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; - Start population modeling and monitor progress&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Processing Tips&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:4px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Enable parallel processing with multiple CPU cores for faster analysis&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Use block processing for large areas or high-resolution data&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Monitor progress and check logs for detailed information&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Output layers are automatically added to QGIS when processing completes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QTextEdit" name="textEdit">
-         <property name="html">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Need Help?&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Here are resources to help you get started:&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ Documentation&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Comprehensive user guide and tutorials: &lt;/span&gt;&lt;a href=&quot;https://wpgp.github.io/QGIS-pypopRF/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;wpgp.github.io/QGIS-pypopRF/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ Technical Support&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Report bugs and request features: &lt;/span&gt;&lt;a href=&quot;https://github.com/wpgp/QGIS-pypopRF/issues&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;github.com/wpgp/QGIS-pypopRF/issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; font-weight:600; color:#16a085;&quot;&gt;▹ WorldPop SDI Portal&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Access data and additional resources: &lt;/span&gt;&lt;a href=&quot;https://sdi.worldpop.org/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;sdi.worldpop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="label_version">
-         <property name="text">
-          <string>pypopRF QGIS Plugin v0.1.1</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QGroupBox" name="groupBoxProject">
-         <property name="title">
-          <string>Project Configuration</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_workdir">
-            <property name="text">
-             <string>Working Directory:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QgsFileWidget" name="workingDirEdit">
-            <property name="locale">
-             <locale language="English" country="UnitedKingdom"/>
-            </property>
-            <property name="storageMode">
-             <enum>QgsFileWidget::GetDirectory</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_browse">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="3">
-           <widget class="QPushButton" name="initProjectButton">
-            <property name="text">
-             <string>Initialize New Project</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="3">
-           <widget class="QPushButton" name="openProjectFolder">
-            <property name="text">
-             <string>Open Project Folder</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_input">
-      <attribute name="title">
-       <string>Input Data</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBoxRasters">
-         <property name="title">
-          <string>Raster Inputs</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_mastergrid">
-            <property name="text">
-             <string>Mastergrid:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QgsFileWidget" name="mastergridFileWidget"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_browse_2">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_mask">
-            <property name="text">
-             <string>Mask (optional):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QgsFileWidget" name="maskFileWidget"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="label_browse_3">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_constrain">
-            <property name="text">
-             <string>Constrain (optional):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QgsFileWidget" name="constrainFileWidget"/>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="label_browse_4">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBoxCensus">
-         <property name="title">
-          <string>Census File</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_census">
-            <property name="text">
-             <string>Population CSV:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QgsFileWidget" name="populationCensusFileWidget"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_browse_5">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_census_2">
-            <property name="text">
-             <string>Age&amp;Sex CSV (optional):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QgsFileWidget" name="agesexCensusFileWidget"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="label_browse_6">
-            <property name="text">
-             <string>Browse</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBoxCovariates">
-         <property name="title">
-          <string>Covariates</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+        <layout class="QHBoxLayout" name="runActionsLayout">
           <item>
-           <widget class="QTableWidget" name="covariatesTable">
-            <column>
-             <property name="text">
-              <string>Name</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Size</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="addCovariateButton">
-            <property name="text">
-             <string>Add Covariate</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_settings">
-      <attribute name="title">
-       <string>Settings</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_11">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_logging">
-         <property name="title">
-          <string>Logging Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="1">
-           <widget class="QComboBox" name="comboBox">
-            <item>
-             <property name="text">
-              <string>INFO</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>DEBUG</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="logsColumnEdit">
-            <property name="text">
-             <string>logs_pypoprf.log</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_logging">
-            <property name="text">
-             <string>Logging Level:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Log File name:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_5">
-         <property name="title">
-          <string>Population CSV File Column Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>ID Column Name:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="idColumnEdit">
-            <property name="text">
-             <string>id</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="popColumnEdit">
-            <property name="text">
-             <string>pop</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Population Column Name:</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>440</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBoxOption">
-         <property name="title">
-          <string>Process Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_13">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="enableParallelCheckBox">
-            <property name="text">
-             <string>Parallel Processing</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>95</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="3">
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>CPU Core:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="cpuCoresComboBox">
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-              <property name="currentText">
-               <string>2</string>
-              </property>
-              <item>
-               <property name="text">
-                <string>2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>12</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>4</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>6</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>8</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>10</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="enableBlockProcessingCheckBox">
-            <property name="text">
-             <string>By Block</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>95</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="3">
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Blocksize:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="blockSizeComboBox">
-              <property name="minimumSize">
-               <size>
-                <width>75</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="editable">
-               <bool>true</bool>
-              </property>
-              <item>
-               <property name="text">
-                <string>512, 512</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>256, 256</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="addToQgisCheckBox">
-            <property name="text">
-             <string>Add Output Layers into QGIS</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="logScaleCheckBox">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Logarithmic scale</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" colspan="2">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>147</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="3" column="3">
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>CCS Limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QDoubleSpinBox" name="selectionThresholdLimit">
-              <property name="minimum">
-               <double>-100.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>100.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.010000000000000</double>
-              </property>
+            <widget class="QProgressBar" name="mainProgressBar">
               <property name="value">
-               <double>0.010000000000000</double>
+                <number>0</number>
               </property>
-             </widget>
-            </item>
-           </layout>
+              <property name="format">
+                <string>Choose a project</string>
+              </property>
+            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_about">
-      <attribute name="title">
-       <string>About</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_12">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_logo">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>55</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>220</width>
-           <height>55</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="pixmap">
-          <pixmap>wp_logo.png</pixmap>
-         </property>
-         <property name="scaledContents">
-          <bool>true</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QTextEdit" name="f_aboutTextEdit">
-         <property name="html">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:11pt; font-weight:600; color:#2c3e50;&quot;&gt;What is pypopRF?&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:9pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:9pt; color:#34495e;&quot;&gt;Tool for high-resolution population mapping that combines machine learning with dasymetric techniques to generate detailed population distribution maps.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Key Features:&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; High-performance multi-threaded processing&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Interactive visualization and real-time progress tracking&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Memory-efficient block-based processing for large datasets&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Automated model validation and accuracy assessment&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:8px; margin-left:30px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#3498db;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Age-sex structure mapping capabilities&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Processing Components:&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Mastergrid:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Zone definitions for analysis&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Census Data:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Required - Population counts by zon&lt;/span&gt;&lt;/li&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Population CSV file with zone IDs&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Optional - Age-sex structure data&lt;/span&gt;&lt;/p&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Covariates:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Predictive variables like:&lt;/span&gt;&lt;/li&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building counts&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building footprints&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Building heights/volumes&lt;/span&gt;&lt;/p&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:8px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Optional Inputs:&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
-&lt;p style=&quot; margin-top:8px; margin-bottom:8px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Water mask: To exclude water bodies&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:8px; margin-bottom:8px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ Constrain layer: For restricted population distribution&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Output Files:&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;normalized_census.tif:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Normalized census values&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Population Distribution:&lt;/span&gt;&lt;/li&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ population_unconstrained.tif (default output)&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ population_constrained.tif (when constrain layer provided)&lt;/span&gt;&lt;/p&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Machine Learning:&lt;/span&gt;&lt;/li&gt;
-&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ model.pkl.gz - Trained Random Forest model&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ scaler.pkl.gz - Feature scaler&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:8px; margin-bottom:4px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;◆ features.csv - Extracted covariate features with importance&lt;/span&gt;&lt;/p&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:8px; margin-bottom:4px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Age-Sex Structure:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; Additional outputs in agesex/ directory (when age-sex data provided)&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#34495e;&quot;&gt;Detailed processing logs&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:12px; margin-left:60px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:3px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#34495e;&quot;&gt;The plugin provides a user-friendly interface integrated into QGIS, making it easy to generate high-resolution population maps from census data using machine learning and dasymetric mapping techniques. It supports parallel processing and block-based operations for efficient handling of large datasets, along with extensive validation and logging capabilities.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QTextEdit" name="s_aboutTextEdit">
-         <property name="html">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Development Team - WorldPop SDI&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Borys Nosatiuk - Project Lead&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Rhorom Priyatikanto&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹ &lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt;Maksym Bondarenko &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Wenbin Zhang&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Tom McKeen&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Elena Vataga&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Natalia Tejedor Garavit&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Organization&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:9pt;&quot;&gt;WorldPop&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot;&gt;, Geography and Env. Science, University of Southampton&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Project Information&lt;/span&gt;&lt;/p&gt;
-&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:4px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Version:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; 0.1.1&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;Released:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; April 2025&lt;/span&gt;&lt;/li&gt;
-&lt;li style=&quot; font-family:'Segoe UI'; font-size:8pt;&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600; color:#16a085;&quot;&gt;License:&lt;/span&gt;&lt;span style=&quot; color:#34495e;&quot;&gt; GNU GPL v2&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:8px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:10pt; font-weight:600; color:#2980b9;&quot;&gt;✦ Documentation &amp;amp; Support&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Documentation: &lt;/span&gt;&lt;a href=&quot;https://wpgp.github.io/QGIS-pypopRF/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;wpgp.github.io/QGIS-pypopRF/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:4px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Issue tracker: &lt;/span&gt;&lt;a href=&quot;https://github.com/wpgp/QGIS-pypopRF/issues&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;github.com/wpgp/QGIS-pypopRF/issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:12px; margin-left:15px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#16a085;&quot;&gt;▹&lt;/span&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; color:#34495e;&quot;&gt; Support portal: &lt;/span&gt;&lt;a href=&quot;https://sdi.worldpop.org/&quot;&gt;&lt;span style=&quot; font-family:'Segoe UI'; font-size:8pt; text-decoration: underline; color:#3498db;&quot;&gt;sdi.worldpop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <customwidgets>
-  <customwidget>
-   <class>QgsFileWidget</class>
-   <extends>QWidget</extends>
-   <header>qgsfilewidget.h</header>
-  </customwidget>
- </customwidgets>
- <resources/>
- <connections/>
+          <item>
+            <widget class="QPushButton" name="mainStartButton">
+              <property name="text">
+                <string>Run analysis</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <customwidgets>
+    <customwidget>
+      <class>QgsFileWidget</class>
+      <extends>QWidget</extends>
+      <header>qgsfilewidget.h</header>
+    </customwidget>
+  </customwidgets>
+  <resources />
+  <connections />
 </ui>

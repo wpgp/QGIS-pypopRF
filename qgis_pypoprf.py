@@ -23,9 +23,12 @@
 """
 import os
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+try:
+    from qgis.PyQt.QtGui import QAction
+except ImportError:
+    from qgis.PyQt.QtWidgets import QAction
 
 from .qgis_pypoprf_dialog import PyPopRFDialog
 
@@ -42,7 +45,6 @@ class PyPopRF:
         plugin_dir: Plugin's root directory path
         actions: List of plugin actions in QGIS interface
         menu: Plugin menu entry name
-        first_start: Flag indicating first plugin start in session
     """
 
     def __init__(self, iface):
@@ -63,7 +65,8 @@ class PyPopRF:
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        self.dlg = None
+        self._unloading = False
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -167,7 +170,6 @@ class PyPopRF:
             parent=self.iface.mainWindow(),
             status_tip=self.tr("Start population modeling process"),
         )
-        self.first_start = True
 
     def unload(self):
         """Removes plugin components from QGIS GUI.
@@ -175,6 +177,14 @@ class PyPopRF:
         Cleans up all plugin UI elements and references when plugin
         is being unloaded.
         """
+        self._unloading = True
+        if self.dlg:
+            if self.dlg.is_busy:
+                self.dlg.workCompleted.connect(self._dispose_dialog)
+                self.dlg.cancel_all()
+                self.dlg.hide()
+            else:
+                self._dispose_dialog()
         for action in self.actions:
             self.iface.removePluginMenu(self.tr("&QGIS pypopRF"), action)
             self.iface.removeToolBarIcon(action)
@@ -188,21 +198,24 @@ class PyPopRF:
         Creates and shows the main plugin dialog. Dialog is created only
         once per QGIS session to improve performance.
         """
-        # if self.first_start:
-        #     self.first_start = False
-        #     self.dlg = PyPopRFDialog(iface=self.iface)
-
-        self.dlg = PyPopRFDialog(iface=self.iface)
-
+        if self._unloading:
+            return
         try:
+            if self.dlg is None:
+                self.dlg = PyPopRFDialog(parent=self.iface.mainWindow(), iface=self.iface)
             self.dlg.show()
-            result = self.dlg.exec_()
-            if result:
-                # Handle any post-execution tasks if needed
-                pass
+            self.dlg.raise_()
+            self.dlg.activateWindow()
 
         except Exception as e:
             # Log error and show user-friendly message
             self.iface.messageBar().pushCritical(
                 "PyPopRF Error", f"An error occurred: {str(e)}"
             )
+
+    def _dispose_dialog(self):
+        if self.dlg and not self.dlg.is_busy:
+            self.dlg.logger.close()
+            self.dlg.logger.set_output_stream()
+            self.dlg.deleteLater()
+            self.dlg = None
