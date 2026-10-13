@@ -222,4 +222,3 @@ class FileHandler:
 
         except Exception as e:
             raise FileHandlerError(f"Input validation failed: {str(e)}")
-

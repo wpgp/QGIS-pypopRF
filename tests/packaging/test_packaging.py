@@ -1,4 +1,7 @@
 import hashlib
+import shutil
+import subprocess
+import sys
 from types import SimpleNamespace
 import zipfile
 import xmlrpc.client
@@ -6,7 +9,7 @@ import xmlrpc.client
 import pytest
 
 from scripts import plugin_upload
-from scripts.build_plugin import ROOT, build_plugin, verify_package
+from scripts.build_plugin import ROOT, RUNTIME_DIRECTORIES, build_plugin, package_files, verify_package
 
 
 def test_package_is_reproducible_complete_and_excludes_user_data(tmp_path):
@@ -39,6 +42,45 @@ def test_build_cannot_replace_nonarchive_source_files(tmp_path, name):
     with pytest.raises(ValueError, match=".zip archive"):
         build_plugin(source)
     assert source.read_bytes() == b"trusted source"
+
+
+def copy_runtime_source(destination):
+    for name, source in package_files(ROOT):
+        target = destination / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    return destination
+
+
+@pytest.mark.parametrize("directory", RUNTIME_DIRECTORIES)
+def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, directory):
+    source = copy_runtime_source(tmp_path / "source")
+    destination = source / directory / "preserved.zip"
+    destination.write_bytes(b"previous archive")
+    with pytest.raises(ValueError, match="source package"):
+        build_plugin(destination, root=source)
+    assert destination.read_bytes() == b"previous archive"
+
+
+@pytest.mark.parametrize("missing", [
+    "core/__init__.py", "core/pypoprf/__main__.py", "core/pypoprf/algorithms/model.py",
+    "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
+])
+def test_missing_runtime_boundary_file_cannot_publish_an_incomplete_archive(tmp_path, missing):
+    source = copy_runtime_source(tmp_path / "source")
+    (source / missing).unlink()
+    destination = tmp_path / "preserved.zip"
+    destination.write_bytes(b"previous archive")
+    with pytest.raises(ValueError, match="Missing"):
+        build_plugin(destination, root=source)
+    assert destination.read_bytes() == b"previous archive"
+
+
+def test_relocated_upload_module_help_has_no_publication_side_effect():
+    completed = subprocess.run([sys.executable, "-m", "scripts.plugin_upload", "--help"],
+                               cwd=ROOT, capture_output=True, text=True, timeout=15)
+    assert completed.returncode == 0, completed.stderr
+    assert "archive" in completed.stdout and "username" in completed.stdout
 
 
 def test_password_special_characters_encoded_and_never_logged(tmp_path, capsys):
