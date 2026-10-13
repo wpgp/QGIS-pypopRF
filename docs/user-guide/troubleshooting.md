@@ -69,6 +69,5 @@ strategy; random-zone diagnostics do not establish spatial independence.
 ## Development diagnostics
 
 Run `python -m pytest` in the development engine environment. Native QGIS tests
-require genuine QGIS/Qt bindings and are marked `qgis`. Audit reproduction scripts
-describe defects in the historical version and are not acceptance tests for the
-updated implementation.
+require genuine QGIS/Qt bindings and are marked `qgis`. See the development guide
+for the maintained regression suites, package checks and native-test commands.

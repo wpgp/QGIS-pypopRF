@@ -23,9 +23,9 @@ __all__ = [
 ]
 
 _PUBLIC_MODULES = {
-    "FeatureExtractor": ".core.feature_extraction",
-    "Model": ".core.model",
-    "DasymetricMapper": ".core.dasymetric",
+    "FeatureExtractor": ".algorithms.feature_extraction",
+    "Model": ".algorithms.model",
+    "DasymetricMapper": ".algorithms.dasymetric",
     "Settings": ".config.settings",
 }
 

@@ -54,7 +54,7 @@ unpublished build does not claim calibrated pixel uncertainty or new platforms.
 - Headless JSON-event CLI, full effective settings snapshot, input/artifact SHA-256
   provenance, deterministic ZIP builder, Windows/Linux regression and native QGIS tests.
 - Runtime update verification/rollback, lock exclusivity and exact dependency checks.
-- Independent audit/review records and reproducible Rwanda model benchmarks.
+- Maintained regression tests and documented native-QGIS qualification workflows.
 
 Verification commands are described in docs/development.md. No external release has
 been published; platform and licensing release gates must not be inferred closed.

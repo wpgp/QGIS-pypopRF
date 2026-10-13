@@ -1,5 +1,6 @@
 """Dependency boundaries and installed-layout checks, independent of Qt mocks."""
 import ast
+from importlib.util import resolve_name
 from pathlib import Path
 import shutil
 import subprocess
@@ -111,6 +112,57 @@ def test_runtime_source_has_no_stale_import_names_or_old_package_directories():
             assert "q_models" not in source, path
             assert "core.pypoprf.core" not in source, path
             assert "core/pypoprf/core" not in source, path
+
+
+def test_lazy_public_api_dictionary_resolves_to_existing_runtime_classes():
+    # A dictionary-selected import cannot be covered by literal-call scanning.
+    source = ROOT / "core/pypoprf/__init__.py"
+    assignments = {node.targets[0].id: ast.literal_eval(node.value)
+                   for node in ast.parse(source.read_text(encoding="utf-8-sig")).body
+                   if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
+                   and node.targets[0].id in {"_PUBLIC_MODULES", "__all__"}}
+    exports, modules = assignments["__all__"], assignments["_PUBLIC_MODULES"]
+    assert set(exports) == set(modules) == {"FeatureExtractor", "Model", "DasymetricMapper", "Settings"}
+    for name, relative in modules.items():
+        module = resolve_name(relative, "core.pypoprf")
+        path = ROOT.joinpath(*module.split(".")).with_suffix(".py")
+        assert path.is_file(), (name, relative, path)
+        definitions = ast.parse(path.read_text(encoding="utf-8-sig")).body
+        assert any(isinstance(node, ast.ClassDef) and node.name == name for node in definitions), name
+
+
+def test_public_engine_api_loads_all_exports_in_canonical_and_plugin_alias_packages():
+    script = """
+import importlib, importlib.util, pathlib, sys, types
+dependencies = ('numpy', 'pandas', 'rasterio', 'sklearn', 'joblib', 'geopandas', 'scipy')
+if any(importlib.util.find_spec(name) is None for name in dependencies):
+    raise SystemExit(77)
+root = pathlib.Path(sys.argv[1])
+alias = 'public_api_installed_alias'
+package = types.ModuleType(alias)
+package.__path__ = [str(root)]
+sys.modules[alias] = package
+expected = {'FeatureExtractor': '.algorithms.feature_extraction', 'Model': '.algorithms.model',
+            'DasymetricMapper': '.algorithms.dasymetric', 'Settings': '.config.settings'}
+for package_name in ('core.pypoprf', alias + '.core.pypoprf'):
+    module = importlib.import_module(package_name)
+    for name, relative in expected.items():
+        value = getattr(module, name)
+        assert value is getattr(importlib.import_module(relative, package_name), name)
+        assert getattr(module, name) is value
+    try:
+        getattr(module, 'MissingPublicAPI')
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('Unknown public names must raise AttributeError')
+assert 'qgis' not in sys.modules
+"""
+    result = subprocess.run([sys.executable, "-c", script, str(ROOT)], cwd=ROOT,
+                            capture_output=True, text=True, timeout=60)
+    if result.returncode == 77:
+        pytest.skip("Public engine API requires the scientific engine; bare QGIS host tests cover lazy initialization only")
+    assert result.returncode == 0, result.stderr
 
 
 def test_imported_services_and_shared_do_not_load_qt_or_scientific_code():
