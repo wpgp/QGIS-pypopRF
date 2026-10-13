@@ -168,8 +168,13 @@ class RuntimeManager:
     def _run(self, command, cancellation_token=None, progress=None, percent=0, timeout=300):
         """Bound diagnostic output; drain pipes and check cancellation regularly."""
         self._check_cancel(cancellation_token)
+        working = Path(command[0]).resolve().parent
+        if not working.is_dir() or working.is_relative_to(self.package_root):
+            working = Path(tempfile.gettempdir()).resolve()
+        if working.is_relative_to(self.package_root):
+            raise RuntimeSetupError("Cannot choose an external runtime working directory")
         kwargs = dict(stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                      env=self._environment(command[0]))
+                      env=self._environment(command[0]), cwd=working)
         if os.name == "nt":
             kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
         else:

@@ -22,12 +22,44 @@ The initial package installation can take several minutes. You can cancel it fro
 
 ## Update safely
 
-Finish or cancel the current analysis before updating the plugin. Install a newly built ZIP through QGIS, then reopen the dialog. If the packaged dependency lock changed, set up the new engine. The active environment switches only after successful verification; old environments are retained for recovery, not recursively deleted.
+1. Finish the current analysis, or cancel it and wait for the task to stop.
+2. Use **Plugins → Manage and Install Plugins → Install from ZIP** to install the
+   newly built ZIP. There is no need to uninstall the modern plugin first.
+3. Reopen pypopRF and wait for the engine check. If the packaged dependency lock
+   changed, choose **Update / repair engine** and wait for verification.
+
+Analysis and preparation jobs use a private, verified source snapshot and working
+directory outside the installation. Unloading the plugin requests cancellation;
+owned resources are released asynchronously after the child actually exits.
+This protects the installed folder from those jobs, but updating in the middle
+of an analysis is not a way to preserve or resume that analysis.
+
+The active engine environment switches only after successful verification; old
+environments are retained for recovery, not recursively deleted. A plugin ZIP
+replacement and an engine update are different operations. QGIS's ZIP installer
+does not guarantee rollback for an arbitrary incomplete plugin archive. Use a
+ZIP built and verified by this repository, and keep the preceding valid ZIP.
 
 Keep analysis projects outside the plugin installation and engine-cache directories.
 QGIS manages the installed plugin folder; uninstalling/replacing a plugin is not a
 project-backup mechanism. Back up the project configuration and important completed
 runs before changing an installation.
+
+### One-time migration from a legacy Windows installation
+
+An older plugin may have loaded numerical DLLs from its installation folder into
+the QGIS process. Disabling the plugin cannot safely unload those DLLs. If this
+is the installation you are replacing:
+
+1. In **Installed**, uncheck pypopRF to disable it; do not uninstall it first.
+2. Save your QGIS project and close **all QGIS instances using that profile**.
+3. Reopen QGIS with pypopRF still disabled.
+4. Install the valid new ZIP using **Install from ZIP**, then enable pypopRF.
+5. Set up the separate engine and reopen your analysis project.
+
+Normal QGIS process exit releases the old DLL locks. Do not force-unload DLLs,
+kill unrelated processes, or manually delete a folder while QGIS still uses it.
+If replacement still fails, stop and follow the [recovery checks](../user-guide/troubleshooting.md#plugin-update-or-locked-folder).
 
 Existing project input files and earlier run directories are not replaced by an engine update. Model bundles have a strict schema and environment contract; old separate model/scaler files are deliberately not loaded. Retrain when moving to the new engine.
 

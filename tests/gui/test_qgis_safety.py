@@ -440,8 +440,11 @@ def test_qprocess_start_has_no_numerical_preflight_or_project_mutation(adapter, 
     process = controller.process
     assert process.program.endswith("python")
     assert process.environment.values == {"PATH": "isolated"}
-    assert process.cwd == str(ROOT)
-    assert process.arguments[:4] == ["-X", "utf8", "-m", "core.pypoprf"]
+    assert Path(process.cwd).parent == controller.dialog.job_cache
+    assert Path(process.cwd) != ROOT
+    assert (Path(process.cwd) / "engine_source" / ".engine_snapshot.json").is_file()
+    assert process.arguments[:5] == ["-I", "-B", "-X", "utf8", "-c"]
+    assert "core.pypoprf" in process.arguments
     assert not controller._expected_run.exists()
     assert Path(controller.dialog.config_manager.config_path).read_bytes() == before
     controller._finished(1, Process.ExitStatus.NormalExit)
@@ -841,7 +844,7 @@ def test_tools_inspection_transfers_verified_report_before_owned_cache_cleanup(a
     tools.completed.connect(lambda: completed.append(not tools.is_running))
     assert tools.start({"operation": "inspect"})
     owned = tools.process
-    request = json.loads(Path(owned.arguments[5]).read_text())
+    request = json.loads(Path(owned.arguments[owned.arguments.index("--request") + 1]).read_text())
     assert request["request_id"] == tools._request_id and len(tools._request_id) == 32
     assert owned.environment.values == {"PATH": "isolated"}
     report, event = publish_tool_result(tools, ready)

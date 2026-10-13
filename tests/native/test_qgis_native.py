@@ -106,12 +106,8 @@ def native_dialog(native_package, tmp_path):
     yield dialog
     if sip.isdeleted(dialog):
         return
-    if dialog.is_busy:
-        dialog.cancel_all()
-        wait_until(lambda: not dialog.is_busy)
-    dialog.logger.close()
-    dialog.deleteLater()
-    QApplication.processEvents()
+    dialog.dispose_when_idle()
+    wait_until(lambda: sip.isdeleted(dialog))
 
 
 def initialize(dialog, root):
@@ -222,6 +218,33 @@ def test_native_create_open_preserves_config_logs_and_flags(native_dialog, tmp_p
     assert "preserved-native-log-marker" in log.read_text()
     assert dialog.initProjectButton.text() == "Open project"
     capture_state(dialog, "project-open")
+
+
+def test_native_disposal_disconnects_only_owned_settings_callbacks(native_dialog, tmp_path):
+    dialog = native_dialog
+    initialize(dialog, tmp_path / "disposal-project")
+    config = Path(dialog.config_manager.config_path)
+    before = config.read_bytes()
+    external = []
+    dialog.logsColumnEdit.textChanged.connect(external.append)
+    dialog.logsColumnEdit.setText("pending-before-dispose.log")
+    handler = dialog.settings_handler
+    assert handler._pending_log_filename == "pending-before-dispose.log"
+    assert len(handler._connections) == 6
+    handler.close()
+    assert handler._closed and not handler._connections
+    dialog.logsColumnEdit.setText("must-not-persist.log")
+    dialog.popColumnEdit.setText("must-not-persist-pop")
+    dialog.idColumnEdit.setText("must-not-persist-id")
+    for widget in (dialog.logsColumnEdit, dialog.popColumnEdit, dialog.idColumnEdit):
+        widget.editingFinished.emit()
+    handler._apply_log_filename_update(dialog)  # A queued callback also fails closed.
+    handler._apply_census_update()
+    assert config.read_bytes() == before
+    assert external[-1] == "must-not-persist.log"  # No blanket signal disconnect.
+    dialog.dispose_when_idle()
+    wait_until(lambda: sip.isdeleted(dialog))
+    assert not dialog.logger.logger.handlers
 
 
 def test_native_qprocess_actual_engine_sanitizes_environment_and_conserves(native_dialog, tmp_path, monkeypatch):
@@ -472,7 +495,14 @@ def test_native_unload_retains_owned_process_until_ended(native_dialog, native_p
     plugin.dlg = dialog
     dialog.process_executor.start_analysis()
     assert dialog.process_executor.is_running
+    config = Path(dialog.config_manager.config_path)
+    before = config.read_bytes()
+    dialog.logsColumnEdit.setText("must-not-save-during-unload.log")
     plugin.unload()
     assert plugin.dlg is dialog
+    assert dialog.settings_handler._closed
+    dialog.logsColumnEdit.editingFinished.emit()
+    dialog.settings_handler._apply_log_filename_update(dialog)
+    assert config.read_bytes() == before
     wait_until(lambda: plugin.dlg is None)
     assert not dialog.process_executor.is_running

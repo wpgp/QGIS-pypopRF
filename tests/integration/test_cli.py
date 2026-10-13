@@ -51,7 +51,8 @@ def test_input_fingerprint_identifies_content_and_metadata(tmp_path):
 
 @pytest.mark.integration
 @pytest.mark.parametrize("run_name", ["run", "результат"])
-def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_path, run_name):
+@pytest.mark.parametrize("source_mode", ["live_source", "verified_snapshot"])
+def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_path, run_name, source_mode):
     data = tmp_path / "data"
     data.mkdir()
     zones = np.repeat(np.arange(1, 7, dtype="int32"), 4).reshape(4, 6)
@@ -69,8 +70,30 @@ def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_pa
         "n_estimators": 6, "cv_folds": 2, "cv_strategy": "shuffled_zone",
     }), encoding="utf-8")
     output = tmp_path / run_name
+    package_root = Path(__file__).resolve().parents[2]
+    command = ["-m", "core.pypoprf", "--config", str(config), "--output-dir", str(output)]
+    execution_root = package_root
+    frozen = None
+    if source_mode == "verified_snapshot":
+        from services.engine_snapshot import create_engine_snapshot, engine_arguments
+        from scripts.build_plugin import package_files
+        import shutil
+        installed = tmp_path / "installed-plugin"
+        for relative, original in package_files(package_root):
+            target = installed / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(original, target)
+        job = tmp_path / "owned-job"
+        job.mkdir()
+        frozen = create_engine_snapshot(installed, job)
+        command = engine_arguments(frozen, "core.pypoprf", command[2:])
+        execution_root = job
+        # No remaining installed source path: actual numerical imports and
+        # provenance must still use the frozen copy, not this mutable folder.
+        installed.rename(tmp_path / "retired-plugin")
+        assert not installed.exists()
     process = subprocess.run(
-        [sys.executable, "-m", "core.pypoprf", "--config", str(config), "--output-dir", str(output)],
+        [sys.executable, *command], cwd=execution_root,
         capture_output=True, text=True, encoding="utf-8", check=False, timeout=30,
         env=dict(os.environ, PYTHONIOENCODING="cp1252"),
     )
@@ -80,14 +103,25 @@ def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_pa
     manifest = json.loads((output / "manifest.json").read_text())
     assert manifest["outputs"] == events[-1]["outputs"]
     assert manifest["status"] == "complete"
+    assert manifest["engine_source_origin"] == source_mode
+    if frozen:
+        frozen_manifest = frozen / ".engine_snapshot.json"
+        records = json.loads(frozen_manifest.read_text())
+        assert manifest["engine_source_snapshot"] == {
+            "manifest_sha256": hashlib.sha256(frozen_manifest.read_bytes()).hexdigest(),
+            "file_count": records["file_count"], "total_bytes": records["total_bytes"],
+            "original_source_root": records["source_root"],
+        }
+        assert not list(frozen.rglob("*.pyc"))
+    else:
+        assert "engine_source_snapshot" not in manifest
     assert len(manifest["inputs"]) == 3
     assert "algorithms/model.py" in manifest["engine_source_sha256"]
     assert set(manifest["engine_adapter_source_sha256"]) == {
         "services/runtime_manager.py", "services/owned_process.py",
         "shared/atomic_files.py", "shared/runtime_environment.py"}
-    package_root = Path(__file__).resolve().parents[2]
     for relative, digest in manifest["engine_adapter_source_sha256"].items():
-        assert digest == hashlib.sha256((package_root / relative).read_bytes()).hexdigest()
+        assert digest == hashlib.sha256(((frozen or package_root) / relative).read_bytes()).hexdigest()
     assert manifest["runtime"]["distributions"]["rasterio"] == rasterio.__version__
     assert manifest["runtime"]["rasterio_gdal"] == rasterio.__gdal_version__
     assert len(manifest["packaged_dependency_lock_sha256"]) == 64

@@ -267,6 +267,16 @@ def test_runtime_environment_api_delegates_to_shared_contract(manager):
     assert manager.child_environment() == child_environment()
 
 
+def test_actual_runtime_child_uses_explicit_external_cwd_without_changing_parent(tmp_path):
+    package = tmp_path / "package"
+    package.mkdir()
+    manager = RuntimeManager(package, tmp_path / "cache")
+    before = Path.cwd()
+    value = json.loads(manager._run([sys.executable, "-I", "-c", "import json,os;print(json.dumps(os.getcwd()))"], timeout=10))
+    assert Path(value).resolve() == Path(sys.executable).resolve().parent
+    assert not Path(value).is_relative_to(package) and Path.cwd() == before
+
+
 @pytest.mark.parametrize("failure", ["create", "configure", "assign"])
 def test_extracted_windows_job_retains_runtime_error_and_handle_cleanup(monkeypatch, failure):
     import ctypes

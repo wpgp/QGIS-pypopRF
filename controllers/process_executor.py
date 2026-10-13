@@ -12,6 +12,7 @@ from qgis.PyQt.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyq
 from ..services.result_manifest import read_manifest, population_paths
 from ..shared.atomic_files import atomic_replace
 from ..services.process_exit_guard import ProcessExitGuard
+from ..services.engine_snapshot import create_engine_snapshot, engine_arguments
 
 
 class ProcessExecutor(QObject):
@@ -68,6 +69,7 @@ class ProcessExecutor(QObject):
             config = Path(self._job.name) / "config.yaml"
             self._config_file = config.resolve()
             config.write_text(yaml.safe_dump(snapshot, sort_keys=False), encoding="utf-8")
+            engine_source = create_engine_snapshot(self.dialog.plugin_root, Path(self._job.name))
             self._stdout, self._stderr, self._result = b"", "", None
             self._cancelled = False
             self.last_result_paths = []
@@ -79,15 +81,15 @@ class ProcessExecutor(QObject):
             self._guard_warning = False
             self._waiting_exit = False
             process.started.connect(lambda owned=process, guard=self._exit_guard: self._started(owned, guard))
-            process.setWorkingDirectory(str(self.dialog.plugin_root))
+            process.setWorkingDirectory(self._job.name)
             environment = QProcessEnvironment()
             for key, value in self.dialog.runtime_controller.manager.child_environment(python).items():
                 environment.insert(str(key), str(value))
             process.setProcessEnvironment(environment)
             process.setProgram(str(python))
-            process.setArguments(["-X", "utf8", "-m", "core.pypoprf", "--config", str(config),
-                                  "--output-dir", str(self._expected_run),
-                                  "--cancel-file", str(self._cancel_file)])
+            process.setArguments(engine_arguments(engine_source, "core.pypoprf", [
+                "--config", str(config), "--output-dir", str(self._expected_run),
+                "--cancel-file", str(self._cancel_file)]))
             process.readyReadStandardOutput.connect(lambda owned=process: self._read_stdout(owned))
             process.readyReadStandardError.connect(lambda owned=process: self._read_stderr(owned))
             process.finished.connect(lambda code, status, owned=process: self._finished(code, status, owned))

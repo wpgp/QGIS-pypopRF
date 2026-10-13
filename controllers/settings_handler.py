@@ -41,6 +41,33 @@ class SettingsHandler:
         self._pending_log_filename: Optional[str] = None
         self._pending_pop_column: Optional[str] = None
         self._pending_id_column: Optional[str] = None
+        self._connections = []
+        self._closed = False
+
+    def _connect(self, signal, callback):
+        signal.connect(callback)
+        self._connections.append((signal, callback))
+
+    def _set_pending(self, name, value):
+        if not self._closed:
+            setattr(self, name, value)
+
+    def close(self, *args):
+        """Detach only this handler's callbacks before child widgets die.
+
+        Qt may emit editingFinished while focus/children are being destroyed.
+        Do not touch a partially deleted view or reopen its closed log file.
+        """
+        if self._closed:
+            return
+        self._closed = True
+        for signal, callback in self._connections:
+            try:
+                signal.disconnect(callback)
+            except (TypeError, RuntimeError):
+                pass
+        self._connections.clear()
+        self._pending_log_filename = self._pending_pop_column = self._pending_id_column = None
 
     def connect_log_filename_signals(self, dialog) -> None:
         """Connect signals for log filename input.
@@ -48,26 +75,26 @@ class SettingsHandler:
         Args:
             dialog: Main dialog instance
         """
-        dialog.logsColumnEdit.textChanged.connect(
-            lambda text: setattr(self, "_pending_log_filename", text)
+        self._connect(dialog.logsColumnEdit.textChanged,
+            lambda text: self._set_pending("_pending_log_filename", text)
         )
-        dialog.logsColumnEdit.editingFinished.connect(
+        self._connect(dialog.logsColumnEdit.editingFinished,
             lambda: self._apply_log_filename_update(dialog)
         )
 
     def connect_census_fields_signals(self, dialog):
         """Connect signals for census fields input."""
         # Для поля population
-        dialog.popColumnEdit.textChanged.connect(
-            lambda text: setattr(self, "_pending_pop_column", text)
+        self._connect(dialog.popColumnEdit.textChanged,
+            lambda text: self._set_pending("_pending_pop_column", text)
         )
-        dialog.popColumnEdit.editingFinished.connect(lambda: self._apply_census_update())
+        self._connect(dialog.popColumnEdit.editingFinished, self._apply_census_update)
 
         # Для поля id
-        dialog.idColumnEdit.textChanged.connect(
-            lambda text: setattr(self, "_pending_id_column", text)
+        self._connect(dialog.idColumnEdit.textChanged,
+            lambda text: self._set_pending("_pending_id_column", text)
         )
-        dialog.idColumnEdit.editingFinished.connect(lambda: self._apply_census_update())
+        self._connect(dialog.idColumnEdit.editingFinished, self._apply_census_update)
 
     def _apply_log_filename_update(self, dialog) -> None:
         """Apply log filename changes when editing is finished.
@@ -78,6 +105,8 @@ class SettingsHandler:
         Raises:
             SettingsError: If update fails
         """
+        if self._closed:
+            return
         try:
             if not self.config_manager.config_path:
                 return
@@ -104,7 +133,7 @@ class SettingsHandler:
 
     def _apply_census_update(self):
         """Apply census fields changes when editing is finished."""
-        if not self.config_manager.config_path:
+        if self._closed or not self.config_manager.config_path:
             return
         try:
             if self._pending_pop_column is not None:

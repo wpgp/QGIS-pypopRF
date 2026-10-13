@@ -65,5 +65,6 @@ jobs:
               python3 scripts/build_plugin.py --output /tmp/plugin.zip
               python3 -m zipfile -e /tmp/plugin.zip /tmp/plugin-package
               export PYPOPRF_TEST_PLUGIN_ROOT=/tmp/plugin-package/pypopRF
+              export PYPOPRF_TEST_PLUGIN_ZIP=/tmp/plugin.zip
               /tmp/ui-tests/bin/python -m pytest tests/native -q -p no:cacheprovider
             '

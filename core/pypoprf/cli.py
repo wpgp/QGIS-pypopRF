@@ -124,6 +124,10 @@ def main(argv=None):
         settings.output_dir = output
         manifest.update(status="running", run_id=output.name, config=str(options.config.resolve()),
                         engine_version=__version__)
+        source_snapshot = getattr(sys, "_pypoprf_engine_snapshot", None)
+        manifest["engine_source_origin"] = "verified_snapshot" if source_snapshot else "live_source"
+        if source_snapshot:
+            manifest["engine_source_snapshot"] = dict(source_snapshot)
         manifest["runtime"] = {
             "python": sys.version, "implementation": platform.python_implementation(),
             "platform": platform.platform(), "machine": platform.machine(),

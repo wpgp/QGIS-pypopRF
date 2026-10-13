@@ -65,6 +65,7 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
 @pytest.mark.parametrize("missing", [
     "core/__init__.py", "core/pypoprf/__main__.py", "core/pypoprf/algorithms/model.py",
     "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
+    "services/engine_snapshot.py",
 ])
 def test_missing_runtime_boundary_file_cannot_publish_an_incomplete_archive(tmp_path, missing):
     source = copy_runtime_source(tmp_path / "source")

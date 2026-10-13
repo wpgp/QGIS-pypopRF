@@ -16,6 +16,26 @@ is shown in Details. Do not run pip in the QGIS Python to work around the failur
 An earlier healthy engine remains active if a repair fails; an outdated lock
 requires successful setup before the new plugin can run.
 
+## Plugin update or locked folder
+
+Keep a valid previous ZIP and keep projects outside the plugin installation and
+engine cache. For a legacy plugin which loaded DLLs into QGIS, use the
+[disable → close QGIS → reopen disabled → install ZIP migration](../getting-started/installation.md#one-time-migration-from-a-legacy-windows-installation).
+Do not uninstall first or force-delete an active plugin folder.
+
+If installation still fails, save your QGIS work, disable pypopRF and close all
+instances using the affected profile. Check the exact installer error and ensure
+the ZIP was successfully built and verified. Other QGIS instances, antivirus or
+backup software can also retain a file handle; do not assume every lock comes
+from this plugin. Retry the valid ZIP with the plugin disabled. If an incomplete
+archive replaced files, reinstall the previous valid ZIP with the plugin disabled.
+The QGIS installer is not a transactional plugin backup.
+
+If this does not recover the plugin, report the QGIS/OS versions and installer
+error without private data. Do not delete your project, engine cache or a broad
+QGIS profile as a repair step. A surviving engine job is not a reason to kill
+every Python process; cancellation and cleanup are scoped to the owned job.
+
 ## Input checks
 
 All rasters must define a CRS, contain one band, and use the same pixel grid.

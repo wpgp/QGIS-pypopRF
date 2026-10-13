@@ -25,6 +25,7 @@ import os
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QIcon
+from qgis.core import Qgis
 try:
     from qgis.PyQt.QtGui import QAction
 except ImportError:
@@ -180,14 +181,26 @@ class PyPopRF:
         self._unloading = True
         if self.dlg:
             if self.dlg.is_busy:
-                self.dlg.workCompleted.connect(self._dispose_dialog)
-                self.dlg.cancel_all()
-                self.dlg.hide()
+                # This notification does not retain the plugin instance or
+                # claim QGIS will wait before replacing installation files.
+                try:
+                    self.iface.messageBar().pushMessage(
+                        "pypopRF", "Stopping background tasks; temporary files will be released when they finish.",
+                        level=Qgis.MessageLevel.Info, duration=6)
+                except (AttributeError, RuntimeError):
+                    pass
+                self.dlg.destroyed.connect(self._dialog_destroyed)
+                self.dlg.dispose_when_idle()
             else:
                 self._dispose_dialog()
         for action in self.actions:
+            try:
+                action.triggered.disconnect(self.run)
+            except (TypeError, RuntimeError):
+                pass
             self.iface.removePluginMenu(self.tr("&QGIS pypopRF"), action)
             self.iface.removeToolBarIcon(action)
+            action.deleteLater()
 
         # Clear references
         self.actions = []
@@ -215,7 +228,8 @@ class PyPopRF:
 
     def _dispose_dialog(self):
         if self.dlg and not self.dlg.is_busy:
-            self.dlg.logger.close()
-            self.dlg.logger.set_output_stream()
-            self.dlg.deleteLater()
+            self.dlg.dispose_when_idle()
             self.dlg = None
+
+    def _dialog_destroyed(self, *args):
+        self.dlg = None

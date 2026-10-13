@@ -55,6 +55,16 @@ complete result event, a complete manifest and present contained result paths.
 Progress alone never establishes successful completion. Native process/thread
 completion determines when a controller can release its owned resources.
 
+Before analysis or preparation starts, `services/engine_snapshot.py` freezes a
+bounded, verified copy of engine/shared code, provenance resources and dependency
+locks in the owned job cache. The child starts with `-I -B`, verifies the snapshot
+manifest, exact file inventory and installed dependency versions before importing
+the numerical engine, and uses an external job working directory. Replacing the
+installed plugin cannot change that child's imports or recorded source hashes.
+Analysis manifests distinguish `verified_snapshot` from direct CLI `live_source`
+execution and retain the frozen-manifest digest. No snapshot is shared between
+jobs or removed before the actual owned child exits.
+
 Setup creates a venv at its permanent unique location. It does not move a venv
 after creation. Installation accepts exact pinned requirements, uses binary
 wheels, checks package consistency and native imports, and activates through a
@@ -99,7 +109,17 @@ in `.github/workflows/test.yml` declares the actual current test matrix.
 
 `scripts/run_native_tests.py` discovers all test modules in `tests/native/` by default;
 this includes the original adapter, preparation/layer/AOI workflow and quality
-widget tests. Windows launcher termination is not itself proof that the redirected
+widget tests plus isolated actual-installer replacement/recovery tests. Set
+`PYPOPRF_TEST_PLUGIN_ROOT` to the freshly extracted plugin and
+`PYPOPRF_TEST_PLUGIN_ZIP` to the same verified ZIP. On Windows,
+`PYPOPRF_TEST_ENGINE` must name a standalone prepared engine, not the portable
+QGIS host interpreter. The installer subprocess tests redirect home, cache,
+profile and Qt INI settings into a nonce-owned temporary directory before any
+settings write; they never use an existing desktop profile. They include a
+Windows-only copied-DLL, normal-process-exit migration fixture, not forced DLL
+unloading or manual deletion of a user installation.
+
+Windows launcher termination is not itself proof that the redirected
 Python child has exited: the adapter asynchronously checks held, birth-identified
 Windows process handles before releasing metadata or deleting owned scratch.
 Tracking failures remain explicit and do not falsely establish cleanup safety.

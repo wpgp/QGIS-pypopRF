@@ -14,7 +14,7 @@ PLUGIN_NAME = "pypopRF"
 REQUIRED_FILES = (
     "__init__.py", "qgis_pypoprf.py", "gui/dialogs/main_dialog.py",
     "gui/forms/main_dialog.ui", "services/runtime_manager.py", "shared/atomic_files.py",
-    "services/owned_process.py", "shared/runtime_environment.py",
+    "services/owned_process.py", "services/engine_snapshot.py", "shared/runtime_environment.py",
     "core/__init__.py", "core/pypoprf/__init__.py", "core/pypoprf/__main__.py",
     "core/pypoprf/cli.py", "core/pypoprf/pipeline.py", "core/pypoprf/tools.py",
     "core/pypoprf/algorithms/model.py",

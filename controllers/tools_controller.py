@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from qgis.PyQt.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyqtSignal
 from ..services.process_exit_guard import ProcessExitGuard
+from ..services.engine_snapshot import create_engine_snapshot, engine_arguments
 
 
 def validate_population_summary(summary):
@@ -95,6 +96,7 @@ class ToolsController(QObject):
             self._marker = Path(self._job.name) / "cancel"
             config = Path(self._job.name) / "request.json"
             config.write_text(json.dumps(request, ensure_ascii=True), encoding="utf-8")
+            engine_source = create_engine_snapshot(self.dialog.plugin_root, Path(self._job.name))
             self._buffer, self._stderr, self._event = b"", "", None
             self._cancelled = False
             process = QProcess(self)
@@ -103,14 +105,14 @@ class ToolsController(QObject):
             self._guard_warning = False
             self._waiting_exit = False
             process.started.connect(lambda owned=process, guard=self._exit_guard: self._started(owned, guard))
-            process.setWorkingDirectory(str(self.dialog.plugin_root))
+            process.setWorkingDirectory(self._job.name)
             environment = QProcessEnvironment()
             for key, value in self.dialog.runtime_controller.manager.child_environment(python).items():
                 environment.insert(str(key), str(value))
             process.setProcessEnvironment(environment)
             process.setProgram(str(python))
-            process.setArguments(["-X", "utf8", "-m", "core.pypoprf.tools", "--request", str(config),
-                                  "--cancel-file", str(self._marker)])
+            process.setArguments(engine_arguments(engine_source, "core.pypoprf.tools", [
+                "--request", str(config), "--cancel-file", str(self._marker)]))
             process.readyReadStandardOutput.connect(lambda owned=process: self._read_stdout(owned))
             process.readyReadStandardError.connect(lambda owned=process: self._read_stderr(owned))
             process.finished.connect(lambda code, status, owned=process: self._finished(code, status, owned))

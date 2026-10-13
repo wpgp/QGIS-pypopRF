@@ -88,6 +88,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._loading_project = False
         self._project_ready = False
         self._close_pending = False
+        self._dispose_pending = False
+        self._disposed = False
         self.import_controller = ImportController(self)
         self.import_controller.progress.connect(self._import_progress)
         self.import_controller.imported.connect(self._imports_finished)
@@ -110,6 +112,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         self.file_handler = FileHandler("", self.logger)
         self.settings_handler = SettingsHandler(self.config_manager, self.logger)
+        self.destroyed.connect(self.settings_handler.close)
         self.process_executor = ProcessExecutor(self, self.logger, iface)
         self.process_executor.completed.connect(self._processing_completed)
         self.tools_controller = ToolsController(self, self.logger)
@@ -401,9 +404,34 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         if self.is_busy:
             return
         self.workCompleted.emit()
+        if self._dispose_pending:
+            self._dispose_resources()
+            return
         if self._close_pending:
             self._close_pending = False
             self.reject()
+
+    def dispose_when_idle(self):
+        """Keep disposal owned by this Qt dialog after QGIS drops the plugin.
+
+        QGIS unload removes the Python plugin instance immediately. A weak
+        bound slot on that instance cannot own deferred worker cleanup.
+        """
+        self._dispose_pending = True
+        self.settings_handler.close()
+        self.hide()
+        if self.is_busy:
+            self.cancel_all()
+        else:
+            self._dispose_resources()
+
+    def _dispose_resources(self):
+        if self._disposed or self.is_busy:
+            return
+        self._disposed = True
+        self.settings_handler.close()
+        self.logger.close()
+        self.deleteLater()
 
     @property
     def is_busy(self):
