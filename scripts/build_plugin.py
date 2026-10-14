@@ -6,6 +6,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
+import stat
 import tempfile
 import zipfile
 
@@ -43,6 +45,25 @@ REQUIRED_FILES = (
     "LICENSE", "README.md", "CHANGELOG.md", "CITATION.cff",
 ) + PUBLIC_DOCUMENTATION
 RUNTIME_DIRECTORIES = ("core", "gui", "controllers", "services", "shared")
+MAX_ARCHIVE_FILES = 10_000
+MAX_MEMBER_BYTES = 25 * 1024 * 1024
+MAX_EXPANDED_BYTES = 100 * 1024 * 1024
+
+
+def _portable_member(name):
+    """Reject aliases/device paths before trusting a cross-platform ZIP member.
+
+    Windows naming rules: https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+    ZIP names use POSIX separators even when verification runs on Windows.
+    """
+    parts = name.split("/")
+    devices = {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"} | {
+        prefix + digit for prefix in ("COM", "LPT") for digit in "123456789¹²³"}
+    if any(not part or part in {".", ".."} or part.endswith((".", " "))
+           or any(ord(char) < 32 or char in '<>:"\\|?*' for char in part)
+           or part.split(".", 1)[0].rstrip(" ").upper() in devices for part in parts):
+        raise ValueError(f"Unsafe archive member: {name}")
+    return name.casefold()
 
 
 def package_files(root):
@@ -53,6 +74,7 @@ def package_files(root):
                      for path in (root / directory).rglob("*.py")
                      if "__pycache__" not in path.parts)
     for name in sorted(names):
+        _portable_member(name)
         path = root / name
         if not path.is_file() or not path.resolve().is_relative_to(root):
             raise ValueError(f"Missing or unsafe package file: {name}")
@@ -60,29 +82,64 @@ def package_files(root):
 
 
 def verify_package(archive):
+    if Path(archive).stat().st_size > 25_000_000:
+        raise ValueError("Plugin archive exceeds 25 MB")
     with zipfile.ZipFile(archive) as package:
+        infos = package.infolist()
+        if (len(infos) > MAX_ARCHIVE_FILES
+                or any(info.file_size > MAX_MEMBER_BYTES for info in infos)
+                or sum(info.file_size for info in infos) > MAX_EXPANDED_BYTES):
+            raise ValueError("Plugin archive exceeds the expanded-file verification budget")
+        manifest_info = package.getinfo(f"{PLUGIN_NAME}/PACKAGE_MANIFEST.json")
+        if manifest_info.file_size > 4 * 1024 * 1024:
+            raise ValueError("Package manifest is unexpectedly large")
         if package.testzip() is not None:
             raise ValueError("Corrupt archive")
-        members = package.namelist()
+        # ZipInfo.filename normalizes backslashes on Windows and truncates NUL.
+        # Validate the original ZIP spelling before using normalized lookups.
+        members = [info.orig_filename for info in infos]
         prefix = f"{PLUGIN_NAME}/"
         if len(members) != len(set(members)):
             raise ValueError("Duplicate archive members")
-        for member in members:
-            if not member.startswith(prefix) or ".." in Path(member).parts:
+        portable = set()
+        for info in infos:
+            member = info.orig_filename
+            key = _portable_member(member)
+            if (not member.startswith(prefix) or key in portable
+                    or stat.S_IFMT(info.external_attr >> 16) not in {0, stat.S_IFREG}):
                 raise ValueError(f"Unsafe archive member: {member}")
+            portable.add(key)
+        for member in members:
+            parts = member.casefold().split("/")
+            if any("/".join(parts[:end]) in portable for end in range(1, len(parts))):
+                raise ValueError(f"Unsafe archive member with a file parent: {member}")
         for name in REQUIRED_FILES:
             if prefix + name not in members:
                 raise ValueError(f"Missing package requirement: {name}")
-        manifest = json.loads(package.read(prefix + "PACKAGE_MANIFEST.json"))
+        manifest = json.loads(package.read(manifest_info))
+        if (not isinstance(manifest, dict) or type(manifest.get("format_version")) is not int
+                or manifest["format_version"] != 1 or manifest.get("plugin") != PLUGIN_NAME
+                or not isinstance(manifest.get("version"), str) or not manifest["version"]
+                or not isinstance(manifest.get("files"), dict)):
+            raise ValueError("Invalid package manifest identity or schema")
         declared = manifest["files"]
+        if any(not isinstance(name, str) or not isinstance(digest, str)
+               or re.fullmatch(r"[0-9a-f]{64}", digest) is None for name, digest in declared.items()):
+            raise ValueError("Invalid package manifest file hashes")
         actual = set(members) - {prefix + "PACKAGE_MANIFEST.json"}
         if actual != {prefix + name for name in declared}:
             raise ValueError("Archive contents differ from manifest")
         for name, digest in declared.items():
             if hashlib.sha256(package.read(prefix + name)).hexdigest() != digest:
                 raise ValueError(f"Hash mismatch: {name}")
-    if Path(archive).stat().st_size > 25_000_000:
-        raise ValueError("Plugin archive exceeds 25 MB")
+        metadata = configparser.ConfigParser(interpolation=None)
+        try:
+            metadata.read_string(package.read(prefix + "metadata.txt").decode("utf-8-sig"))
+            version = metadata.get("general", "version")
+        except (configparser.Error, UnicodeError) as exc:
+            raise ValueError("Invalid packaged metadata") from exc
+        if version != manifest["version"]:
+            raise ValueError("Package manifest version differs from metadata")
     return manifest
 
 

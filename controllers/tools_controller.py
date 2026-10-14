@@ -278,6 +278,7 @@ class ToolsController(QObject):
                 self.progress.emit(0, "Waiting for the data-tool process to exit before cleaning up…")
             QTimer.singleShot(20, lambda: self._finished(code, status, owned))
             return
+        output = self._output
         result = {"success": False, "cancelled": self._cancelled, "operation": self._operation,
                   "report": None, "output_dir": str(self._output),
                   "message": "Data tool stopped; your existing project and source data were not changed"}
@@ -298,6 +299,15 @@ class ToolsController(QObject):
             result["message"] = f"Could not verify data-tool results: {exc}"
         finally:
             self._release()
+            if result["cancelled"] and result["operation"] == "prepare":
+                try:
+                    # Check after owned job cleanup: temporary results may have
+                    # disappeared, but an external prepared directory is kept.
+                    if output.is_dir():
+                        result["message"] += (f". New output directory remains at {output}. "
+                                              "It may be incomplete; review before reuse.")
+                except OSError as exc:
+                    self.logger.warning(f"Could not inspect the stopped preparation output: {exc}")
             self.busyChanged.emit(False)
         try:
             self.resultReady.emit(result)

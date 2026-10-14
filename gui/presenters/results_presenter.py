@@ -24,6 +24,7 @@ class ResultsPresenter:
     """Present saved runs without owning or launching analysis workers."""
     def __init__(self, view):
         self.view = view
+        self._history_root = None
 
     def setup(self):
         view = self.view
@@ -53,12 +54,14 @@ class ResultsPresenter:
         wanted = [str(Path(select).resolve())] if select else []
         wanted += [str(previous)] if previous else []
         view.resultsTree.clear()
+        self._history_root = None
         self._result_selected()
         if not view.config_manager.config_path:
             return
         try:
             config = view.config_manager.get_config()
             root = (Path(view.config_manager.working_dir) / config.get("output_dir", "output") / "runs").resolve()
+            self._history_root = root
         except Exception as exc:
             view.resultSummaryLabel.setText("Project settings could not be read. See Details.")
             view.logger.error(str(exc))
@@ -74,27 +77,41 @@ class ResultsPresenter:
             return
         items, newest_complete = {}, None
         for directory in directories:
-            if not directory.is_dir() or directory.is_symlink():
-                continue
-            path = directory / "manifest.json"
             try:
-                manifest = read_manifest(path)
+                safe = (directory.is_dir() and not directory.is_symlink()
+                    and not (hasattr(directory, "is_junction") and directory.is_junction())
+                    and directory.resolve().is_relative_to(root))
+            except (OSError, RuntimeError) as exc:
+                view.logger.warning(f"Could not inspect saved run folder {directory.name}: {exc}")
+                continue
+            if not safe:
+                continue
+            try:
+                manifest = self._read_run_manifest(directory)
                 status = manifest["status"]
                 outputs = population_paths(directory, manifest)
-                item = QtWidgets.QTreeWidgetItem([run_label(directory.name), status.capitalize(), str(len(outputs))])
-                item.setData(0, Qt.ItemDataRole.UserRole, str(directory))
-                item.setToolTip(0, plain_tooltip(f"Run ID: {directory.name}\n{directory}"))
-                view.resultsTree.addTopLevelItem(item)
-                items[str(directory)] = item
-                if status == "complete":
-                    complete += 1
-                    if newest_complete is None and outputs:
-                        newest_complete = item
-            except (OSError, ValueError, TypeError):
-                continue
+                if status == "complete" and not outputs:
+                    raise ValueError("Completed run has no published population maps")
+                problem = ""
+            except (OSError, ValueError, TypeError) as exc:
+                status, outputs = "invalid", []
+                problem = str(exc)
+            item = QtWidgets.QTreeWidgetItem([run_label(directory.name), status.capitalize(), str(len(outputs))])
+            item.setData(0, Qt.ItemDataRole.UserRole, str(directory))
+            item.setData(0, Qt.ItemDataRole.UserRole + 1, status)
+            item.setToolTip(0, plain_tooltip(f"Run ID: {directory.name}\n{directory}"))
+            if problem:
+                item.setToolTip(1, plain_tooltip("Saved result is invalid: " + problem))
+                view.logger.warning(f"Could not read saved run {directory.name}: {problem}")
+            view.resultsTree.addTopLevelItem(item)
+            items[str(directory)] = item
+            if status == "complete":
+                complete += 1
+                if newest_complete is None:
+                    newest_complete = item
         view.resultSummaryLabel.setText(
             f"{complete} completed analyses. Select a run to view its results." if complete else
-            "No completed analyses yet. Failed or stopped runs are listed for diagnosis." if items else
+            "No completed analyses yet. Failed, stopped or invalid runs are listed for diagnosis." if items else
             "No analyses yet. Add input data and run your first analysis.")
         target = next((items[path] for path in wanted if path in items), newest_complete)
         if target is not None:
@@ -107,30 +124,57 @@ class ResultsPresenter:
         selected = view.resultsTree.selectedItems()
         return Path(selected[0].data(0, Qt.ItemDataRole.UserRole)) if selected else None
 
+    def _safe_run_directory(self, path):
+        if path is None or self._history_root is None:
+            return False
+        try:
+            config = self.view.config_manager.get_config()
+            current = (Path(self.view.config_manager.working_dir) / config.get("output_dir", "output") / "runs").resolve()
+            return (current == self._history_root and path.is_dir() and not path.is_symlink()
+                and not (hasattr(path, "is_junction") and path.is_junction())
+                and path.resolve().parent == self._history_root)
+        except (OSError, ValueError, RuntimeError):
+            return False
+
+    @staticmethod
+    def _read_run_manifest(root):
+        marker = root / "manifest.json"
+        if (root.is_symlink() or (hasattr(root, "is_junction") and root.is_junction())
+                or not root.is_dir() or marker.is_symlink()
+                or (hasattr(marker, "is_junction") and marker.is_junction())
+                or not marker.is_file() or marker.resolve().parent != root.resolve()):
+            raise ValueError("Saved result metadata is missing, linked or outside its ordinary run directory")
+        return read_manifest(marker)
+
     def _result_selected(self):
         view = self.view
         selected = view.resultsTree.selectedItems()
-        view.openRunButton.setEnabled(bool(selected))
         view.openRunButton.setToolTip(plain_tooltip(self._selected_run()) if selected else "")
-        complete = False
+        complete, invalid = False, False
+        safe_folder = bool(selected) and self._safe_run_directory(self._selected_run())
         if selected:
             root = self._selected_run()
-            try:
-                manifest = read_manifest(root / "manifest.json")
-                complete = bool(population_paths(root, manifest))
-            except (OSError, ValueError, TypeError):
-                pass
+            invalid = not safe_folder or selected[0].data(0, Qt.ItemDataRole.UserRole + 1) == "invalid"
+            if safe_folder:
+                try:
+                    manifest = self._read_run_manifest(root)
+                    complete = bool(population_paths(root, manifest))
+                    invalid = invalid or (manifest["status"] == "complete" and not complete)
+                except (OSError, ValueError, TypeError):
+                    invalid = True
+        view.openRunButton.setEnabled(safe_folder)
+        complete = complete and not invalid and safe_folder
         view.addRunLayersButton.setEnabled(complete and view.iface is not None)
         view.summarizePopulationButton.setEnabled(complete and bool(view.runtime_controller.python) and not view.is_busy)
         try:
-            view.quality_panel.load_run(self._selected_run())
+            view.quality_panel.load_run(None if invalid else self._selected_run())
         except Exception as exc:
             view.logger.warning(f"Could not display quality diagnostics: {exc}")
 
     def _open_selected_run(self):
         view = self.view
         path = self._selected_run()
-        if path:
+        if path and self._safe_run_directory(path):
             try:
                 open_folder(str(path))
             except Exception as exc:
@@ -141,8 +185,12 @@ class ResultsPresenter:
         root = self._selected_run()
         if root is None or view.iface is None:
             return
+        if not self._safe_run_directory(root):
+            self._result_selected()
+            view.set_task_status("The saved run folder changed or is unavailable. Refresh Results before loading maps.")
+            return
         try:
-            manifest = read_manifest(root / "manifest.json")
+            manifest = self._read_run_manifest(root)
             view.layer_integration.iface = view.iface
             view.layer_integration.add_run(root, population_paths(root, manifest))
         except (OSError, ValueError, TypeError) as exc:
@@ -163,7 +211,11 @@ class ResultsPresenter:
             root = self._selected_run()
             if not root:
                 return
-            manifest = read_manifest(root / "manifest.json")
+            if not self._safe_run_directory(root):
+                self._result_selected()
+                view.set_task_status("The saved run folder changed or is unavailable. Refresh Results before summarizing population.")
+                return
+            manifest = self._read_run_manifest(root)
             maps = population_paths(root, manifest)
             if not maps:
                 return
@@ -173,9 +225,14 @@ class ResultsPresenter:
                 if isinstance(inventory, list):
                     for artifact in inventory:
                         if isinstance(artifact, dict) and isinstance(artifact.get("path"), str):
-                            candidate = root / artifact["path"]
-                            if candidate in maps:
-                                hashes[str(candidate)] = artifact.get("sha256")
+                            try:
+                                candidates = population_paths(root, {"status": "complete",
+                                    "outputs": [artifact["path"]]})
+                            except (OSError, ValueError, TypeError):
+                                continue
+                            for candidate in candidates:
+                                if candidate in maps:
+                                    hashes[str(candidate)] = artifact.get("sha256")
                 window = PopulationSummaryDialog(view, maps, hashes)
                 view._summary_window = window
                 window.finished.connect(lambda: view._close_feature_window("_summary_window"))

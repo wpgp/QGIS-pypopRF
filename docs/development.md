@@ -154,6 +154,13 @@ Python child has exited: the adapter asynchronously checks held, birth-identifie
 Windows process handles before releasing metadata or deleting owned scratch.
 Tracking failures remain explicit and do not falsely establish cleanup safety.
 
+Maintainer ZIP verification checks portable raw member names (including Windows
+aliases/device names), regular-file inventory and manifest/version consistency
+without extracting files. It rejects more than 10,000 members, a member larger
+than 25 MiB, more than 100 MiB expanded data, a manifest larger than 4 MiB, or an
+archive larger than 25 MB before content verification. These are resource and
+consistency checks, not publisher signatures or proof of authentic code.
+
 An access-denied candidate can be excluded only when a limited query proves its
 creation time lies outside every held parent's lifetime. Query-only handles are
 never retained or used to establish exit; Windows live-process exit-time fields

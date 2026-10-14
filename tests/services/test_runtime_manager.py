@@ -163,6 +163,36 @@ def test_failed_new_upgrade_preserves_legacy_pointer_and_all_legacy_bytes(manage
     assert first.exists() and len(list(manager.env_root.iterdir())) == 2
 
 
+@pytest.mark.parametrize("contents,accepted", [
+    ("home = owned-base\ninclude-system-site-packages = false\n", True),
+    ("# include-system-site-packages = true\ninclude-system-site-packages = false\n", True),
+    ("include-system-site-packages = true\n# include-system-site-packages = false\n", False),
+    ("include-system-site-packages = false\ninclude-system-site-packages = true\n", False),
+    ("include-system-site-packages = false\ninclude-system-site-packages = false\n", False),
+    ("# include-system-site-packages = false\n", False),
+    ("include-system-site-packages = false # comment\n", False),
+    ("include-system-site-packages = false-ish\n", False),
+    ("include-system-site-packages\n", False),
+    ("prompt = note\vinclude-system-site-packages = false\n", False),
+    ("prompt = note\finclude-system-site-packages = false\n", False),
+    ("prompt = note\u0085include-system-site-packages = false\n", False),
+    ("prompt = note\u2028include-system-site-packages = false\n", False),
+    ("home = owned-base\rinclude-system-site-packages = false\r", True),
+    ("  INCLUDE-SYSTEM-SITE-PACKAGES = FALSE  \n", True),
+])
+def test_pyvenv_cfg_isolation_requires_one_actual_false_field(manager, contents, accepted):
+    python = manager.setup(manager.source_python)
+    directory = python.parent.parent
+    (directory / "pyvenv.cfg").write_text(contents, encoding="utf-8")
+    before = len(manager.calls)
+    if accepted:
+        assert manager._health(directory, manager._requirements())["versions"] == manager._requirements()["pins"]
+    else:
+        with pytest.raises(RuntimeNotReady, match="isolated|system.site"):
+            manager._health(directory, manager._requirements())
+        assert len(manager.calls) == before
+
+
 @pytest.mark.parametrize("payload", [b"", b"outside control file"])
 def test_setup_lock_hardlink_refused_before_seed_or_setup(manager, tmp_path, payload):
     outside = tmp_path / "outside-control"

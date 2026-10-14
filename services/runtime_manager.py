@@ -551,8 +551,27 @@ class RuntimeManager:
             raise RuntimeNotReady("Engine interpreter is missing")
         config = environment / "pyvenv.cfg"
         if (config.is_symlink() or config.resolve().parent != environment.resolve() or not config.is_file()
-                or "include-system-site-packages = false" not in config.read_text(encoding="utf-8").lower()):
+                or config.stat().st_size > self.MAX_CONTROL_BYTES):
             raise RuntimeNotReady("Engine is not an isolated virtual environment")
+        try:
+            with config.open("rb") as stream:
+                content = stream.read(self.MAX_CONTROL_BYTES + 1)
+            if len(content) > self.MAX_CONTROL_BYTES:
+                raise RuntimeNotReady("Engine virtual environment configuration is too large")
+            settings = []
+            # Match TextIO universal newlines used by CPython's site.py, not
+            # str.splitlines(), which also splits VT/FF/Unicode separators.
+            text = content.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+            for line in text.split("\n"):
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+                key, separator, value = line.partition("=")
+                if key.strip().lower() == "include-system-site-packages":
+                    settings.append(value.strip().lower() if separator else None)
+            if settings != ["false"]:
+                raise RuntimeNotReady("Engine must explicitly disable system site packages once")
+        except (OSError, UnicodeError) as exc:
+            raise RuntimeNotReady("Invalid isolated virtual environment configuration") from exc
         self._run([python, "-I", "-X", "utf8", "-m", "pip", "--isolated", "check"],
                   cancellation_token=cancellation_token, timeout=60)
         report = self._json_output(self._run([python, "-I", "-X", "utf8", "-c", _HEALTH,

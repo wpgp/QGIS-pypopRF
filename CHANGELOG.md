@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - Unreleased
+
+### Fixed
+
+- Recheck the staged CSV header against its selected input role before import
+  publication, including a producer change after the original header preview.
+- Parse the private engine's actual system-site-packages setting rather than
+  trusting a matching substring in a comment or ambiguous configuration.
+- Clear previous-project input errors after successful activation of another
+  project; preserve diagnostics on failed activation.
+- Roll back a covariate row when its configuration write fails, and retain
+  damaged runs as Invalid diagnostics without enabling map/result actions.
+- Report retained new preparation directories after cancellation without
+  claiming they are complete or deleting them.
+- Restore preparation controls when its controller rejects a start, instead of
+  showing a compatibility check that never began.
+- Retain available population-map fingerprints for contained legacy Windows
+  artifact paths, and decode only the bounded CSV header in preparation previews.
+- Reject nonportable/aliased ZIP members and inconsistent manifest identity in
+  maintainer package verification, without extracting archive contents.
+
 ## [0.3.6] - Unreleased
 
 ### Fixed

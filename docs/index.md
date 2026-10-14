@@ -13,7 +13,7 @@ run results are preserved.
 
 ## Modernized development workflow
 
-These guides describe the **0.3.6 development build** in this repository, not an
+These guides describe the **0.3.7 development build** in this repository, not an
 older released plugin. They are shipped with the ZIP; an already deployed website
 may be behind this checkout until a separate documentation deployment occurs.
 

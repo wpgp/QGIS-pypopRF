@@ -3,7 +3,7 @@ name=pypopRF
 qgisMinimumVersion=3.44
 qgisMaximumVersion=4.99
 description=A plugin for population prediction and dasymetric mapping using machine learning
-version=0.3.6
+version=0.3.7
 author=WorldPop SDI Team:
     Borys Nosatiuk (Project Lead),
     Rhorom Priyatikanto,
@@ -16,7 +16,11 @@ about=Create gridded population maps from census counts and aligned raster covar
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
 hasProcessingProvider=no
-changelog=Version 0.3.6 (development):
+changelog=Version 0.3.7 (development):
+    * Validate copied CSV role and strict private-engine configuration
+    * Clear stale project diagnostics and handle rejected preparation starts
+    * Preserve legacy result fingerprints and UTF-8 census header previews
+Version 0.3.6 (development):
     * Exact census IDs before floating-point parsing and verified first-import copies
     * Safe manual input drafts and inactive-project/teardown guards
     * Shorter unique engine paths with legacy engine reuse and protected lock files

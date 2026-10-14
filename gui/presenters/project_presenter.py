@@ -269,6 +269,10 @@ class ProjectInputsPresenter:
                 view.set_input_widgets_enabled(True)
                 view.set_settings_widgets_enabled(True)
                 view.refresh_results()
+                # Diagnostics belong to the activated project, not the earlier
+                # candidate. Clear only after a fully successful activation.
+                for kind in (*self.input_widgets, "covariate"):
+                    self._input_error(kind, "")
                 view._refresh_readiness()
                 view.set_task_status("Project opened. Saved inputs and settings restored." if existing else
                                      "Project created. Add the required inputs in Input data.")

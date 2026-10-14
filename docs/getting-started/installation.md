@@ -1,6 +1,6 @@
 # Installation and updates
 
-This is the development build (0.3.6), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
+This is the development build (0.3.7), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
 
 ## Before you start
 

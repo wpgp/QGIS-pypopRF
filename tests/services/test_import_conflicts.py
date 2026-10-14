@@ -28,6 +28,69 @@ def inspect(inputs):
     return handler.inspect_conflict(str(source), "census_data")
 
 
+@pytest.mark.parametrize("kind,replacement", [
+    ("agesex_data", b"zone,pop\n1,10\n"),
+    ("census_data", b"zone,zone\n1,10\n"),
+    ("census_data", b",pop\n1,10\n"),
+])
+@pytest.mark.parametrize("streamed", [False, True])
+def test_staged_role_rechecked_when_source_finishes_after_initial_preview(tmp_path, monkeypatch, kind, replacement, streamed):
+    project = tmp_path / "project"
+    (project / "data").mkdir(parents=True)
+    source = tmp_path / "counts.csv"
+    source.write_bytes(b"zone,pop,f0,m0\n1,10,5,5\n")
+    handler = FileHandler(str(project), logging.getLogger("staged-role-test"))
+    preview = handler.validate_role
+    def producer_finishes(path, role, id_column="id"):
+        headers = preview(path, role, id_column)
+        source.write_bytes(replacement)
+        return headers
+    monkeypatch.setattr(handler, "validate_role", producer_finishes)
+    with pytest.raises(FileHandlerError, match="unique headers|Age-sex CSV"):
+        handler.copy_to_data_dir(str(source), kind, id_column="zone",
+                                 progress=(lambda *args: None) if streamed else None)
+    assert source.read_bytes() == replacement
+    assert not list((project / "data").iterdir())
+
+
+@pytest.mark.parametrize("kind,content", [
+    ("census_data", b"custom_zone,custom_people\n1,10\n"),
+    ("agesex_data", b"custom_zone,f_0_4,m_65+\n1,5,5\n"),
+])
+def test_staged_role_valid_custom_headers_keep_original_extension_contract(tmp_path, kind, content):
+    project = tmp_path / "project"
+    project.mkdir()
+    source = tmp_path / "counts.csv"
+    source.write_bytes(content)
+    handler = FileHandler(str(project), logging.getLogger("staged-role-test"))
+    assert handler.copy_to_data_dir(str(source), kind, id_column="custom_zone") == source.name
+    assert (project / "data" / source.name).read_bytes() == content
+
+
+def test_cancellation_after_staged_csv_validation_refuses_publication(tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    project.mkdir()
+    source = tmp_path / "counts.csv"
+    source.write_bytes(b"id,pop\n1,10\n")
+    handler = FileHandler(str(project), logging.getLogger("staged-role-test"))
+    cancelled = False
+    validate_header = handler._validate_csv_header
+    def staged_header(path, kind):
+        nonlocal cancelled
+        result = validate_header(path, kind)
+        cancelled = True
+        return result
+    monkeypatch.setattr(handler, "_validate_csv_header", staged_header)
+    class Token:
+        def check(self):
+            if cancelled:
+                raise RuntimeError("cancelled after copied header")
+    with pytest.raises(FileHandlerError, match="cancelled after copied header"):
+        handler.copy_to_data_dir(str(source), "census_data", cancellation_token=Token())
+    assert source.read_bytes() == b"id,pop\n1,10\n"
+    assert not list((project / "data").iterdir())
+
+
 def test_identical_reuse_is_explicit_and_default_still_refuses(inputs):
     handler, source, target = inputs
     conflict = inspect(inputs)

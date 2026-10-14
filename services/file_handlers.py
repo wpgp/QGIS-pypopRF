@@ -157,6 +157,11 @@ class FileHandler:
                     raise FileHandlerError("Source changed during copy; select it again")
                 self._ordinary(source_file)
                 self._reject_sidecars(sidecars + self._sidecars(dest_file))
+                if file_type in {"census_data", "agesex_data"}:
+                    # A producer may finish replacing a valid CSV after its
+                    # initial preview but before the source SHA is captured.
+                    # Validate the copied snapshot, not that earlier header.
+                    self._validate_csv_header(pending, file_type)
                 if cancellation_token:
                     cancellation_token.check()
                 # Publishing a hard link is atomic and refuses concurrent collisions.
@@ -224,6 +229,11 @@ class FileHandler:
             return []
         if path.suffix.lower() != ".csv":
             raise FileHandlerError("Choose a CSV table for this input role")
+        return FileHandler._validate_csv_header(path, kind)
+
+    @staticmethod
+    def _validate_csv_header(path, kind):
+        """Validate bounded CSV snapshot bytes without requiring a staging suffix."""
         with path.open(encoding="utf-8-sig", newline="") as stream:
             line = stream.readline(65537)
         if len(line) > 65536:

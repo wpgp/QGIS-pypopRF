@@ -33,6 +33,10 @@ align inputs…** deliberately if needed.
 Keep project configuration, CSVs, rasters and sidecars stable during import or
 analysis. Fingerprints detect observed resource changes, not an adversarial
 point-in-time snapshot of another process repeatedly replacing/restoring data.
+Calculating raster statistics in QGIS or another GDAL application can create
+an `.aux.xml` sidecar. Do that before Run, not during calculation: adding a
+resource changes the input snapshot and the attempt is rejected rather than
+silently accepted with different provenance.
 
 ## What runs, and how to stop it
 
@@ -70,6 +74,9 @@ your selection. **Open result folder** opens its files; **Add maps to QGIS**
 loads population maps from a completed run. Failed/stopped attempts remain
 available for diagnosis, not map loading. A newly verified successful run takes
 selection; a failed attempt does not silently replace the selected earlier run.
+An existing run with malformed metadata or missing/unsafe outputs is shown as
+**Invalid**, not Complete. Its folder remains available for diagnosis; map
+loading and population summaries stay disabled until the data are repaired.
 
 Default location:
 

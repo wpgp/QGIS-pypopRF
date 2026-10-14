@@ -104,38 +104,44 @@ class CovariateTableHandler:
             filename: Filename to add
             data_dir: Data directory path
         """
-        row = self.table.rowCount()
-        self.table.insertRow(row)
-
         name = name or Path(filename).stem
         file_path = data_dir / filename
-
-        # Add name
         name_item = QTableWidgetItem(name)
         name_item.setData(Qt.ItemDataRole.UserRole, name)
-        self.table.setItem(row, 0, name_item)
-
-        # Add size
         size_item = QTableWidgetItem(self.format_size(file_path.stat().st_size)
                                     if file_path.is_file() else "Missing")
         size_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.table.setItem(row, 1, size_item)
-
-        # Add path
-        self.table.setItem(row, 2, QTableWidgetItem(str(file_path)))
-        for column in range(3):
-            item = self.table.item(row, column)
+        items = (name_item, size_item, QTableWidgetItem(str(file_path)))
+        for item in items:
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        # A failed disk/lock write must not expose an unregistered table row.
+        try:
+            if update:
+                self.config_manager.update_config(f"covariate_{name}", filename)
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            for column, item in enumerate(items):
+                self.table.setItem(row, column, item)
+            delete_button = QtWidgets.QPushButton("Delete")
+            delete_button.setToolTip("Delete this covariate")
+            self._create_delete_button(row, delete_button)
+            self.table.setCellWidget(row, 3, delete_button)
+        except Exception:
+            if update:
+                # Persistence may already be successful. Rebuild from the
+                # latest canonical config; never undo a concurrent writer.
+                try:
+                    self._refresh_from_config()
+                except Exception as exc:
+                    self.logger.error(f"Could not refresh predictors from saved settings: {exc}")
+            raise
 
-        # Add delete button
-        delete_button = QtWidgets.QPushButton("Delete")
-        delete_button.setToolTip("Delete this covariate")
-        self._create_delete_button(row, delete_button)
-        self.table.setCellWidget(row, 3, delete_button)
-
-        # Update config
-        if update:
-            self.config_manager.update_config(f"covariate_{name}", filename)
+    def _refresh_from_config(self):
+        config = self.config_manager.get_config()
+        data_dir = Path(self.config_manager.working_dir) / config.get("data_dir", "data")
+        self.table.setRowCount(0)
+        for name, filename in config.get("covariates", {}).items():
+            self._add_covariate_row(filename, data_dir, name=name, update=False)
 
     def _create_delete_button(self, row: int, button: QtWidgets.QPushButton) -> None:
         """Create delete button with proper connection.

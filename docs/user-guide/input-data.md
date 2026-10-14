@@ -209,6 +209,10 @@ or sidecar requires a new compatibility check, not reuse of the old confirmation
 Existing project files with external masks can be prepared into self-contained
 GeoTIFFs; direct GUI copy still rejects sidecars to avoid losing them. The prepared
 project includes a compatible `config.yaml`, derived data, report and provenance.
+After a late cancellation or forced stop, a newly requested output folder may
+remain. The message identifies a retained folder; treat it as potentially
+incomplete, inspect it separately and choose a new destination for retry.
+Cancellation never silently deletes or overwrites it.
 
 Age-sex inputs are added after opening the prepared project; this first wizard
 does not automatically copy a previously configured age-sex table. The original

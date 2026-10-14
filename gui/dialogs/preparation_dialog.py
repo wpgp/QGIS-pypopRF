@@ -1,6 +1,5 @@
 """Explicit preparation and AOI workflows backed by the isolated tools engine."""
 import csv
-import io
 import json
 import math
 from pathlib import Path
@@ -103,10 +102,17 @@ class PreparationWizard(QtWidgets.QWizard):
             if not path:
                 return
             with Path(path).open("rb") as stream:
-                data = stream.read(65537)
-            if len(data) > 65536 and b"\n" not in data:
-                raise ValueError("The CSV header is too large")
-            columns = next(csv.reader(io.StringIO(data.decode("utf-8-sig"))))
+                def header_lines():
+                    total, first = 0, True
+                    while raw := stream.readline(65537 - total):
+                        total += len(raw)
+                        if total > 65536:
+                            raise ValueError("The CSV header is too large")
+                        yield raw.decode("utf-8-sig" if first else "utf-8")
+                        first = False
+                # Read only the bounded first logical CSV record. A truncated
+                # multibyte sequence in a later body row is not a header error.
+                columns = next(csv.reader(header_lines(), strict=True))
             columns = [name for name in columns if name]
             for combo in (self.idColumn, self.populationColumn):
                 previous = combo.currentText()
@@ -344,8 +350,20 @@ class PreparationWizard(QtWidgets.QWizard):
             self.progress.setFormat("Checking compatibility")
             if self.controller.start(request):
                 self._set_busy(True)
+            elif self._operation is not None:
+                self._start_rejected()
         except Exception as exc:
             self.reportView.setPlainText(str(exc))
+
+    def _start_rejected(self):
+        self._operation, self._ready = None, False
+        self._checked, self._expected_inputs = None, None
+        self.progress.setValue(0)
+        self.progress.setFormat("Operation did not start")
+        self.reportView.setPlainText("The analysis engine is not available. Verify it on the Engine tab before trying again."
+            if not self.dialog.runtime_controller.python else
+            "Another task is running. Wait for it to finish before trying again.")
+        self._set_busy(False)
 
     def _progress(self, percent, message):
         if self._operation:
@@ -439,6 +457,8 @@ class PreparationWizard(QtWidgets.QWizard):
             self.progress.setFormat("Preparing new project")
             if self.controller.start(request):
                 self._set_busy(True)
+            elif self._operation is not None:
+                self._start_rejected()
         except Exception as exc:
             self.reportView.setPlainText(str(exc))
         return False
