@@ -63,13 +63,7 @@ class FeatureExtractor:
                 return gpd.read_file(path)
             elif ext in self.SUPPORTED_TABLE_FORMATS:
                 logger.debug("Loading CSV file")
-                # pandas mangles duplicated headers, making validation too late.
-                import csv
-                with path.open(encoding="utf-8-sig", newline="") as handle:
-                    headers = next(csv.reader(handle), [])
-                if len(headers) != len(set(headers)):
-                    raise ValueError("Duplicate census column names")
-                return pd.read_csv(path)
+                return Settings._read_csv(path, self.settings.census["id_column"])
             else:
                 logger.error(f"Unsupported file format: {ext}")
                 raise ValueError(f"Unsupported file format: {ext}")

@@ -2,6 +2,7 @@
 import copy
 import math
 import os
+import stat
 import tempfile
 import threading
 from contextlib import contextmanager
@@ -181,7 +182,19 @@ class ConfigManager:
             if not self.config_path:
                 raise ConfigError("Configuration path not set")
             path = Path(self.config_path).with_suffix(".yaml.lock")
+            if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+                raise ConfigError("Project configuration lock cannot be a file alias")
+            if path.exists():
+                metadata = path.stat()
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+                    raise ConfigError("Project configuration lock must be a dedicated ordinary file")
             with path.open("a+b") as stream:
+                opened, current = os.fstat(stream.fileno()), path.stat()
+                if (path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction())
+                        or not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                        or not stat.S_ISREG(current.st_mode) or current.st_nlink != 1
+                        or (opened.st_dev, opened.st_ino) != (current.st_dev, current.st_ino)):
+                    raise ConfigError("Project configuration lock changed or is not a dedicated ordinary file")
                 if stream.seek(0, os.SEEK_END) == 0:
                     stream.write(b"\0")
                     stream.flush()

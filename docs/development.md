@@ -130,6 +130,13 @@ available separate engine. Offscreen container acceptance is useful, but it
 does not replace an interactive operating-system smoke test. CI configuration
 in `.github/workflows/test.yml` declares the actual current test matrix.
 
+The Windows headless job also creates an empty temporary engine cache and invokes
+the real locked setup and health checks. Installing development dependencies or
+using a prepared engine is not evidence that a fresh Windows installation works.
+New environments use a shorter full-UUID basename; legacy verified names remain
+accepted without moving their virtual environments. Arbitrarily long custom cache
+paths remain subject to operating-system and wheel path limits.
+
 `scripts/run_native_tests.py` discovers all test modules in `tests/native/` by default;
 this includes the original adapter, preparation/layer/AOI workflow and quality
 widget tests plus isolated actual-installer replacement/recovery tests. Set
@@ -146,6 +153,12 @@ Windows launcher termination is not itself proof that the redirected
 Python child has exited: the adapter asynchronously checks held, birth-identified
 Windows process handles before releasing metadata or deleting owned scratch.
 Tracking failures remain explicit and do not falsely establish cleanup safety.
+
+An access-denied candidate can be excluded only when a limited query proves its
+creation time lies outside every held parent's lifetime. Query-only handles are
+never retained or used to establish exit; Windows live-process exit-time fields
+are undefined. Fully inaccessible or possibly owned children remain fail-closed,
+with explicit tracking diagnostics rather than premature resource cleanup.
 
 The extra tools protocol is
 `python -m core.pypoprf.tools --request absolute-request.json --cancel-file marker`.

@@ -49,13 +49,28 @@ class ProcessExitGuard:
         while True:
             parents = {}
             for (pid, created), handle in self._members.items():
-                _, exited = self._api.times(handle)
+                # GetProcessTimes exit output is undefined while a process is
+                # running. The held handle's creation key is already known.
+                exited = self._api.times(handle)[1] if self._api.signaled(handle) else 0
                 parents.setdefault(pid, []).append((created, exited))
             added = False
             for pid, parent_pid in entries:
                 if pid == parent_pid or parent_pid not in parents:
                     continue
-                handle = self._api.open(pid)
+                try:
+                    handle = self._api.open(pid)
+                except OSError as exc:
+                    if getattr(exc, "winerror", None) == 5 and hasattr(self._api, "creation_time"):
+                        # A stale PPID may point to an unrelated protected
+                        # process. Limited query rights can prove its birth is
+                        # outside every held parent's lifetime, but cannot
+                        # prove an owned process exited without SYNCHRONIZE.
+                        candidate_created = self._api.creation_time(pid)
+                        if candidate_created is None or not any(
+                                candidate_created >= start and (not end or candidate_created <= end)
+                                for start, end in parents[parent_pid]):
+                            continue
+                    raise
                 if handle is None:  # Already exited and disappeared.
                     continue
                 retained = False
@@ -137,6 +152,19 @@ class _WindowsProcesses:
                                            self.ct.byref(kernel), self.ct.byref(user)):
             raise self.ct.WinError(self.ct.get_last_error())
         return ((created.high << 32) | created.low, (exited.high << 32) | exited.low)
+
+    def creation_time(self, pid):
+        """Query birth only; this handle is never retained or used to prove exit."""
+        handle = self.kernel.OpenProcess(0x1000, False, pid)
+        if not handle:
+            error = self.ct.get_last_error()
+            if error == 87:
+                return None
+            raise self.ct.WinError(error)
+        try:
+            return self.times(handle)[0]
+        finally:
+            self.close(handle)
 
     def signaled(self, handle):
         status = self.kernel.WaitForSingleObject(handle, 0)

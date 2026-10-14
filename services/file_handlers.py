@@ -116,12 +116,17 @@ class FileHandler:
 
             sidecars = self._sidecars(source_file)
             self._reject_sidecars(sidecars + self._sidecars(dest_file))
+            source_info = (conflict["source_info"] if conflict is not None else
+                           self._fingerprint(source_file, cancellation_token, progress))
+            self._reject_sidecars(sidecars + self._sidecars(dest_file))
 
             descriptor, pending_name = tempfile.mkstemp(prefix=".import-", suffix=".tmp", dir=data_dir)
             os.close(descriptor)
             pending = Path(pending_name)
-            original_metadata = source_file.stat()
             try:
+                original_metadata = source_file.stat()
+                if self._identity(original_metadata) != source_info["identity"]:
+                    raise FileHandlerError("Source changed before copy; select it again")
                 if cancellation_token is None and progress is None:
                     shutil.copy2(source_path, str(pending))
                 else:
@@ -144,13 +149,16 @@ class FileHandler:
                     raise FileHandlerError("Source changed during import; retry after it finishes updating")
                 # A writer can create a GDAL mask/metadata file without changing
                 # the TIFF's size or timestamp while our staged copy is running.
-                if conflict is not None:
-                    expected = conflict["source_info"]["sha256"]
-                    if (self._fingerprint(pending, cancellation_token)["sha256"] != expected
-                            or self._fingerprint(source_file, cancellation_token)["sha256"] != expected):
-                        raise FileHandlerError("Source changed during copy; select it again")
+                # Stat identity is insufficient on Windows when a producer
+                # preserves size/mtime. Verify all imports, not only collision
+                # decisions, against both the actual staged bytes and source.
+                if (self._fingerprint(pending, cancellation_token)["sha256"] != source_info["sha256"]
+                        or self._fingerprint(source_file, cancellation_token, progress) != source_info):
+                    raise FileHandlerError("Source changed during copy; select it again")
                 self._ordinary(source_file)
                 self._reject_sidecars(sidecars + self._sidecars(dest_file))
+                if cancellation_token:
+                    cancellation_token.check()
                 # Publishing a hard link is atomic and refuses concurrent collisions.
                 # Windows rename also refuses an existing destination on filesystems
                 # that do not support hard links.

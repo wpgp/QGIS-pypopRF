@@ -110,6 +110,11 @@ active selected root for its new snapshot. If you use the headless API/CLI too,
 check its configured `work_dir` and external paths separately. Earlier saved run
 configurations retain their original provenance paths.
 
+New run output names use portable `/` separators. Results also accepts legacy
+Windows backslash separators for contained relative paths, so nested age-sex maps
+remain visible after a Windows-to-Linux move. Drive/UNC paths, traversal and files
+outside the run are still refused. This does not rewrite old input/provenance paths.
+
 QGIS layers can still point to old files. Add the relocated project's completed
 maps through **Results → Add maps to QGIS**, or update the QGIS project deliberately;
 moving the folder does not rewrite `.qgz` layer sources automatically.

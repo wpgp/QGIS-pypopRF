@@ -2,7 +2,9 @@
 import logging
 import os
 import ast
+import importlib
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -201,3 +203,92 @@ def test_age_column_pattern_tracks_core_contract_without_importing_engine():
                         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                         and node.func.attr == "fullmatch"]
     assert core_pattern.removeprefix("^").removesuffix("$") in preview_patterns
+
+
+def test_first_import_rejects_same_size_source_mutation_with_restored_mtime(tmp_path):
+    source = tmp_path / "census.csv"
+    original = b"id,pop\n" + b"".join(f"{i},1\n".encode() for i in range(1, 200001))
+    changed = original.replace(b",1\n", b",2\n")
+    assert len(original) == len(changed) and len(original) > 1024 * 1024
+    source.write_bytes(original)
+    metadata = source.stat()
+    project = tmp_path / "project"
+    handler = FileHandler(str(project), logging.getLogger("first-import-snapshot"))
+    mutations = []
+    def mutate_copy(percent, name):
+        # Ignore pre-verification progress: change while the actual staged copy
+        # is in progress, using real filesystem metadata rather than stat fakes.
+        if not mutations and list((project / "data").glob(".import-*.tmp")):
+            source.write_bytes(changed)
+            os.utime(source, ns=(metadata.st_atime_ns, metadata.st_mtime_ns))
+            mutations.append(True)
+    with pytest.raises(FileHandlerError, match="changed"):
+        handler.copy_to_data_dir(str(source), "census_data", progress=mutate_copy)
+    assert mutations == [True]
+    assert source.read_bytes() == changed
+    assert not (project / "data" / source.name).exists()
+    assert not list((project / "data").glob(".import-*.tmp"))
+
+
+def test_first_import_without_progress_verifies_its_source_snapshot(tmp_path, monkeypatch):
+    source = tmp_path / "census.csv"
+    source.write_bytes(b"id,pop\n1,12\n")
+    metadata = source.stat()
+    handler = FileHandler(str(tmp_path / "project"), logging.getLogger("first-copy2-snapshot"))
+    fingerprint = handler._fingerprint
+    def change_after_snapshot(path, *args, **kwargs):
+        info = fingerprint(path, *args, **kwargs)
+        if path == source:
+            source.write_bytes(b"id,pop\n1,99\n")
+            os.utime(source, ns=(metadata.st_atime_ns, metadata.st_mtime_ns))
+        return info
+    monkeypatch.setattr(handler, "_fingerprint", change_after_snapshot)
+    with pytest.raises(FileHandlerError, match="changed"):
+        handler.copy_to_data_dir(str(source), "census_data")
+    assert source.read_bytes() == b"id,pop\n1,99\n"
+    assert list((tmp_path / "project/data").iterdir()) == []
+
+
+@pytest.mark.parametrize("phase", ["source-before", "staging", "source-after"])
+def test_all_first_import_verification_passes_are_cancellable(tmp_path, monkeypatch, phase):
+    source = tmp_path / "large.tif"
+    original = b"x" * (2 * 1024 * 1024)
+    source.write_bytes(original)
+    handler = FileHandler(str(tmp_path / "project"), logging.getLogger("cancel-verification"))
+    class Token:
+        cancelled = False
+        def check(self):
+            if self.cancelled:
+                raise RuntimeError("cancelled during verification")
+    token = Token()
+    fingerprint, observed = handler._fingerprint, []
+    def verify(path, cancellation_token=None, progress=None):
+        observed.append("source-before" if path == source and not observed else
+                        "source-after" if path == source else "staging")
+        if observed[-1] == phase:
+            def cancel(percent, name):
+                token.cancelled = True
+            progress = cancel
+        return fingerprint(path, cancellation_token, progress)
+    monkeypatch.setattr(handler, "_fingerprint", verify)
+    with pytest.raises(FileHandlerError, match="cancelled"):
+        handler.copy_to_data_dir(str(source), "mastergrid", cancellation_token=token)
+    assert phase in observed and token.cancelled
+    assert source.read_bytes() == original
+    assert list((tmp_path / "project/data").iterdir()) == []
+
+
+def test_source_disappearing_after_staging_creation_leaves_no_pending_file(tmp_path, monkeypatch):
+    source = tmp_path / "census.csv"
+    source.write_bytes(b"id,pop\n1,12\n")
+    handler = FileHandler(str(tmp_path / "project"), logging.getLogger("missing-source"))
+    module = importlib.import_module(FileHandler.__module__)
+    mkstemp = module.tempfile.mkstemp
+    def create_then_remove(*args, **kwargs):
+        result = mkstemp(*args, **kwargs)
+        source.unlink()
+        return result
+    monkeypatch.setattr(module, "tempfile", SimpleNamespace(mkstemp=create_then_remove))
+    with pytest.raises(FileHandlerError, match="No such file|cannot find|not find"):
+        handler.copy_to_data_dir(str(source), "census_data")
+    assert list((tmp_path / "project/data").iterdir()) == []

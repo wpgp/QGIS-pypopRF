@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - Unreleased
+
+### Fixed
+
+- Validate census identifier spelling before floating-point parsing; reject
+  fractional/out-of-range IDs instead of silently assigning a different zone.
+  Preserve exact numeric API values and apply the same boundary to preparation,
+  age-sex tables, feature extraction, validation and allocation.
+- Verify source and staged-file hashes for every new copied input, not only
+  filename conflicts. Refuse changed/mixed copies without publishing a destination.
+- Treat manually typed input paths as drafts until committed; keep browse choices
+  immediate. Prevent stale input clears from mutating an inactive previous project
+  and detach owned edit callbacks before Qt child teardown. Keep input Enter and
+  Run-with-draft confirmation separate from analysis and cancellation actions.
+- Use shorter unique permanent engine directory names to reduce Windows path-length
+  failures, retaining full UUID ownership and verified legacy environment reuse.
+- Refuse aliased, shared or replaced configuration/setup lock files before writing
+  their lock byte; preserve foreign files and existing locking behavior.
+- Write portable relative run output paths and accept contained legacy Windows
+  separators when reopening moved results; retain drive/traversal protections.
+- Exclude inaccessible stale Windows process candidates only with proven foreign
+  creation times. Keep real exit checks for retained children and fail closed
+  when ownership/reaping cannot be established.
+
 ## [0.3.5] - Unreleased
 
 ### Fixed

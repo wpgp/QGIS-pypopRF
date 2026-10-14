@@ -53,6 +53,10 @@ IDs must be exactly representable integers within the supported numeric range
 
 Zero is a valid zone ID if it is not declared NoData. Numeric IDs such as `1`
 and `1.0` identify the same zone; text codes such as `A001` are not supported.
+The CSV identifier spelling is checked before floating-point parsing: out-of-range
+or fractional IDs are rejected, not rounded to a nearby zone. A Python API caller
+must also preserve its original values; precision already lost before calling the
+engine cannot be reconstructed.
 
 Every training census zone needs eligible grid pixels and a finite mean for
 each configured covariate. Zones without that support are reported as errors,
@@ -214,7 +218,14 @@ valid predictor support is diagnosed rather than resolved by implicit imputation
 ### Direct file import
 
 New files are copied in cancellable background jobs into the project's data
-directory, normally `<project>/data/`. Existing destination names are never
+directory, normally `<project>/data/`. When typing a path manually, complete it
+and press Enter, Tab or leave the field to commit it. Enter confirms only that
+input, never Run or Cancel. If you click **Run analysis** with an uncommitted
+input path, that click commits the import first; wait for success and click
+**Run analysis** again. It does not calculate from the previous input.
+Intermediate keystrokes do not
+start imports; closing the dialog discards an uncommitted draft. Browsing still
+commits the selected path immediately. Existing destination names are never
 overwritten. A conflict dialog explains the selected role and offers:
 
 - **Use verified existing file** only when source/destination bytes match and
@@ -232,6 +243,10 @@ canonical dedicated file or export a separate copy.
 
 Incomplete copies are staged and not registered. Clearing an optional file field
 or removing a covariate from the table removes only its configuration reference,
-not the physical file. Keep source files stable throughout import and analysis.
+not the physical file. Every new copied import verifies the source snapshot,
+staged bytes and current source before publication, even without a name conflict.
+This adds background reads but never installs packages or hashes on the GUI thread.
+Keep source files stable throughout import and analysis; this is change detection,
+not an adversarial point-in-time snapshot of another writer.
 
 [Projects](projects.md) · [Settings](settings.md) · [Run an analysis](running-analysis.md)

@@ -107,6 +107,97 @@ def test_initial_open_failure_is_indeterminate_not_success():
     guard.close()
 
 
+def access_denied():
+    error = PermissionError("SYNCHRONIZE access denied")
+    error.winerror = 5
+    return error
+
+
+@pytest.mark.parametrize("created", [1, 250])
+def test_inaccessible_foreign_candidate_requires_proven_birth_outside_parent_lifetime(created):
+    kernel = Kernel()
+    kernel.processes[10] = (100, 200, True)
+    open_process = kernel.open
+    queried = []
+    def open_candidate(pid):
+        if pid == 99:
+            raise access_denied()
+        return open_process(pid)
+    kernel.open = open_candidate
+    kernel.creation_time = lambda pid: queried.append(pid) or created
+    kernel.entries = [(99, 10)]
+    guard = ProcessExitGuard(kernel)
+    guard.begin(10)
+    assert guard.exited() and queried
+    assert list(guard._members) == [(10, 100)]
+    guard.close()
+
+
+def test_inaccessible_possibly_owned_candidate_is_not_ignored():
+    kernel = Kernel()
+    guard = ProcessExitGuard(kernel)
+    guard.begin(10)
+    kernel.processes[10] = (100, 200, True)
+    kernel.entries = [(11, 10)]
+    kernel.open = lambda pid: (_ for _ in ()).throw(access_denied())
+    kernel.creation_time = lambda pid: 120
+    with pytest.raises(PermissionError, match="SYNCHRONIZE"):
+        guard.exited()
+    assert list(guard._members) == [(10, 100)]
+    guard.close()
+
+
+def test_candidate_with_inaccessible_creation_time_keeps_fail_closed_state():
+    kernel = Kernel()
+    guard = ProcessExitGuard(kernel)
+    guard.begin(10)
+    kernel.processes[10] = (100, 200, True)
+    kernel.entries = [(99, 10)]
+    kernel.open = lambda pid: (_ for _ in ()).throw(access_denied())
+    kernel.creation_time = lambda pid: (_ for _ in ()).throw(access_denied())
+    with pytest.raises(PermissionError):
+        guard.exited()
+    guard.close()
+
+
+def test_non_access_denied_candidate_failure_does_not_query_or_ignore():
+    kernel = Kernel()
+    guard = ProcessExitGuard(kernel)
+    guard.begin(10)
+    kernel.entries = [(99, 10)]
+    kernel.open = lambda pid: (_ for _ in ()).throw(OSError("unrelated failure"))
+    kernel.creation_time = lambda pid: pytest.fail("Only access-denied candidates may be queried")
+    with pytest.raises(OSError, match="unrelated failure"):
+        guard.exited()
+    guard.close()
+
+
+def test_running_parent_undefined_exit_timestamp_cannot_exclude_owned_child():
+    kernel = Kernel()
+    kernel.processes.update({10: (100, 150, False), 11: (200, 0, False)})
+    kernel.entries = [(11, 10)]
+    guard = ProcessExitGuard(kernel)
+    guard.begin(10)
+    assert (11, 200) in guard._members
+    kernel.processes[10] = (100, 300, True)
+    assert not guard.exited()
+    kernel.processes[11] = (200, 400, True)
+    assert guard.exited()
+    guard.close()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Real Windows limited-query process handle")
+def test_actual_creation_only_query_never_waits_and_closes_handle(monkeypatch):
+    from services.process_exit_guard import _WindowsProcesses
+    api = _WindowsProcesses()
+    closed = []
+    close = api.close
+    monkeypatch.setattr(api, "close", lambda handle: closed.append(handle) or close(handle))
+    monkeypatch.setattr(api, "signaled", lambda handle: pytest.fail("Query-only rights cannot prove reaping"))
+    created = api.creation_time(os.getpid())
+    assert isinstance(created, int) and created > 0 and len(closed) == 1
+
+
 def test_pid_reuse_tracks_each_generation_and_never_waits_on_foreign_children():
     kernel = Kernel()
     root = {"created": 100, "exited": 0, "signaled": False}

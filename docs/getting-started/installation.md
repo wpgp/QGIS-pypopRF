@@ -1,6 +1,6 @@
 # Installation and updates
 
-This is the development build (0.3.5), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
+This is the development build (0.3.6), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
 
 ## Before you start
 
@@ -89,7 +89,10 @@ The initial package installation can take several minutes. You can cancel it fro
 
 For an interface-only update with the same compatible dependency lock, the existing
 verified engine is reused; downloads are not required merely because the plugin
-version changed. Your project is separate: select it on Project, click **Open
+version changed. New engines use shorter unique directory names to reduce Windows
+path-length failures; already verified legacy environments stay at their original
+paths and remain reusable. No Windows long-path setting is changed automatically.
+Your project is separate: select it on Project, click **Open
 project**, then verify **Project open** and **Active project: …**. Merely choosing
 the path does not activate it. See [Projects](../user-guide/projects.md).
 

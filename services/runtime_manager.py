@@ -21,6 +21,7 @@ import queue
 import re
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -96,7 +97,9 @@ class RuntimeManager:
     SCHEMA_VERSION = 2
     INSTALL_POLICY = "sha256_checked_binary_wheels"
     MAX_DISCOVERY_CANDIDATES = 24
-    ENV_PATTERN = re.compile(r"engine-[0-9a-f]{12}-[0-9a-f]{32}$")
+    # Keep existing caches readable. New names omit the redundant hash prefix
+    # to leave room for deep wheel paths on Windows; READY binds the full hash.
+    ENV_PATTERN = re.compile(r"(?:engine-[0-9a-f]{12}-[0-9a-f]{32}|e-[0-9a-f]{32})$")
     PIN_PATTERN = re.compile(r"([A-Za-z0-9][A-Za-z0-9._-]*)==([A-Za-z0-9][A-Za-z0-9.!+_-]*)$")
     HASH_PATTERN = re.compile(r"--hash=sha256:([0-9a-fA-F]{64})$")
     MAX_CONTROL_BYTES = 512 * 1024
@@ -622,8 +625,9 @@ class RuntimeManager:
             return None
         if self.env_root.resolve() != self.env_root:
             raise RuntimeSetupError("Engine environment root cannot be a directory link")
-        pattern = f"engine-{requirements['fingerprint'][:12]}-*"
-        for candidate in sorted(self.env_root.glob(pattern), key=lambda path: path.name):
+        candidates = [path for pattern in (f"engine-{requirements['fingerprint'][:12]}-*", "e-*")
+                      for path in self.env_root.glob(pattern) if self.ENV_PATTERN.fullmatch(path.name)]
+        for candidate in sorted(candidates, key=lambda path: path.name):
             self._check_cancel(cancellation_token)
             try:
                 environment = self._completed_environment(candidate.name, requirements, cancellation_token)
@@ -657,11 +661,21 @@ class RuntimeManager:
     def _setup_lock(self):
         self.cache_root.mkdir(parents=True, exist_ok=True)
         path = self.cache_root / "setup.lock"
-        if path.is_symlink():
+        if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
             raise RuntimeSetupError("Unsafe engine setup lock")
+        if path.exists():
+            metadata = path.stat()
+            if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+                raise RuntimeSetupError("Engine setup lock must be a dedicated ordinary file")
         handle = path.open("a+b")
         locked = False
         try:
+            opened, current = os.fstat(handle.fileno()), path.stat()
+            if (path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction())
+                    or not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                    or not stat.S_ISREG(current.st_mode) or current.st_nlink != 1
+                    or (opened.st_dev, opened.st_ino) != (current.st_dev, current.st_ino)):
+                raise RuntimeSetupError("Engine setup lock changed or is not a dedicated ordinary file")
             if os.name == "nt":
                 import msvcrt
                 handle.seek(0, os.SEEK_END)
@@ -757,7 +771,7 @@ class RuntimeManager:
             self.env_root.mkdir(parents=True, exist_ok=True)
             if self.env_root.is_symlink():
                 raise RuntimeSetupError("Engine environment root cannot be a directory link")
-            name = f"engine-{requirements['fingerprint'][:12]}-{uuid4().hex}"
+            name = f"e-{uuid4().hex}"
             environment = self._owned_environment(name)
             environment.mkdir(exist_ok=False)
             ownership_id = uuid4().hex

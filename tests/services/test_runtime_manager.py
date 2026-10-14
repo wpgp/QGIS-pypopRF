@@ -11,6 +11,7 @@ import sys
 import time
 from threading import Event
 import zipfile
+import shutil
 
 import pytest
 
@@ -79,6 +80,135 @@ def test_provision_idempotence_exact_pins_and_no_host_mutations(manager):
     assert (environment / "requirements" / "requirements.txt").read_bytes() == package_before["requirements.txt"]
     assert manager.source_python.read_bytes() == source_before
     assert {p.name: p.read_bytes() for p in manager.package_root.iterdir()} == package_before
+
+
+def test_new_environment_name_shortens_windows_paths_without_weakening_owner(manager):
+    python = manager.setup(manager.source_python)
+    directory = python.parent.parent
+    assert directory.name.startswith("e-") and len(directory.name) == 34
+    assert manager.ENV_PATTERN.fullmatch(directory.name)
+    owner = json.loads((directory / "OWNER.json").read_text())["id"]
+    assert len(owner) == 32 and owner != directory.name[2:]
+    assert len("engine-" + "a" * 12 + "-" + "b" * 32) - len(directory.name) == 18
+    marker = json.loads((directory / "READY.json").read_text())
+    assert marker["fingerprint"] == manager._requirements()["fingerprint"]
+    assert manager.get_python() == python
+
+
+@pytest.mark.parametrize("name", ["e-a", "e-" + "a" * 31, "e-" + "a" * 33,
+                                  "e-" + "G" * 32, "e-../outside", "foreign-folder"])
+def test_short_environment_names_still_reject_unowned_forms(manager, name):
+    with pytest.raises(RuntimeNotReady, match="Invalid engine environment name"):
+        manager._owned_environment(name)
+
+
+def test_legacy_active_environment_remains_read_only_and_usable(manager):
+    python = manager.setup(manager.source_python)
+    fingerprint = manager._requirements()["fingerprint"]
+    legacy = manager.env_root / ("engine-" + fingerprint[:12] + "-" + "d" * 32)
+    # Fake owned test environments only; production never relocates a venv.
+    shutil.copytree(python.parent.parent, legacy)
+    active = json.loads(manager.active_path.read_text())
+    active["environment"] = legacy.name
+    manager._write_json(manager.active_path, active)
+    before = {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    pointer = manager.active_path.read_bytes()
+    expected = manager._python_in(legacy)
+    assert manager.get_python() == expected
+    assert manager.setup(manager.package_root / "missing-base-python") == expected
+    assert manager.active_path.read_bytes() == pointer
+    assert before == {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+
+
+def test_offline_rollback_reuses_legacy_name_without_moving_or_rebuilding(manager):
+    first = manager.setup(manager.source_python)
+    previous = (manager.package_root / "requirements.txt").read_bytes()
+    fingerprint = manager._requirements()["fingerprint"]
+    legacy = manager.env_root / ("engine-" + fingerprint[:12] + "-" + "d" * 32)
+    shutil.copytree(first.parent.parent, legacy)
+    # Force the scan to skip the separate modern-name test copy, not delete it.
+    (first.parent.parent / "OWNER.json").write_text('{}', encoding="utf-8")
+    (manager.package_root / "requirements.txt").write_text(pinned("tiny-package", "1.1"), encoding="utf-8")
+    second = manager.setup(manager.source_python)
+    (manager.package_root / "requirements.txt").write_bytes(previous)
+    before = {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    calls = len(manager.calls)
+    assert manager.setup(manager.package_root / "missing-base-python") == manager._python_in(legacy)
+    assert not any("venv" in command or "install" in command for command in manager.calls[calls:])
+    assert first.exists() and second.exists()
+    assert before == {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+
+
+def test_failed_new_upgrade_preserves_legacy_pointer_and_all_legacy_bytes(manager, monkeypatch):
+    first = manager.setup(manager.source_python)
+    fingerprint = manager._requirements()["fingerprint"]
+    legacy = manager.env_root / ("engine-" + fingerprint[:12] + "-" + "d" * 32)
+    shutil.copytree(first.parent.parent, legacy)
+    active = json.loads(manager.active_path.read_text())
+    active["environment"] = legacy.name
+    manager._write_json(manager.active_path, active)
+    before = {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    pointer = manager.active_path.read_bytes()
+    (manager.package_root / "requirements.txt").write_text(pinned("tiny-package", "1.1"), encoding="utf-8")
+    original = manager._run
+    def fail_install(command, *args, **kwargs):
+        if "install" in command:
+            raise RuntimeSetupError("Network unavailable during new-name upgrade")
+        return original(command, *args, **kwargs)
+    monkeypatch.setattr(manager, "_run", fail_install)
+    with pytest.raises(RuntimeSetupError, match="Network"):
+        manager.setup(manager.source_python)
+    assert manager.active_path.read_bytes() == pointer
+    assert before == {p.relative_to(legacy): p.read_bytes() for p in legacy.rglob("*") if p.is_file()}
+    assert first.exists() and len(list(manager.env_root.iterdir())) == 2
+
+
+@pytest.mark.parametrize("payload", [b"", b"outside control file"])
+def test_setup_lock_hardlink_refused_before_seed_or_setup(manager, tmp_path, payload):
+    outside = tmp_path / "outside-control"
+    outside.write_bytes(payload)
+    manager.cache_root.mkdir()
+    path = manager.cache_root / "setup.lock"
+    os.link(outside, path)
+    with pytest.raises(RuntimeSetupError, match="dedicated ordinary"):
+        with manager._setup_lock():
+            pytest.fail("Hardlinked lock must not be acquired")
+    assert outside.read_bytes() == payload and path.read_bytes() == payload
+    assert not manager.active_path.exists() and not manager.env_root.exists()
+
+
+def test_setup_lock_symlink_refused_before_seed(manager, tmp_path):
+    outside = tmp_path / "outside-control"
+    outside.write_bytes(b"")
+    manager.cache_root.mkdir()
+    path = manager.cache_root / "setup.lock"
+    try:
+        path.symlink_to(outside)
+    except OSError:
+        pytest.skip("This platform/user cannot create symbolic links")
+    with pytest.raises(RuntimeSetupError, match="Unsafe"):
+        with manager._setup_lock():
+            pytest.fail("Symlinked lock must not be acquired")
+    assert outside.read_bytes() == b"" and path.is_symlink()
+
+
+def test_setup_lock_control_replaced_after_open_refused_before_seed(manager, tmp_path, monkeypatch):
+    manager.cache_root.mkdir()
+    path = manager.cache_root / "setup.lock"
+    path.write_bytes(b"")
+    outside = tmp_path / "outside-control"
+    outside.write_bytes(b"")
+    original = Path.open
+    def replaced(self, *args, **kwargs):
+        if self == path and args and args[0] == "a+b":
+            handle = original(outside, *args, **kwargs)
+            return handle
+        return original(self, *args, **kwargs)
+    monkeypatch.setattr(Path, "open", replaced)
+    with pytest.raises(RuntimeSetupError, match="changed"):
+        with manager._setup_lock():
+            pytest.fail("Changed fd/path identity must not be acquired")
+    assert outside.read_bytes() == b"" and path.read_bytes() == b""
 
 
 def test_nested_requirements_change_makes_active_runtime_stale(manager):

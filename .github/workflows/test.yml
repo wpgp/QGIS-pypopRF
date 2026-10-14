@@ -31,6 +31,22 @@ jobs:
             requirements-engine.lock
             requirements-dev.txt
       - run: python -m pip install -r requirements-dev.txt
+      - name: Verify clean isolated engine setup on Windows
+        if: runner.os == 'Windows'
+        shell: python
+        run: |
+          import os
+          from pathlib import Path
+          import sys
+          import tempfile
+          from services.runtime_manager import RuntimeManager
+          before = dict(os.environ)
+          cache = Path(tempfile.mkdtemp(prefix="pypoprf-clean-")) / "engine"
+          manager = RuntimeManager(Path.cwd(), cache)
+          engine = manager.setup(sys.executable)
+          assert manager.get_python() == engine
+          assert engine.is_relative_to(cache)
+          assert dict(os.environ) == before
       - run: python -m pytest -m "not qgis" -q
       - run: python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
       - run: python scripts/build_plugin.py

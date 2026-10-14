@@ -7,7 +7,7 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout is the **0.3.5 development build**, not a published
+This checkout is the **0.3.6 development build**, not a published
 stable release. The [development guide](docs/development.md) describes the
 architecture, regression checks and packaging. Build a ZIP from this checkout;
 there is no published download of this development build.
@@ -46,6 +46,8 @@ evidence of population-map accuracy in a real area.
   Compatible Python installations are offered instead of requiring file browsing;
   setup errors are shown next to the controls. Python is not silently installed.
 - Import name conflicts offer verified reuse or a separate copy, never overwrite.
+- All new copied imports verify source and staged-file hashes before publication;
+  manually typed input paths are drafts until committed, not imports per keystroke.
 - A plugin-owned light interface provides Home, Engine, Project, Input data, Settings,
   Results and Details tabs. Engine readiness has its own page; verified setup
   hides routine installation choices behind advanced maintenance. Clickable

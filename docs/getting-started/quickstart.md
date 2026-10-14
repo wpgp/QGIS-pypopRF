@@ -115,6 +115,10 @@ Do not resolve a conflict by deleting a file whose role you have not checked.
 A failed selection restores the configured input, not the rejected one.
 **Cancel import** requests cancellation of a current copy.
 
+When typing an input path manually, press Enter or Tab to confirm it. A Run
+click with an uncommitted input confirms the import instead of starting analysis;
+wait for the import to succeed, then click Run again. Closing discards a draft.
+
 New direct GeoTIFF imports must be self-contained. External `.msk`, `.aux.xml`
 and world-file resources are not silently dropped: read the
 [raster resource rules](../user-guide/input-data.md#raster-grid-contract).

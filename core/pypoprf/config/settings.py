@@ -13,6 +13,7 @@ import rasterio
 import yaml
 
 from ..utils.logger import get_logger
+from ..utils.zone_ids import exact_zone_ids
 
 logger = get_logger()
 
@@ -179,14 +180,7 @@ class Settings:
         if any(frame[column].map(lambda value: isinstance(value, (bool, np.bool_))).any()
                for column in required):
             raise ValueError(f"{role} IDs and population values cannot be booleans")
-        numeric_ids = pd.to_numeric(frame[id_column], errors="raise")
-        if np.iscomplexobj(numeric_ids.to_numpy()):
-            raise ValueError(f"{role} IDs must be real numbers")
-        if (numeric_ids.abs() > 2 ** 53).any():
-            raise ValueError(f"{role} IDs must be finite integers representable exactly")
-        ids = numeric_ids.to_numpy(dtype=float)
-        if not np.isfinite(ids).all() or np.any(ids != np.floor(ids)) or np.any(np.abs(ids) > 2 ** 53):
-            raise ValueError(f"{role} IDs must be finite integers representable exactly")
+        ids = np.asarray(exact_zone_ids(frame[id_column]), dtype=float)
         if pd.Series(ids).duplicated().any():
             raise ValueError(f"{role} contains duplicate zone IDs")
         for column in population_columns:
@@ -199,13 +193,20 @@ class Settings:
         return ids
 
     @staticmethod
-    def _read_csv(path):
+    def _read_csv(path, id_column=None):
         # pandas renames repeated headers, which would hide an ambiguous schema.
         with open(path, newline="", encoding="utf-8-sig") as handle:
             header = next(csv.reader(handle), [])
-        if not header or len(set(header)) != len(header) or any(not name.strip() for name in header):
+        if len(set(header)) != len(header):
+            raise ValueError("Duplicate census column names; CSV headers must be unique")
+        if not header or any(not name.strip() for name in header):
             raise ValueError("CSV headers must be nonempty and unique")
-        return pd.read_csv(path)
+        frame = pd.read_csv(path, dtype={id_column: str} if id_column is not None else None)
+        if id_column is not None and id_column in frame:
+            # Decimal spelling such as 9007199254740993.0 must not round into
+            # another zone before the range/integrality checks.
+            frame[id_column] = pd.Series(exact_zone_ids(frame[id_column]), index=frame.index, dtype="int64")
+        return frame
 
     def _validate_settings(self):
         self._check_cancelled()
@@ -232,7 +233,7 @@ class Settings:
         self._require_file(self.census["path"], "Census")
         if Path(self.census["path"]).suffix.lower() != ".csv":
             raise ValueError("Census file must be CSV format")
-        census = self._read_csv(self.census["path"])
+        census = self._read_csv(self.census["path"], zone)
         self.validate_census_frame(census, zone, [pop])
         if self.cv_group_column is not None:
             if self.cv_group_column not in census or census[self.cv_group_column].isna().any():
@@ -241,7 +242,7 @@ class Settings:
             self._require_file(self.agesex_data, "Age-sex census")
             if Path(self.agesex_data).suffix.lower() != ".csv":
                 raise ValueError("Age-sex census file must be CSV format")
-            frame = self._read_csv(self.agesex_data)
+            frame = self._read_csv(self.agesex_data, zone)
             age_column = re.compile(r"^[fm](?:_)?\d+(?:[_-]\d+|\+)?$", re.IGNORECASE)
             groups = [c for c in frame.columns if c != zone and age_column.fullmatch(c)]
             if not groups:

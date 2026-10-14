@@ -21,6 +21,7 @@ from rasterio.windows import Window
 from ..config.settings import Settings
 from ..utils.logger import get_logger
 from ..utils.runtime import atomic_output
+from ..utils.zone_ids import exact_zone_ids
 
 logger = get_logger()
 BUNDLE_VERSION = 2
@@ -48,7 +49,7 @@ class Model:
         Centroids use valid mastergrid pixel centres; water exclusion therefore
         affects them when the pipeline supplies a remasked mastergrid.
         """
-        numeric_ids = pd.to_numeric(pd.Series(zone_ids), errors="raise").to_numpy(dtype=float)
+        numeric_ids = np.asarray(exact_zone_ids(zone_ids), dtype=float)
         requested = set(numeric_ids)
         totals = {zone: [0.0, 0.0, 0] for zone in requested}
         columns, rows = getattr(self.settings, "spatial_grid", (4, 4))
@@ -286,7 +287,7 @@ class Model:
         self.target_mean = float(np.mean(density))
         # Validate the entire train/select/scale procedure with fresh fits per fold.
         self.cv_metrics = self._calculate_cv_scores(X, density, groups=groups,
-                                                   zone_ids=data[self.settings.census["id_column"]].to_numpy(),
+                                                   zone_ids=np.asarray(exact_zone_ids(data[self.settings.census["id_column"]])),
                                                    group_source="train_arguments" if supplied_groups else "census_column")
         self.model, self.scaler, self.selected_features, self.feature_importances = self._fit_procedure(X, density)
         with atomic_output(self._output_path("feature_importance.csv"),

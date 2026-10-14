@@ -36,7 +36,7 @@ REQUIRED_FILES = (
     "gui/presenters/project_presenter.py",
     "core/__init__.py", "core/pypoprf/__init__.py", "core/pypoprf/__main__.py",
     "core/pypoprf/cli.py", "core/pypoprf/pipeline.py", "core/pypoprf/tools.py",
-    "core/pypoprf/algorithms/model.py",
+    "core/pypoprf/algorithms/model.py", "core/pypoprf/utils/zone_ids.py",
     "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
     "metadata.txt", "icon.png", "wp_logo.png",
     "requirements.txt", "requirements-engine.lock", "requirements-engine-wheels.json",

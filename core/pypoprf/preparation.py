@@ -309,7 +309,8 @@ def _census(spec):
     if (not header or len(header) != len(set(header)) or any(not column.strip() or len(column) > 256
             or any(ord(char) < 32 or ord(char) == 127 for char in column) for column in header)):
         raise ValueError("CSV column names must be nonempty, unique, at most 256 characters and contain no controls")
-    data = validate_census(pd.read_csv(path), spec["id_column"], spec["population_column"])
+    from .config.settings import Settings
+    data = validate_census(Settings._read_csv(path, spec["id_column"]), spec["id_column"], spec["population_column"])
     return data, header
 
 

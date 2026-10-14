@@ -18,6 +18,9 @@ class ProjectInputsPresenter:
         self.view = view
         self._conflict_dialog = None
         self._import_context = None
+        self._closed = False
+        self._edit_connections = []
+        self._input_edit_roles = {}
         self.input_widgets = {
             "mastergrid": view.mastergridFileWidget,
             "mask": view.maskFileWidget,
@@ -25,6 +28,61 @@ class ProjectInputsPresenter:
             "census_data": view.populationCensusFileWidget,
             "agesex_data": view.agesexCensusFileWidget,
         }
+
+    def connect_input_signals(self):
+        """Treat typing as a draft, but preserve committed file-widget choices."""
+        for kind, widget in self.input_widgets.items():
+            widget.fileChanged.connect(
+                lambda path, kind=kind: self._handle_file_change(kind, path))
+            # QgsFileWidget exposes its QgsFilterLineEdit in both Qt bindings.
+            edit = widget.lineEdit()
+            self._input_edit_roles[edit] = kind
+            edit.installEventFilter(self.view)
+            callback = lambda kind=kind: self._commit_input_edit(kind)
+            edit.editingFinished.connect(callback)
+            self._edit_connections.append((edit.editingFinished, callback))
+
+    def input_edit_kind(self, edit):
+        return self._input_edit_roles.get(edit)
+
+    def commit_pending_input_draft(self):
+        if self._closed:
+            return False
+        for kind, widget in self.input_widgets.items():
+            if widget.lineEdit().isModified():
+                self._commit_input_edit(kind)
+                return True
+        return False
+
+    def _commit_input_edit(self, kind):
+        if self._closed:
+            return
+        widget = self.input_widgets[kind]
+        edit = widget.lineEdit()
+        if not edit.isModified():
+            return
+        edit.setModified(False)
+        self._handle_file_change(kind, widget.filePath())
+
+    def discard_input_edits(self):
+        """Closing is not permission to start an import from a pending draft."""
+        if self._closed:
+            return
+        for kind, widget in self.input_widgets.items():
+            if widget.lineEdit().isModified():
+                self._restore_file_widget(kind)
+                widget.lineEdit().setModified(False)
+
+    def close(self):
+        if self._closed:
+            return
+        self._closed = True
+        for signal, callback in self._edit_connections:
+            try:
+                signal.disconnect(callback)
+            except (TypeError, RuntimeError):
+                pass
+        self._edit_connections.clear()
 
     def _setup_file_widgets(self):
         """Configure file widgets with appropriate filters and titles."""
@@ -64,7 +122,15 @@ class ProjectInputsPresenter:
         """
         view = self.view
 
-        if view._loading_project or not view.config_manager.config_path:
+        if self._closed or view._loading_project or not view.config_manager.config_path:
+            return
+        # Old queued field signals must not write the previously open config.
+        if not self.selection_is_active():
+            return
+        widget = self.input_widgets[file_type]
+        if widget.lineEdit().isModified():
+            # QLineEdit marks genuine key edits before fileChanged is emitted;
+            # setFilePath/browse setText resets this flag and remains immediate.
             return
         if view.is_busy:
             self._restore_file_widget(file_type)

@@ -3,7 +3,7 @@ name=pypopRF
 qgisMinimumVersion=3.44
 qgisMaximumVersion=4.99
 description=A plugin for population prediction and dasymetric mapping using machine learning
-version=0.3.5
+version=0.3.6
 author=WorldPop SDI Team:
     Borys Nosatiuk (Project Lead),
     Rhorom Priyatikanto,
@@ -12,11 +12,16 @@ author=WorldPop SDI Team:
     Tom McKeen,
     Elena Vataga
 email=b.nosatiuk@soton.ac.uk
-about=Create gridded population maps from census counts and aligned raster covariates. Calculations run in an isolated 64-bit Python 3.12 environment managed by the plugin. Initial engine setup downloads locked Python packages; activation never installs packages into QGIS. Census totals are verified separately for every zone. Model validation describes held-out census zones and does not establish pixel-level accuracy. This is an unpublished development build; qualification and remaining release gates are documented in the repository.
+about=Create gridded population maps from census counts and aligned raster covariates. Calculations run in an isolated 64-bit Python 3.12 environment managed by the plugin. Qualified targets are Windows AMD64 and Linux glibc x86_64; macOS, ARM and musl are not qualified. Initial engine setup downloads locked Python packages; activation never installs packages into QGIS. Census totals are verified separately for every zone. Model validation describes held-out census zones and does not establish pixel-level accuracy. This is an unpublished development build; qualification and remaining release gates are documented in the repository.
 tracker=https://github.com/wpgp/QGIS-pypopRF/issues
 repository=https://github.com/wpgp/QGIS-pypopRF
 hasProcessingProvider=no
-changelog=Version 0.3.5 (development):
+changelog=Version 0.3.6 (development):
+    * Exact census IDs before floating-point parsing and verified first-import copies
+    * Safe manual input drafts and inactive-project/teardown guards
+    * Shorter unique engine paths with legacy engine reuse and protected lock files
+    * Portable run output paths across Windows and Linux
+Version 0.3.5 (development):
     * Explicit selected-folder versus active-project state and guarded duplicate opens
     * Expanded first-run, project lifecycle, input, settings, results and recovery guides
 Version 0.3.4 (development):

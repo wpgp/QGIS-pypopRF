@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import rasterio
 from rasterio.windows import Window
+from .zone_ids import exact_zone_ids
 
 RAW_COLUMNS = ["id", "count", "sum", "sum2", "min", "max", "mean", "m2"]
 
@@ -65,6 +66,9 @@ def validate_census(census, id_column, pop_column):
     if census.empty:
         raise ValueError("Census is empty")
     result = census.copy()
+    ids = exact_zone_ids(result[id_column])
+    if not pd.api.types.is_numeric_dtype(result[id_column]):
+        result[id_column] = pd.Series(ids, index=result.index, dtype="int64")
     for column in (id_column, pop_column):
         if pd.api.types.is_bool_dtype(result[column]) or result[column].map(lambda value: isinstance(value, (bool, np.bool_))).any():
             raise ValueError(f"Census column {column} cannot contain boolean values")

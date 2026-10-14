@@ -170,7 +170,7 @@ def main(argv=None):
                 raise ValueError(f"Input changed during analysis: {source['path']}")
         outputs = [result["prediction"], *result["population"].values(), *result["agesex"].values()]
         manifest.update(
-            status="complete", outputs=[str(Path(path).relative_to(output)) for path in outputs],
+            status="complete", outputs=[Path(path).relative_to(output).as_posix() for path in outputs],
             cv_metrics=result["cv_metrics"], diagnostics=result["diagnostics"],
             elapsed_seconds=result["elapsed_seconds"],
             artifacts=artifact_inventory(output, token),

@@ -1,6 +1,6 @@
 """Bounded run metadata validation shared by process completion and history."""
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 MAX_MANIFEST_BYTES = 4 * 1024 * 1024
 
@@ -31,9 +31,12 @@ def population_paths(root, manifest):
         return []
     result = []
     for name in manifest.get("outputs", []):
-        if Path(name).is_absolute():
+        # Old Windows runs used backslashes; new runs use portable POSIX names.
+        # Normalize only contained relative paths, never drives/UNC/traversal.
+        relative = Path(name.replace("\\", "/"))
+        if relative.is_absolute() or PureWindowsPath(name).drive or ".." in relative.parts:
             raise ValueError("Invalid result path")
-        path = (root / name).resolve()
+        path = (root / relative).resolve()
         if not path.is_relative_to(root) or not path.is_file():
             raise ValueError("Result escaped its run directory or is missing")
         if path.suffix.lower() in {".tif", ".tiff"} and path.name != "prediction.tif":

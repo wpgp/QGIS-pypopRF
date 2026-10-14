@@ -95,6 +95,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PyPopRFDialog, self).__init__(parent)
         self.iface = iface
         self.setupUi(self)
+        # A mouse Run click must not first change focus and start a path import,
+        # then reinterpret the same click as Cancel import. Keyboard Tab stays.
+        self.mainStartButton.setFocusPolicy(Qt.FocusPolicy.TabFocus)
         for button in (self.engineReadyButton, self.projectReadyButton, self.zoneGridReadyButton,
                        self.censusReadyButton, self.covariatesReadyButton):
             button.setProperty("pypoprfReadiness", True)
@@ -151,6 +154,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._input_errors = {}
         self._setup_onboarding()
         self.project_presenter = ProjectInputsPresenter(self)
+        self.destroyed.connect(self.project_presenter.close)
         self.results_presenter = ResultsPresenter(self)
         self.preparation_presenter = PreparationPresenter(self)
         self._setup_feature_widgets()
@@ -214,19 +218,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # File widget signals
         self.workingDirEdit.fileChanged.connect(self.on_working_dir_changed)
-        self.mastergridFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change("mastergrid", x)
-        )
-        self.maskFileWidget.fileChanged.connect(lambda x: self._handle_file_change("mask", x))
-        self.constrainFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change("constrain", x)
-        )
-        self.populationCensusFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change("census_data", x)
-        )
-        self.agesexCensusFileWidget.fileChanged.connect(
-            lambda x: self._handle_file_change("agesex_data", x)
-        )
+        self.project_presenter.connect_input_signals()
 
         # Settings tab signals
         self.enableParallelCheckBox.stateChanged.connect(
@@ -415,6 +407,11 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def _handle_start_button(self):
         """Handle start/stop button click"""
+        if not self.is_busy and self.project_presenter.commit_pending_input_draft():
+            # Commit the chosen input first; running requires a separate action
+            # after successful import. Never calculate from the previous input.
+            self._sync_run_action()
+            return
         if self.tools_controller.is_running:
             self.tools_controller.stop()
             self.mainStartButton.setEnabled(False)
@@ -445,13 +442,39 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         return self.project_presenter._restore_file_widget(key)
 
     def reject(self):
+        self.project_presenter.discard_input_edits()
         if self.is_busy:
             self._close_pending = True
             self.cancel_all()
             return
         super().reject()
 
+    def event(self, event):
+        if event.type() == QEvent.Type.DeferredDelete:
+            # Focus teardown can emit editingFinished before destroyed, after
+            # sibling widgets have already gone. Detach only owned edit slots
+            # before Qt performs the actual QObject deletion.
+            if hasattr(self, "project_presenter"):
+                self.project_presenter.close()
+            if hasattr(self, "settings_handler"):
+                self.settings_handler.close()
+        return super().event(event)
+
+    def eventFilter(self, watched, event):
+        if (event.type() == QEvent.Type.KeyPress
+                and event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
+                and hasattr(self, "project_presenter")):
+            kind = self.project_presenter.input_edit_kind(watched)
+            if kind is not None:
+                # Only input-path Enter confirms that field. Do not propagate
+                # into QDialog's default Run/Cancel action for the same key.
+                self.project_presenter._commit_input_edit(kind)
+                event.accept()
+                return True
+        return super().eventFilter(watched, event)
+
     def closeEvent(self, event):
+        self.project_presenter.discard_input_edits()
         if self.is_busy:
             self._close_pending = True
             self.cancel_all()
@@ -481,6 +504,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         bound slot on that instance cannot own deferred worker cleanup.
         """
         self._dispose_pending = True
+        self.project_presenter.close()
         self.runtime_presenter.close()
         self.settings_handler.close()
         self.hide()
@@ -493,6 +517,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         if self._disposed or self.is_busy:
             return
         self._disposed = True
+        self.project_presenter.close()
         self.runtime_presenter.close()
         self.settings_handler.close()
         self.logger.close()

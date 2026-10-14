@@ -63,10 +63,15 @@ def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_pa
             out.write(values, 1)
     census = pd.DataFrame({"zone": np.arange(1, 7), "sum": np.arange(6) * 40.0})
     census.to_csv(data / "census.csv", index=False)
+    # A nested age-sex product catches Windows-only path separators in output
+    # metadata; those names must still work after moving the run to Linux.
+    pd.DataFrame({"zone": census["zone"], "f0": census["sum"]}).to_csv(
+        data / "ages.csv", index=False)
     config = tmp_path / "config.yaml"
     config.write_text(yaml.safe_dump({
         "work_dir": ".", "mastergrid": "zones.tif", "covariates": {"building": "building.tif"},
         "census_data": "census.csv", "census_id_column": "zone", "census_pop_column": "sum",
+        "agesex_data": "ages.csv",
         "n_estimators": 6, "cv_folds": 2, "cv_strategy": "shuffled_zone",
     }), encoding="utf-8")
     output = tmp_path / run_name
@@ -102,6 +107,8 @@ def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_pa
     assert events[-1]["status"] == "complete"
     manifest = json.loads((output / "manifest.json").read_text())
     assert manifest["outputs"] == events[-1]["outputs"]
+    assert "agesex/population_f0.tif" in manifest["outputs"]
+    assert all("\\" not in name for name in manifest["outputs"])
     assert manifest["status"] == "complete"
     assert manifest["engine_source_origin"] == source_mode
     if frozen:
@@ -115,7 +122,7 @@ def test_cli_complete_run_has_durable_config_provenance_and_verified_maps(tmp_pa
         assert not list(frozen.rglob("*.pyc"))
     else:
         assert "engine_source_snapshot" not in manifest
-    assert len(manifest["inputs"]) == 3
+    assert len(manifest["inputs"]) == 4
     assert "algorithms/model.py" in manifest["engine_source_sha256"]
     assert set(manifest["engine_adapter_source_sha256"]) == {
         "services/runtime_manager.py", "services/owned_process.py",

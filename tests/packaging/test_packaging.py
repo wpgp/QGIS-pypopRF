@@ -66,6 +66,7 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
 
 @pytest.mark.parametrize("missing", [
     "core/__init__.py", "core/pypoprf/__main__.py", "core/pypoprf/algorithms/model.py",
+    "core/pypoprf/utils/zone_ids.py",
     "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
     "services/engine_snapshot.py",
     "services/project_location.py", "gui/widgets/workflow_status.py", "gui/widgets/visual_style.py",
