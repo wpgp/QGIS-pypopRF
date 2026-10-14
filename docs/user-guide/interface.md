@@ -1,6 +1,6 @@
 # Interface
 
-The current interface has five tabs: **Project**, **Input data**, **Settings**,
+The current interface has six tabs: **Home**, **Project**, **Input data**, **Settings**,
 **Results** and **Details**. Historical screenshots from earlier plugin versions
 do not describe this layout.
 
@@ -17,6 +17,13 @@ progress on the Project tab.
 
 ## Project
 
+**Home** shows the packaged project logo, the two installation steps and a next
+action based on current readiness. Guidance can be collapsed; readiness is always
+recomputed, not remembered as a stale completed step. Projects remain usable
+without an engine for inspection; calculations and preparation require it.
+**About / citation…** shows packaged authors, version, links and citation. Links
+open only when explicitly clicked.
+
 Choose a project folder, then use **Create project** for a new folder or
 **Open project** when `config.yaml` already exists. Opening restores the saved
 inputs and settings rather than resetting the project. Merely selecting another
@@ -31,7 +38,7 @@ to another file. Locations are checked again before imports, analysis and
 switching the log destination, including manually edited configuration paths.
 
 The **Analysis engine** area checks for the plugin's isolated Python runtime.
-Select an installed 64-bit CPython 3.12 executable and use **Set up engine**
+Choose a verified 64-bit CPython 3.12 from the discovery list and use **Set up engine**
 when needed. Setup downloads the locked wheel dependencies into a separate
 per-user environment; plugin activation does not install packages into QGIS.
 An update only switches to a verified new environment after its checks pass.
@@ -47,8 +54,13 @@ Select the **Zone grid** and **Population census** and add at least one covariat
 using **Add raster files…**. Optional fields are **Water mask (1 = exclude)**,
 **Population support (1 = include)** and **Age and sex census**.
 
-Imports run outside the GUI and report progress. The run button becomes
-**Cancel import** while an import is active. Name collisions are rejected;
+Imports run outside the GUI and report progress. Filename conflicts open a choice
+to reuse verified identical bytes (with raster-resource checks), import a separate
+copy under a new name, or cancel. Existing inputs are never overwritten. Clearing
+a field removes its configuration reference, not the copied file. CSV headers
+are previewed, but column mapping and numerical checks still occur before analysis.
+The run button becomes
+**Cancel import** while an import is active. Destination names are checked;
 inputs are not overwritten. On a failed selection the field is restored to
 the input actually configured in the project.
 
@@ -133,6 +145,11 @@ area. An AOI outside the raster or containing NoData yields a clearly labelled
 partial supported-cell sum. This is a model-derived estimate, not a new census.
 
 ## Details
+
+The activity area shows the actual current message and elapsed time, not an ETA.
+Package downloading uses an indeterminate indicator rather than a false byte
+percentage. Details includes a bounded stage history, and opening a project or
+starting a calculation does not clear earlier diagnostic messages.
 
 Details shows bounded plain-text setup and processing messages. **Clear view**
 clears the displayed messages; **Copy diagnostics** copies them for a bug report.

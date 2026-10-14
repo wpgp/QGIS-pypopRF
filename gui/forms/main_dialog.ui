@@ -147,7 +147,12 @@
             <attribute name="title">
               <string>Project</string>
             </attribute>
-            <layout class="QVBoxLayout" name="projectLayout">
+            <layout class="QVBoxLayout" name="projectTabLayout">
+              <item>
+                <widget class="QScrollArea" name="projectScrollArea">
+                  <property name="widgetResizable"><bool>true</bool></property>
+                  <widget class="QWidget" name="projectContents">
+                    <layout class="QVBoxLayout" name="projectLayout">
               <item>
                 <widget class="QGroupBox" name="projectGroup">
                   <property name="title">
@@ -301,6 +306,10 @@
                     </size>
                   </property>
                 </spacer>
+              </item>
+                    </layout>
+                  </widget>
+                </widget>
               </item>
             </layout>
           </widget>

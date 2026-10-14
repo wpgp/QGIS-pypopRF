@@ -47,6 +47,11 @@ from ...services.runtime_manager import RuntimeManager
 from ..presenters.project_presenter import ProjectInputsPresenter
 from ..presenters.results_presenter import ResultsPresenter
 from ..presenters.preparation_presenter import PreparationPresenter
+from ..presenters.runtime_presenter import RuntimePresenter
+from ..widgets.task_activity import TaskActivity
+from ..widgets.home_panel import HomePanel
+from ..dialogs.about_dialog import AboutDialog
+from ...services.plugin_info import load_plugin_info
 
 FORM_CLASS, _ = uic.loadUiType(
     str(Path(__file__).resolve().parents[1] / "forms" / "main_dialog.ui")
@@ -126,6 +131,13 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.layer_integration = LayerIntegration(self.logger, iface)
         self._preparation_window = None
         self._summary_window = None
+        self._about_window = None
+        self.activity = TaskActivity(self)
+        self.mainLayout.insertWidget(self.mainLayout.count() - 1, self.activity)
+        self.detailsLayout.insertWidget(1, self.activity.history)
+        self.runtime_presenter = RuntimePresenter(self)
+        self._input_errors = {}
+        self._setup_onboarding()
         self.project_presenter = ProjectInputsPresenter(self)
         self.results_presenter = ResultsPresenter(self)
         self.preparation_presenter = PreparationPresenter(self)
@@ -418,6 +430,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         if self.is_busy:
             return
         self.mainProgressBar.hide()
+        self.activity.finish()
         self.workCompleted.emit()
         if self._dispose_pending:
             self._dispose_resources()
@@ -433,6 +446,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         bound slot on that instance cannot own deferred worker cleanup.
         """
         self._dispose_pending = True
+        self.runtime_presenter.close()
         self.settings_handler.close()
         self.hide()
         if self.is_busy:
@@ -444,8 +458,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         if self._disposed or self.is_busy:
             return
         self._disposed = True
+        self.runtime_presenter.close()
         self.settings_handler.close()
         self.logger.close()
+        self.activity.finish()
         self.deleteLater()
 
     @property
@@ -495,55 +511,23 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.covariate_handler.on_changed = self._refresh_readiness
 
     def _runtime_changed(self, result):
-        ready = bool(result["python"])
-        self.runtimeStatusLabel.setText("Analysis engine ready" if ready else
-                                       "Engine setup could not be completed. See Details." if result.get("error") else
-                                       "Set up the analysis engine to begin")
-        if result["candidates"] and not self.pythonPathEdit.text():
-            self.pythonPathEdit.setText(result["candidates"][0])
-        self.setupRuntimeButton.setText("Update / repair engine" if ready else "Set up engine")
-        self.setupRuntimeButton.setEnabled(True)
-        self.browsePythonButton.setEnabled(True)
-        self.pythonPathEdit.setEnabled(True)
-        self.runtimeProgressBar.hide()
-        self.cancelSetupButton.hide()
-        if result.get("error"):
-            self.logger.error(result["error"])
-            self.set_task_status(("Engine setup failed; the previous engine remains available: " if ready
-                                  else "Engine setup failed: ") + str(result["error"]))
-        self._refresh_readiness()
+        return self.runtime_presenter.changed(result)
 
     def _runtime_progress(self, value, message):
-        self.runtimeProgressBar.setValue(value)
-        self.runtimeStatusLabel.setText("Preparing the analysis engine…" if value < 30 else
-                                       "Installing engine components…" if value < 85 else
-                                       "Checking the analysis engine…" if value < 100 else
-                                       "Analysis engine ready")
-        self.set_task_status(self.runtimeStatusLabel.text())
-        self.logger.info(message)
+        return self.runtime_presenter.progress(value, message)
 
     def _browse_python(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Python 3.12 executable", "", "All files (*)")
-        if path:
-            self.pythonPathEdit.setText(path)
+        return self.runtime_presenter.browse()
 
     def _setup_runtime(self):
-        if self.is_busy:
-            return
-        python = self.pythonPathEdit.text().strip()
-        if not python:
-            self.runtimeStatusLabel.setText("Select a Python 3.12 executable first")
-            return
-        self.setupRuntimeButton.setEnabled(False)
-        self.browsePythonButton.setEnabled(False)
-        self.pythonPathEdit.setEnabled(False)
-        self.runtimeProgressBar.show()
-        self.cancelSetupButton.show()
-        self.runtime_controller.setup(python)
-        self._refresh_readiness()
+        return self.runtime_presenter.setup()
 
     def _refresh_readiness(self):
+        self.runtime_presenter._controls(not self.is_busy)
         if self.process_executor.is_running or self.import_controller.is_running or self.tools_controller.is_running:
+            state = dict(getattr(self, "_home_state", {}))
+            state.update(busy=True, status=self.statusLabel.text())
+            self.home_panel.refresh(state)
             return
         self.prepareInputsButton.setEnabled(bool(self.runtime_controller.python) and not self.is_busy)
         has_project = bool(self.config_manager.config_path)
@@ -559,6 +543,9 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.set_settings_widgets_enabled(False)
                 self.readinessLabel.setText("Project settings cannot be read. Reopen the project.")
                 self._show_readiness(readiness_states(self.runtime_controller.python, False, {}))
+                self._home_state = {"engine_ready": bool(self.runtime_controller.python), "project_ready": False,
+                    "inputs_ready": False, "busy": self.is_busy, "status": "Project settings cannot be read. Reopen the project."}
+                self.home_panel.refresh(self._home_state)
                 self.logger.error(str(exc))
                 return
             ready = bool(config.get("mastergrid") and config.get("census_data") and config.get("covariates"))
@@ -566,6 +553,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                   and Path(self.workingDirEdit.filePath()).resolve() == Path(self.config_manager.working_dir).resolve())
         engine = bool(self.runtime_controller.python)
         self._show_readiness(readiness_states(engine, active, config))
+        self._home_state = {"engine_ready": engine, "project_ready": active,
+            "inputs_ready": ready and active, "busy": self.is_busy,
+            "status": self.statusLabel.text(), "project_path": str(self.config_manager.working_dir or "")}
+        self.home_panel.refresh(self._home_state)
         self.mainStartButton.setEnabled(ready and active and engine and not self.is_busy)
         self.mainStartButton.setText("Run analysis")
         self.readinessLabel.setText(
@@ -593,9 +584,73 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
     def set_task_status(self, message, percent=None):
         """Show task text in the plain status label; the bar shows only percent while work runs."""
         self.statusLabel.setText(bounded_status(message))
+        if hasattr(self, "home_panel"):
+            state = dict(getattr(self, "_home_state", {}))
+            state.update(status=self.statusLabel.text(), busy=self.is_busy)
+            self.home_panel.refresh(state)
         if percent is not None:
+            self.begin_task("Current task")
             self.mainProgressBar.setValue(percent)
             self.mainProgressBar.show()
+        if self.activity.active:
+            self.activity.record(message)
+
+    def begin_task(self, title):
+        self.activity.begin(title)
+
+    def _setup_onboarding(self):
+        self.plugin_info = load_plugin_info(self.plugin_root)
+        self.home_panel = HomePanel(self.plugin_info, self)
+        self.tab_home = self.home_panel
+        self.mainTabWidget.insertTab(0, self.tab_home, "Home")
+        self.mainTabWidget.setCurrentWidget(self.tab_home)
+        self.home_panel.requestedEngine.connect(lambda: self._navigate_readiness("engine"))
+        self.home_panel.requestedProject.connect(lambda: self._navigate_readiness("project"))
+        self.home_panel.requestedInputs.connect(lambda: self.mainTabWidget.setCurrentWidget(self.tab_inputs))
+        self.home_panel.requestedReview.connect(lambda: self.mainTabWidget.setCurrentWidget(self.tab_settings))
+        self.home_panel.requestedAbout.connect(self._show_about)
+        self.aboutButton = QtWidgets.QToolButton(self)
+        self.aboutButton.setText("About")
+        self.aboutButton.setAutoRaise(True)
+        self.aboutButton.clicked.connect(self._show_about)
+        self.readinessRowLayout.addWidget(self.aboutButton)
+        for kind, widget in (("mastergrid", self.mastergridFileWidget), ("census_data", self.populationCensusFileWidget),
+                             ("mask", self.maskFileWidget), ("constrain", self.constrainFileWidget),
+                             ("agesex_data", self.agesexCensusFileWidget)):
+            label = QtWidgets.QLabel(widget.parentWidget())
+            label.setTextFormat(Qt.TextFormat.PlainText)
+            label.setWordWrap(True)
+            label.hide()
+            parent_layout = self.requiredInputs if kind in {"mastergrid", "census_data"} else self.optionalInputs
+            row = parent_layout.getWidgetPosition(widget)[0]
+            # Keep the existing form row/API, with a small label directly below its field.
+            parent_layout.removeWidget(widget)
+            container = QtWidgets.QWidget(widget.parentWidget())
+            layout = QtWidgets.QVBoxLayout(container)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(2)
+            layout.addWidget(widget)
+            layout.addWidget(label)
+            parent_layout.setWidget(row, QtWidgets.QFormLayout.ItemRole.FieldRole, container)
+            self._input_errors[kind] = label
+        self._input_errors["covariate"] = QtWidgets.QLabel(self.tab_inputs)
+        self._input_errors["covariate"].setTextFormat(Qt.TextFormat.PlainText)
+        self._input_errors["covariate"].setWordWrap(True)
+        self._input_errors["covariate"].hide()
+        self.inputLayout.insertWidget(0, self._input_errors["covariate"])
+
+    def set_input_error(self, kind, message):
+        label = self._input_errors.get(kind)
+        if label:
+            label.setText(bounded_status(message, limit=350, lines=2))
+            label.setVisible(bool(message))
+
+    def _show_about(self):
+        if self._about_window is None:
+            self._about_window = AboutDialog(self.plugin_info, self)
+        self._about_window.show()
+        self._about_window.raise_()
+        self._about_window.activateWindow()
 
     def _begin_import(self, paths, kind):
         return self.project_presenter._begin_import(paths, kind)

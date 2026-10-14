@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - Unreleased
+
+### Added
+
+- Optional guided Home screen with packaged logo, live next steps and nonmodal
+  About/citation with explicit safe web links.
+- Verified compatible-Python list and asynchronous manual selection checks;
+  actionable engine errors beside controls and in task status.
+- Worker-verified import reuse/separate-copy/cancel choices, preserving originals
+  and rechecking changes before publication or registration.
+- Elapsed task/stage history, indeterminate package-download progress and
+  diagnostic messages retained across project and calculation transitions.
+
 ## [0.3.1] - Unreleased
 
 ### Fixed

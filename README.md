@@ -7,7 +7,7 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout is the **0.3.1 development build**, not a published
+This checkout is the **0.3.2 development build**, not a published
 stable release. The [development guide](docs/development.md) describes the
 architecture, regression checks and packaging. Build a ZIP from this checkout;
 there is no published download of this development build.
@@ -15,6 +15,8 @@ there is no published download of this development build.
 ![WorldPop SDI](wp_logo.png)
 
 ## A look at the workflow
+
+![Guided native Home screen](docs/assets/screenshots/home.png)
 
 ![Native QGIS workflow](docs/assets/screenshots/workflow.png)
 
@@ -36,9 +38,13 @@ evidence of population-map accuracy in a real area.
 - Default evaluation holds out spatial blocks and refits selection/preprocessing
   inside each fold. Conservation is not proof of pixel-level accuracy; validation
   limitations are described in the [settings guide](docs/user-guide/settings.md).
-- A native-palette interface provides Project, Input data, Settings, Results and
+- A guided Home screen restores the project logo, next steps and About/citation.
+  Compatible Python installations are offered instead of requiring file browsing;
+  setup errors are shown next to the controls. Python is not silently installed.
+- Import name conflicts offer verified reuse or a separate copy, never overwrite.
+- A native-palette interface provides Home, Project, Input data, Settings, Results and
   Details tabs, clickable readiness checks, separate task status and progress,
-  engine setup and run history that keeps your selected result.
+  engine setup, elapsed stage history and run history that keeps your selected result.
 - Guided data preparation creates a new derived project with explicit grid,
   quantity/resampling choices and diagnostics, preserving the original sources.
 - A quality dashboard distinguishes held-out zone-density validation from census

@@ -2,6 +2,10 @@ import platform
 import os
 import shutil
 import tempfile
+import hashlib
+import csv
+import re
+import stat
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -68,7 +72,8 @@ class FileHandler:
             raise FileHandlerError(f"Failed to set working directory: {str(e)}")
 
     def copy_to_data_dir(self, source_path: str, file_type: str, cancellation_token=None,
-                         progress=None) -> Optional[str]:
+                         progress=None, *, destination_name=None, conflict=None,
+                         action=None, id_column="id") -> Optional[str]:
         """Copy file to project's data directory.
 
         Args:
@@ -83,6 +88,7 @@ class FileHandler:
         """
         try:
             source_file = Path(source_path)
+            self._ordinary(source_file)
             if not source_file.is_file():
                 self.logger.error(f"Source file not found: {source_path}")
                 raise FileNotFoundError(f"Source file not found: {source_path}")
@@ -90,21 +96,26 @@ class FileHandler:
             data_dir = Path(self.working_dir) / self.data_dir
             data_dir.mkdir(parents=True, exist_ok=True)
 
-            dest_file = data_dir / source_file.name
+            name = destination_name or source_file.name
+            self.validate_basename(name, source_file.suffix)
+            dest_file = data_dir / name
+            self.validate_role(source_file, file_type, id_column)
+            if conflict is not None:
+                self._verify_resolution(source_file, dest_file, conflict, action,
+                                        cancellation_token, progress)
+                if action == "reuse":
+                    return dest_file.name
             # Check if destination exists
             # GDAL resolves sidecars beside the selected pathname, not by inode.
             # An outside hardlink/symlink can therefore have a different mask.
             if (dest_file.exists() and source_file.samefile(dest_file)
                     and source_file.parent.resolve() == dest_file.parent.resolve()):
                 return source_file.name
-            if dest_file.exists():
+            if dest_file.exists() or dest_file.is_symlink():
                 raise FileExistsError(f"Import would overwrite an existing input: {dest_file}")
 
-            sidecars = []
-            if source_file.suffix.lower() in {".tif", ".tiff"}:
-                sidecars = [Path(str(source_file) + suffix) for suffix in (".msk", ".aux.xml")]
-                sidecars += [source_file.with_suffix(suffix) for suffix in (".tfw", ".tifw", ".wld", ".prj")]
-                self._reject_sidecars(sidecars)
+            sidecars = self._sidecars(source_file)
+            self._reject_sidecars(sidecars + self._sidecars(dest_file))
 
             descriptor, pending_name = tempfile.mkstemp(prefix=".import-", suffix=".tmp", dir=data_dir)
             os.close(descriptor)
@@ -129,11 +140,17 @@ class FileHandler:
                     if cancellation_token:
                         cancellation_token.check()
                 current_metadata = source_file.stat()
-                if (original_metadata.st_size, original_metadata.st_mtime_ns) != (current_metadata.st_size, current_metadata.st_mtime_ns):
+                if self._identity(original_metadata) != self._identity(current_metadata):
                     raise FileHandlerError("Source changed during import; retry after it finishes updating")
                 # A writer can create a GDAL mask/metadata file without changing
                 # the TIFF's size or timestamp while our staged copy is running.
-                self._reject_sidecars(sidecars)
+                if conflict is not None:
+                    expected = conflict["source_info"]["sha256"]
+                    if (self._fingerprint(pending, cancellation_token)["sha256"] != expected
+                            or self._fingerprint(source_file, cancellation_token)["sha256"] != expected):
+                        raise FileHandlerError("Source changed during copy; select it again")
+                self._ordinary(source_file)
+                self._reject_sidecars(sidecars + self._sidecars(dest_file))
                 # Publishing a hard link is atomic and refuses concurrent collisions.
                 # Windows rename also refuses an existing destination on filesystems
                 # that do not support hard links.
@@ -149,15 +166,144 @@ class FileHandler:
                 pending.unlink(missing_ok=True)
 
             self.logger.info(f"Copied {file_type} file to data directory: {source_file.name}")
-            return source_file.name
+            return dest_file.name
 
         except Exception as e:
             self.logger.error(f"Failed to copy file: {str(e)}")
             raise FileHandlerError(f"Failed to copy file: {str(e)}")
 
     @staticmethod
+    def validate_basename(name, suffix=None):
+        if (not isinstance(name, str) or not name or name != name.strip()
+                or name in {".", ".."} or name.endswith((".", " "))
+                or any(c in name for c in '/\\:<>"|?*') or any(ord(c) < 32 for c in name)
+                or len(name) > 240):
+            raise FileHandlerError("Choose a plain portable filename, without folders or special characters")
+        device = name.split(".", 1)[0].upper()
+        if device in {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}:
+            raise FileHandlerError("Reserved device names cannot be imported")
+        if suffix is not None and Path(name).suffix.lower() != suffix.lower():
+            raise FileHandlerError("Keep the original file extension")
+        return name
+
+    @staticmethod
+    def _ordinary(path):
+        if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+            raise FileHandlerError("Input file aliases are not supported; select a dedicated ordinary file")
+        if not stat.S_ISREG(path.stat().st_mode):
+            raise FileHandlerError("Select a regular input file")
+
+    @staticmethod
+    def _identity(metadata):
+        # Python 3.12 Windows stat/fstat expose different legacy st_ctime values
+        # after writes. Creation time is the stable extra identity there; bytes
+        # are independently rehashed and size/mtime/inode are always checked.
+        extra = getattr(metadata, "st_birthtime_ns", 0) if os.name == "nt" else metadata.st_ctime_ns
+        return [metadata.st_dev, metadata.st_ino, metadata.st_size,
+                metadata.st_mtime_ns, extra]
+
+    @staticmethod
+    def _sidecars(path):
+        if path.suffix.lower() not in {".tif", ".tiff"}:
+            return []
+        return ([Path(str(path) + suffix) for suffix in (".msk", ".aux.xml")]
+                + [path.with_suffix(suffix) for suffix in (".tfw", ".tifw", ".wld", ".prj")])
+
+    @staticmethod
+    def validate_role(path, kind, id_column="id"):
+        """Bounded CSV header check, not a substitute for numerical preflight."""
+        if kind not in {"census_data", "agesex_data"}:
+            return []
+        if path.suffix.lower() != ".csv":
+            raise FileHandlerError("Choose a CSV table for this input role")
+        with path.open(encoding="utf-8-sig", newline="") as stream:
+            line = stream.readline(65537)
+        if len(line) > 65536:
+            raise FileHandlerError("CSV header exceeds the supported preview limit")
+        headers = next(csv.reader([line]), [])
+        if not headers or any(not header for header in headers) or len(set(headers)) != len(headers):
+            raise FileHandlerError("CSV needs nonempty unique headers; choose column mapping in Settings before running")
+        if kind == "agesex_data" and not any(re.fullmatch(r"[fm](?:_)?\d+(?:[_-]\d+|\+)?", column, re.I) for column in headers):
+            raise FileHandlerError("Age-sex CSV needs supported count columns such as f0, m0, f_0_4 or m_65+. A regular population table is not an age-sex table.")
+        return headers
+
+    def _fingerprint(self, path, token=None, progress=None):
+        self._ordinary(path)
+        before = self._identity(path.stat())
+        digest, total = hashlib.sha256(), 0
+        with path.open("rb") as stream:
+            if self._identity(os.fstat(stream.fileno())) != before:
+                raise FileHandlerError("Input changed before verification; try again")
+            while chunk := stream.read(1024 * 1024):
+                if token:
+                    token.check()
+                digest.update(chunk)
+                total += len(chunk)
+                if progress:
+                    progress(int(100 * total / max(before[2], 1)), path.name)
+            if self._identity(os.fstat(stream.fileno())) != before:
+                raise FileHandlerError("Input changed during verification; try again")
+        self._ordinary(path)
+        if self._identity(path.stat()) != before:
+            raise FileHandlerError("Input changed during verification; try again")
+        if token:
+            token.check()
+        return {"identity": before, "sha256": digest.hexdigest()}
+
+    def inspect_conflict(self, source_path, kind, cancellation_token=None, progress=None,
+                         id_column="id"):
+        """Run in a worker; SHA comparisons never run in the GUI thread."""
+        source = Path(source_path)
+        self._ordinary(source)
+        self.validate_basename(source.name, source.suffix)
+        headers = self.validate_role(source, kind, id_column)
+        target = Path(self.working_dir) / self.data_dir / source.name
+        if not target.exists() and not target.is_symlink():
+            return None
+        self._ordinary(target)
+        if target.stat().st_nlink > 1:
+            raise FileHandlerError("Existing input is a hardlink; select a dedicated project file")
+        if source.samefile(target) and source.parent.resolve() == target.parent.resolve():
+            return None  # Canonical selection keeps its own GDAL sidecar namespace.
+        source_info = self._fingerprint(source, cancellation_token, progress)
+        target_info = self._fingerprint(target, cancellation_token, progress)
+        compatible = not any(p.exists() or p.is_symlink() for p in self._sidecars(source) + self._sidecars(target))
+        return {"kind": kind, "filename": source.name, "source": str(source.absolute()),
+                "destination": str(target.absolute()), "source_info": source_info,
+                "destination_info": target_info, "identical": source_info["sha256"] == target_info["sha256"],
+                "reuse_allowed": compatible and source_info["sha256"] == target_info["sha256"],
+                "sidecar_compatible": compatible, "headers": headers[:100], "id_column": id_column}
+
+    def _verify_resolution(self, source, target, conflict, action, token, progress):
+        if action not in {"reuse", "copy"}:
+            raise FileHandlerError("Choose reuse, a separate copy, or cancel")
+        original = Path(self.working_dir) / self.data_dir / conflict["filename"]
+        if (str(source.absolute()) != conflict["source"]
+                or str(original.absolute()) != conflict["destination"]):
+            raise FileHandlerError("Import context changed; select the input again")
+        if self._fingerprint(source, token, progress) != conflict["source_info"]:
+            raise FileHandlerError("Source changed since the conflict; select it again")
+        if self._fingerprint(original, token, progress) != conflict["destination_info"]:
+            raise FileHandlerError("Existing input changed since the conflict; select it again")
+        # Same-size writes can share a filesystem timestamp tick. Rehash the
+        # source after destination verification, rather than trusting stat alone.
+        if self._fingerprint(source, token, progress) != conflict["source_info"]:
+            raise FileHandlerError("Source changed during verification; select it again")
+        if action == "reuse":
+            if target != original or not conflict["reuse_allowed"]:
+                raise FileHandlerError("Reuse is available only for verified identical compatible files")
+            self._reject_sidecars(self._sidecars(source) + self._sidecars(original))
+            # Source can change while the destination is being hashed.
+            for path, info in ((source, conflict["source_info"]), (original, conflict["destination_info"])):
+                self._ordinary(path)
+                if self._identity(path.stat()) != info["identity"] or path.stat().st_nlink > 1:
+                    raise FileHandlerError("Input changed since verification; select it again")
+        elif target == original:
+            raise FileHandlerError("Choose a different filename for the separate copy")
+
+    @staticmethod
     def _reject_sidecars(paths):
-        present = [path.name for path in paths if path.is_file()]
+        present = [path.name for path in paths if path.exists() or path.is_symlink()]
         if present:
             raise FileHandlerError(
                 "This raster depends on external mask or metadata files: " + ", ".join(present)

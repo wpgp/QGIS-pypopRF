@@ -53,6 +53,7 @@ class ProcessExecutor(QObject):
         python = self.dialog.runtime_controller.python
         if not python:
             self.logger.error("Set up the analysis engine before starting")
+            self.dialog.set_task_status("Set up the analysis engine before starting")
             return
         try:
             snapshot = self.dialog.config_manager.get_config()
@@ -76,7 +77,9 @@ class ProcessExecutor(QObject):
             self._stdout, self._stderr, self._result = b"", "", None
             self._cancelled = False
             self.last_result_paths = []
-            self.dialog.console_handler.clear()
+            self.logger.info("— New analysis —")
+            if hasattr(self.dialog, "begin_task"):
+                self.dialog.begin_task("Starting population analysis")
             self.dialog.mainProgressBar.setValue(0)
             process = QProcess(self)
             self.process = process
@@ -388,11 +391,18 @@ class ProcessExecutor(QObject):
     def _validate_all(self):
         if not self.dialog.config_manager.config_path:
             self.logger.error("Create or open a project first")
+            if hasattr(self.dialog, "set_task_status"):
+                self.dialog.set_task_status("Create or open a project first")
             return False
         if not getattr(self.dialog, "_project_ready", True):
             self.logger.error("Open the selected project before starting")
+            if hasattr(self.dialog, "set_task_status"):
+                self.dialog.set_task_status("Open the selected project before starting")
             return False
-        return self.dialog.settings_handler.validate_settings(self.dialog)
+        valid = self.dialog.settings_handler.validate_settings(self.dialog)
+        if not valid and hasattr(self.dialog, "set_task_status"):
+            self.dialog.set_task_status("Input or processing settings need attention; see Details for the specific errors")
+        return valid
 
     def add_output_layers(self):
         if not self.iface or not self.last_run_dir:

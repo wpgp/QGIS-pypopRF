@@ -42,7 +42,9 @@ def capture_state(dialog, name, tab=0):
     if directory:
         target = Path(directory)
         target.mkdir(parents=True, exist_ok=True)
-        dialog.mainTabWidget.setCurrentIndex(tab)
+        target_tab = {0: dialog.tab_main, 1: dialog.tab_inputs, 2: dialog.tab_settings,
+                      3: dialog.tab_results, 4: dialog.tab_details}.get(tab, dialog.tab_home)
+        dialog.mainTabWidget.setCurrentWidget(target_tab)
         dialog.show()
         QApplication.processEvents()
         assert dialog.grab().save(str(target / f"{name}.png"))
@@ -343,6 +345,10 @@ def test_native_import_collision_restores_canonical_input(native_dialog, tmp_pat
     other.mkdir()
     (other / "zones.tif").write_bytes(b"different input")
     dialog.mastergridFileWidget.setFilePath(str(other / "zones.tif"))
+    wait_until(lambda: dialog.import_controller.pending_conflict is not None)
+    assert dialog.project_presenter._conflict_dialog is not None
+    assert not dialog.project_presenter._conflict_dialog.reuseButton.isEnabled()
+    dialog.project_presenter._conflict_dialog.reject()
     wait_until(lambda: not dialog.import_controller.is_running)
     assert dialog.mastergridFileWidget.filePath() == str(original)
     assert original.read_bytes() == before
@@ -431,7 +437,7 @@ def test_native_dark_palette_and_keyboard_access(native_dialog, tmp_path):
     try:
         QApplication.setPalette(dark)
         dialog.show()
-        dialog.mainTabWidget.setCurrentIndex(2)
+        dialog.mainTabWidget.setCurrentWidget(dialog.tab_settings)
         dialog.idColumnEdit.setFocus()
         QApplication.processEvents()
         assert dialog.idColumnEdit.hasFocus()
@@ -476,7 +482,7 @@ loop.exec()
 assert not dialog.is_busy
 dialog.resize(920, 720)
 dialog.show()
-dialog.mainTabWidget.setCurrentIndex(2)
+dialog.mainTabWidget.setCurrentWidget(dialog.tab_settings)
 QApplication.processEvents()
 assert dialog.devicePixelRatioF() >= 1.4
 position = dialog.mainStartButton.mapTo(dialog, QPoint(0, 0))

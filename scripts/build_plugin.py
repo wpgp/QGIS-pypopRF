@@ -17,13 +17,15 @@ PUBLIC_DOCUMENTATION = (
     "docs/user-guide/interface.md", "docs/user-guide/input-data.md",
     "docs/user-guide/settings.md", "docs/user-guide/running-analysis.md",
     "docs/user-guide/troubleshooting.md",
-    "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
+    "docs/assets/screenshots/home.png", "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 )
 REQUIRED_FILES = (
     "__init__.py", "qgis_pypoprf.py", "gui/dialogs/main_dialog.py",
     "gui/forms/main_dialog.ui", "services/runtime_manager.py", "shared/atomic_files.py",
     "services/owned_process.py", "services/engine_snapshot.py", "services/project_location.py",
     "shared/runtime_environment.py", "gui/widgets/workflow_status.py",
+    "gui/widgets/home_panel.py", "gui/widgets/task_activity.py", "gui/dialogs/about_dialog.py",
+    "gui/dialogs/import_conflict_dialog.py", "gui/presenters/runtime_presenter.py", "services/plugin_info.py",
     "core/__init__.py", "core/pypoprf/__init__.py", "core/pypoprf/__main__.py",
     "core/pypoprf/cli.py", "core/pypoprf/pipeline.py", "core/pypoprf/tools.py",
     "core/pypoprf/algorithms/model.py",

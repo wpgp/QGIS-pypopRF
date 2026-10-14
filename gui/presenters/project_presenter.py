@@ -16,6 +16,8 @@ class ProjectInputsPresenter:
     """
     def __init__(self, view):
         self.view = view
+        self._conflict_dialog = None
+        self._import_context = None
         self.input_widgets = {
             "mastergrid": view.mastergridFileWidget,
             "mask": view.maskFileWidget,
@@ -70,7 +72,14 @@ class ProjectInputsPresenter:
         if path:
             self._begin_import([path], file_type)
         else:
-            view.config_manager.clear_config_value(file_type)
+            try:
+                view.config_manager.clear_config_value(file_type)
+                self._input_error(file_type, "")
+            except Exception as exc:
+                self._restore_file_widget(file_type)
+                view.logger.error(f"Could not clear input selection: {exc}")
+                view.set_task_status(f"Could not clear input selection: {exc}")
+                self._input_error(file_type, str(exc))
         view._refresh_readiness()
 
     def on_working_dir_changed(self, path: str):
@@ -102,6 +111,7 @@ class ProjectInputsPresenter:
         working_dir = view.workingDirEdit.filePath()
         if not working_dir:
             view.logger.error("Please select working directory first")
+            view.set_task_status("Please select working directory first")
             return
 
         try:
@@ -118,7 +128,7 @@ class ProjectInputsPresenter:
             view.logger.error(str(exc))
             view.set_task_status(str(exc))
             return
-        view.console_handler.clear()
+        view.logger.info("— Opening project —")
         view.mainProgressBar.setValue(0)
 
         try:
@@ -165,6 +175,7 @@ class ProjectInputsPresenter:
 
         except Exception as e:
             view.logger.error(f"Error initializing project: {str(e)}")
+            view.set_task_status(f"Error initializing project: {e}")
             view.set_input_widgets_enabled(False)
             view.set_settings_widgets_enabled(False)
             view.mainStartButton.setEnabled(False)
@@ -184,9 +195,6 @@ class ProjectInputsPresenter:
         )
         paths, names = [], set()
         for path in file_paths:
-            if view.covariate_handler.check_duplicate(path):
-                view.logger.warning(f"Covariate already present: {path}")
-                continue
             if Path(path).stem.casefold() in names:
                 view.logger.warning(f"Duplicate covariate name: {path}")
                 continue
@@ -203,6 +211,7 @@ class ProjectInputsPresenter:
             open_folder(view.config_manager.working_dir)
         except Exception as exc:
             view.logger.error(str(exc))
+            view.set_task_status(str(exc))
 
     def _load_project_inputs(self):
         view = self.view
@@ -222,6 +231,7 @@ class ProjectInputsPresenter:
             config = view.config_manager.get_config()
         except Exception as exc:
             view.logger.error(f"Could not read project settings: {exc}")
+            view.set_task_status(f"Could not read project settings: {exc}")
             view._project_ready = False
             config = {}
         data = Path(view.config_manager.working_dir) / config.get("data_dir", "data")
@@ -245,7 +255,10 @@ class ProjectInputsPresenter:
             # by rereading the same unsafe config, or rewrite a user's edit.
             view.logger.error(f"Import blocked: {exc}")
             view.set_task_status(f"Import blocked: {exc}")
+            self._input_error(kind, str(exc))
             return
+        self._input_error(kind, "")
+        self._import_context = (str(view.config_manager.working_dir), config.get("data_dir", "data"), kind)
         view.set_input_widgets_enabled(False)
         view.set_settings_widgets_enabled(False)
         view.workingDirEdit.setEnabled(False)
@@ -255,7 +268,8 @@ class ProjectInputsPresenter:
         view.mainStartButton.setText("Cancel import")
         view.set_task_status("Importing input data…", 0)
         view.import_controller.start(view.config_manager.working_dir,
-            config.get("data_dir", "data"), paths, kind, view.logger)
+            config.get("data_dir", "data"), paths, kind, view.logger,
+            options={"id_column": config.get("census_id_column", "id")})
 
     def _import_progress(self, percent, name):
         self.view.set_task_status(f"Importing {name}…", percent)
@@ -264,7 +278,10 @@ class ProjectInputsPresenter:
         view = self.view
         kind = result["kind"]
         problem = result["errors"][0] if result["errors"] else None
+        self._close_conflict_dialog()
         try:
+            if result["filenames"]:
+                self._assert_import_context(kind)
             if kind == "covariate":
                 view.covariate_handler.add_covariates(result["filenames"])
             else:
@@ -278,11 +295,72 @@ class ProjectInputsPresenter:
             problem = problem or f"Could not register imported files: {exc}"
             if kind != "covariate":
                 self._restore_file_widget(kind)
+        if result.get("conflicts"):
+            if any(getattr(view, flag, False) for flag in ("_dispose_pending", "_disposed", "_close_pending")):
+                view.import_controller.stop()
+                return
+            from ..dialogs.import_conflict_dialog import ImportConflictDialog
+            conflict = result["conflicts"][0]
+            self._conflict_dialog = ImportConflictDialog(conflict, view)
+            self._conflict_dialog.choiceMade.connect(
+                lambda action, name, conflict=conflict: self._resolve_conflict(conflict, action, name))
+            popup = self._conflict_dialog
+            popup.finished.connect(lambda *_args, popup=popup: self._forget_conflict_dialog(popup))
+            popup.destroyed.connect(lambda *_args, popup=popup: self._forget_conflict_dialog(popup))
+            self._conflict_dialog.open()
+            view.set_task_status(f"Choose how to import {conflict['filename']}; originals will not be replaced")
+            self._input_error(kind, "This filename already exists. Choose reuse, a separate copy, or cancel.")
+            return
+        self._import_context = None
         view.set_input_widgets_enabled(True)
         view.set_settings_widgets_enabled(True)
         view.workingDirEdit.setEnabled(True)
         view.initProjectButton.setEnabled(True)
         view.setupRuntimeButton.setEnabled(True)
-        view.set_task_status("Import completed" if problem is None else
+        view.set_task_status("Import cancelled; existing files retained" if result.get("cancelled") else
+                             "Import completed" if problem is None else
                              f"Import could not be completed: {problem}")
+        self._input_error(kind, problem or "")
         view._refresh_readiness()
+
+    def _input_error(self, kind, message):
+        callback = getattr(self.view, "set_input_error", None)
+        if callback:
+            callback(kind, message)
+
+    def _close_conflict_dialog(self):
+        dialog, self._conflict_dialog = self._conflict_dialog, None
+        if dialog is not None:
+            dialog.choiceMade.disconnect()
+            dialog.close()
+
+    def _forget_conflict_dialog(self, dialog):
+        if self._conflict_dialog is dialog:
+            self._conflict_dialog = None
+
+    def _resolve_conflict(self, conflict, action, name):
+        view = self.view
+        if view.import_controller.pending_conflict is not conflict:
+            return
+        if any(getattr(view, flag, False) for flag in ("_dispose_pending", "_disposed", "_close_pending")):
+            view.import_controller.stop()
+            return
+        if action != "cancel":
+            try:
+                self._assert_import_context(conflict["kind"])
+            except Exception as exc:
+                view.import_controller.stop()
+                view.set_task_status(f"Import blocked: {exc}")
+                self._input_error(conflict["kind"], str(exc))
+                return
+        view.import_controller.resolve_conflict(action, name or None)
+
+    def _assert_import_context(self, kind):
+        view = self.view
+        config = view.config_manager.get_config()
+        context = (str(view.config_manager.working_dir), config.get("data_dir", "data"), kind)
+        if context != self._import_context:
+            raise ValueError("Project or data directory changed; select the input again. Imported files were retained.")
+        ensure_project_paths(view.config_manager.working_dir, config,
+            plugin_root=view.plugin_root, job_cache=view.job_cache,
+            runtime_cache=getattr(view.runtime_controller.manager, "cache_root", None))

@@ -95,6 +95,7 @@ class RuntimeManager:
     PYTHON_VERSION = (3, 12)
     SCHEMA_VERSION = 2
     INSTALL_POLICY = "sha256_checked_binary_wheels"
+    MAX_DISCOVERY_CANDIDATES = 24
     ENV_PATTERN = re.compile(r"engine-[0-9a-f]{12}-[0-9a-f]{32}$")
     PIN_PATTERN = re.compile(r"([A-Za-z0-9][A-Za-z0-9._-]*)==([A-Za-z0-9][A-Za-z0-9.!+_-]*)$")
     HASH_PATTERN = re.compile(r"--hash=sha256:([0-9a-fA-F]{64})$")
@@ -287,7 +288,10 @@ class RuntimeManager:
                                           cancellation_token=cancellation_token, timeout=15))
         if (tuple(info.get("version", [])[:2]) != self.PYTHON_VERSION
                 or info.get("bits") != 64 or info.get("implementation") != "CPython"):
-            raise RuntimeSetupError("The engine requires installed 64-bit CPython 3.12")
+            version = ".".join(map(str, info.get("version", []))) or "unknown version"
+            raise RuntimeSetupError("The engine requires installed 64-bit CPython 3.12; "
+                                    f"found {info.get('implementation', 'unknown implementation')} "
+                                    f"{version} ({info.get('bits', 'unknown')}-bit)")
         executable = Path(info.get("executable", ""))
         if not executable.is_absolute() or not executable.is_file():
             raise RuntimeSetupError("Interpreter did not report an existing absolute executable path")
@@ -295,52 +299,145 @@ class RuntimeManager:
 
     @staticmethod
     def _interpreter_path(python_executable):
-        executable = Path(python_executable).expanduser().resolve()
+        raw = Path(python_executable).expanduser().absolute()
+        if any(part.casefold() == "windowsapps" for part in raw.parts):
+            raise RuntimeSetupError("Choose an installed Python executable, not a Windows Store alias")
+        executable = raw.resolve()
         if not executable.is_file():
             raise RuntimeSetupError(f"Python executable not found: {executable}")
         if executable.suffix.lower() in {".bat", ".cmd", ".ps1"}:
             raise RuntimeSetupError("Choose an installed Python executable, not a shell wrapper")
-        if executable.parent.name.casefold() == "windowsapps":
+        if any(part.casefold() == "windowsapps" for part in executable.parts):
             raise RuntimeSetupError("Choose an installed Python executable, not a Windows Store alias")
         return executable
 
-    def check_interpreter(self, python_executable):
-        executable = self._interpreter_path(python_executable)
-        return self._probe([str(executable)])
-
-    def detect_python_candidates(self, cancellation_token=None):
+    def check_interpreter(self, python_executable, cancellation_token=None):
         self._check_cancel(cancellation_token)
-        candidates = []
-        base = getattr(sys, "_base_executable", None)
-        if base and Path(base).name.lower() in {"python", "python.exe", "python3", "python3.12"}:
-            candidates.append([str(base)])
-        for path in (Path(sys.prefix) / "python.exe", Path(sys.prefix) / "bin" / "python3.12"):
-            if path.is_file():
-                candidates.append([str(path)])
+        executable = self._interpreter_path(python_executable)
+        return self._probe([str(executable)], cancellation_token)
+
+    def _registered_python_candidates(self, cancellation_token=None):
+        """Read bounded official CPython3.12 PEP514 registrations; never write."""
+        if os.name != "nt":
+            return []
+        import winreg
+        result = []
+        for hive, source in ((winreg.HKEY_CURRENT_USER, "registry-user"),
+                             (winreg.HKEY_LOCAL_MACHINE, "registry-machine")):
+            for view in (winreg.KEY_WOW64_64KEY, winreg.KEY_WOW64_32KEY):
+                for tag in ("3.12", "3.12-64", "3.12-32"):
+                    self._check_cancel(cancellation_token)
+                    key_path = rf"Software\Python\PythonCore\{tag}\InstallPath"
+                    try:
+                        with winreg.OpenKey(hive, key_path, 0, winreg.KEY_READ | view) as key:
+                            try:
+                                value, kind = winreg.QueryValueEx(key, "ExecutablePath")
+                            except OSError:
+                                directory, kind = winreg.QueryValueEx(key, "")
+                                if not isinstance(directory, str) or kind not in {winreg.REG_SZ, winreg.REG_EXPAND_SZ}:
+                                    continue
+                                value = str(Path(directory) / "python.exe")
+                            if kind in {winreg.REG_SZ, winreg.REG_EXPAND_SZ} and isinstance(value, str):
+                                value = os.path.expandvars(value) if kind == winreg.REG_EXPAND_SZ else value
+                                if Path(value).is_absolute():
+                                    result.append(([value], source))
+                    except (OSError, TypeError, ValueError):
+                        continue
+        return result
+
+    @staticmethod
+    def _standard_python_candidates():
+        if os.name != "nt":
+            return []
+        directories = []
+        local = os.environ.get("LOCALAPPDATA")
+        if local:
+            directories.append(Path(local) / "Programs" / "Python" / "Python312")
+        for name in ("ProgramW6432", "ProgramFiles", "ProgramFiles(x86)"):
+            if os.environ.get(name):
+                directories.append(Path(os.environ[name]) / "Python312")
+        drive = os.environ.get("SystemDrive")
+        if drive:
+            directories.append(Path(drive + "\\") / "Python312")
+        return [([str(directory / "python.exe")], "standard-install") for directory in directories]
+
+    def _interpreter_candidates(self, cancellation_token=None):
+        self._check_cancel(cancellation_token)
+        candidates = self._registered_python_candidates(cancellation_token) + self._standard_python_candidates()
         for name in ("python3.12", "python", "python3"):
             found = shutil.which(name)
             if found:
-                candidates.append([found])
+                candidates.append(([found], "PATH"))
         if os.name == "nt":
             launcher = shutil.which("py")
             if launcher:
-                candidates.append([launcher, "-3.12"])
-        verified, seen = [], set()
-        for command in candidates:
+                candidates.append(([launcher, "-3.12"], "py-launcher"))
+        base = getattr(sys, "_base_executable", None)
+        if base and Path(base).name.lower() in {"python", "python.exe", "python3", "python3.12"}:
+            candidates.append(([str(base)], "host-base"))
+        for path in (Path(sys.prefix) / "python.exe", Path(sys.prefix) / "bin" / "python3.12"):
+            if path.is_file():
+                candidates.append(([str(path)], "host-prefix"))
+        return candidates
+
+    @staticmethod
+    def _qgis_interpreter(path, info):
+        if any(part.casefold().startswith("qgis") for part in path.parts):
+            return True
+        if os.name == "nt" and "qgis" in sys.modules:
+            prefix = Path(sys.prefix).resolve()
+            base = getattr(sys, "_base_executable", None)
+            return (path.is_relative_to(prefix)
+                    or (base is not None and path == Path(base).resolve())
+                    or Path(info.get("prefix", "")).resolve() == prefix
+                    or Path(info.get("base_prefix", "")).resolve() == prefix)
+        return False
+
+    def discover_interpreters(self, cancellation_token=None):
+        """Return verified compatible metadata, standalone CPython preferred.
+
+        Sources are bounded known registrations/paths, not a filesystem crawl.
+        Every candidate is actually run with isolation, cancellation and timeout;
+        registry labels/version tags alone are never proof of compatibility.
+        """
+        self._check_cancel(cancellation_token)
+        verified, seen_commands, attempts = {}, set(), 0
+        for command, source in self._interpreter_candidates(cancellation_token):
             self._check_cancel(cancellation_token)
-            key = tuple(command)
-            if key in seen:
-                continue
-            seen.add(key)
-            if Path(command[0]).parent.name.casefold() == "windowsapps":
-                continue
             try:
-                path = Path(self._probe(command, cancellation_token)["executable"]).resolve()
+                executable = self._interpreter_path(command[0])
+            except (RuntimeSetupError, OSError, RuntimeError, ValueError):
+                continue
+            key = (str(executable), *command[1:])
+            if key in seen_commands:
+                continue
+            seen_commands.add(key)
+            if attempts >= self.MAX_DISCOVERY_CANDIDATES:
+                break
+            attempts += 1
+            try:
+                info = self._probe([str(executable), *command[1:]], cancellation_token)
+                path = self._interpreter_path(info["executable"])
+                embedded = self._qgis_interpreter(path, info)
+                record = {"path": str(path), "version": ".".join(map(str, info["version"][:3])),
+                          "bits": info["bits"], "source": "qgis-embedded" if embedded else source,
+                          "embedded": embedded, "recommended": False}
                 if path not in verified:
-                    verified.append(path)
+                    virtual = info.get("prefix") != info.get("base_prefix", info.get("prefix"))
+                    priority = {"registry-user": 0, "registry-machine": 1, "standard-install": 2,
+                                "PATH": 3, "py-launcher": 4, "host-base": 5, "host-prefix": 6}.get(source, 7)
+                    verified[path] = (record, (embedded, virtual, priority, str(path).casefold()))
             except RuntimeSetupError:
                 continue
-        return verified
+        records = [record for record, rank in sorted(verified.values(), key=lambda value: value[1])]
+        if records and not records[0]["embedded"]:
+            records[0]["recommended"] = True
+        self._check_cancel(cancellation_token)
+        return records
+
+    def detect_python_candidates(self, cancellation_token=None):
+        """Compatibility Paths API; use discover_interpreters for UI metadata."""
+        return [Path(record["path"]) for record in self.discover_interpreters(cancellation_token)]
 
     @staticmethod
     def _requirement_lines(text):

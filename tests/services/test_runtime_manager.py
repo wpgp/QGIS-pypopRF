@@ -445,9 +445,129 @@ def test_readiness_and_discovery_cancel_before_any_subprocess(manager, monkeypat
     token = CancellationToken()
     token.cancel()
     monkeypatch.setattr(manager, "_run", lambda *args, **kwargs: pytest.fail("Cancelled discovery must not start Python"))
-    for operation in (manager.get_python, manager.runtime_ready, manager.detect_python_candidates):
+    for operation in (manager.get_python, manager.runtime_ready, manager.detect_python_candidates, manager.discover_interpreters):
         with pytest.raises(CancelledError):
             operation(cancellation_token=token)
+    with pytest.raises(CancelledError):
+        manager.check_interpreter(manager.source_python, cancellation_token=token)
+
+
+def test_structured_discovery_verifies_deduplicates_and_prefers_standalone(manager, tmp_path, monkeypatch):
+    standalone = tmp_path / "independent" / "python.exe"
+    embedded = tmp_path / "QGIS" / "apps" / "Python312" / "python.exe"
+    incompatible = tmp_path / "wrong" / "python.exe"
+    store = tmp_path / "WindowsApps" / "python.exe"
+    for path in (standalone, embedded, incompatible, store):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"fixture interpreter")
+    monkeypatch.setattr(manager, "_interpreter_candidates", lambda token: [
+        ([str(embedded)], "host-base"), ([str(standalone)], "registry-user"),
+        ([str(standalone)], "PATH"), ([str(incompatible)], "PATH"), ([str(store)], "PATH")])
+    calls = []
+    def probe(command, **kwargs):
+        calls.append(command)
+        assert command[1:4] == ["-I", "-X", "utf8"]
+        return json.dumps({"executable": command[0], "version": [3, 13 if command[0] == str(incompatible) else 12, 10],
+                           "bits": 64, "implementation": "CPython", "prefix": str(Path(command[0]).parent)})
+    monkeypatch.setattr(manager, "_run", probe)
+    records = manager.discover_interpreters()
+    assert records == [{"path": str(standalone), "version": "3.12.10", "bits": 64, "source": "registry-user",
+                        "embedded": False, "recommended": True},
+                       {"path": str(embedded), "version": "3.12.10", "bits": 64, "source": "qgis-embedded",
+                        "embedded": True, "recommended": False}]
+    assert len(calls) == 3 and not any(command[0] == str(store) for command in calls)
+    assert manager.detect_python_candidates() == [standalone, embedded]
+
+
+def test_discovery_bound_and_cancellation_between_probes(manager, tmp_path, monkeypatch):
+    paths = []
+    for index in range(5):
+        path = tmp_path / f"python-{index}"
+        path.write_bytes(b"fixture")
+        paths.append(path)
+    monkeypatch.setattr(manager, "_interpreter_candidates", lambda token: [([str(path)], "PATH") for path in paths])
+    monkeypatch.setattr(manager, "MAX_DISCOVERY_CANDIDATES", 2)
+    calls = []
+    token = CancellationToken()
+    def probe(command, cancellation_token=None):
+        calls.append(command)
+        return {"executable": command[0], "version": [3, 12, 1], "bits": 64, "prefix": str(tmp_path)}
+    monkeypatch.setattr(manager, "_probe", probe)
+    assert len(manager.discover_interpreters()) == 2 and len(calls) == 2
+    def cancelled(command, cancellation_token=None):
+        token.cancel()
+        return probe(command)
+    calls.clear()
+    monkeypatch.setattr(manager, "_probe", cancelled)
+    with pytest.raises(CancelledError):
+        manager.discover_interpreters(token)
+    assert len(calls) == 1
+
+
+def test_discovery_prefers_installed_base_over_unrelated_project_venv(manager, tmp_path, monkeypatch):
+    venv, base = tmp_path / "aaa-venv-python", tmp_path / "zzz-installed-python"
+    for path in (venv, base):
+        path.write_bytes(b"fixture")
+    monkeypatch.setattr(manager, "_interpreter_candidates", lambda token: [([str(venv)], "PATH"), ([str(base)], "host-base")])
+    monkeypatch.setattr(manager, "_probe", lambda command, token=None: {
+        "executable": command[0], "version": [3, 12, 10], "bits": 64,
+        "prefix": str(tmp_path / "venv") if command[0] == str(venv) else str(tmp_path / "installed"),
+        "base_prefix": str(tmp_path / "installed")})
+    records = manager.discover_interpreters()
+    assert records[0]["path"] == str(base) and records[0]["recommended"] is True
+    assert records[1]["path"] == str(venv) and records[1]["recommended"] is False
+
+
+@pytest.mark.parametrize("version,bits", [([3, 11, 9], 64), ([3, 12, 1], 32)])
+def test_selected_interpreter_probe_rejects_incompatible_metadata(manager, monkeypatch, version, bits):
+    monkeypatch.setattr(manager, "_run", lambda *args, **kwargs: json.dumps({
+        "executable": str(manager.source_python), "version": version, "bits": bits, "implementation": "CPython"}))
+    with pytest.raises(RuntimeSetupError, match="64-bit CPython 3.12"):
+        manager.check_interpreter(manager.source_python)
+    with pytest.raises(RuntimeSetupError, match="found CPython " + r"\.".join(map(str, version)) + " \\(" + str(bits) + "-bit\\)"):
+        manager.check_interpreter(manager.source_python)
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Readonly Windows PEP514 registry")
+def test_registered_discovery_reads_known_keys_no_registry_writes(manager, monkeypatch):
+    from types import SimpleNamespace
+    opened = []
+    class Key:
+        def __init__(self, path): self.path = path
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+    def open_key(hive, path, unused, access):
+        opened.append((hive, path, access))
+        return Key(path)
+    def query(key, name):
+        if name == "ExecutablePath":
+            if "3.12-32" in key.path:
+                return "relative.exe", 1
+            raise FileNotFoundError()
+        return str(manager.source_python.parent), 1
+    registry = SimpleNamespace(HKEY_CURRENT_USER=1, HKEY_LOCAL_MACHINE=2,
+        KEY_WOW64_64KEY=256, KEY_WOW64_32KEY=512, KEY_READ=16,
+        REG_SZ=1, REG_EXPAND_SZ=2, OpenKey=open_key, QueryValueEx=query)
+    monkeypatch.setitem(sys.modules, "winreg", registry)
+    records = manager._registered_python_candidates()
+    assert len(opened) == 12 and records
+    assert all(path.startswith("Software\\Python\\PythonCore\\3.12") for _, path, _ in opened)
+    assert all(access & registry.KEY_READ for _, _, access in opened)
+    assert {source for _, source in records} == {"registry-user", "registry-machine"}
+    assert all(Path(command[0]).is_absolute() for command, _ in records)
+
+
+def test_actual_selected_python_probe_has_structured_compatible_info(tmp_path):
+    if sys.version_info[:2] != (3, 12):
+        pytest.skip("Requires actual CPython3.12")
+    package = tmp_path / "package"
+    package.mkdir()
+    manager = RuntimeManager(package, tmp_path / "cache")
+    before = dict(os.environ)
+    info = manager.check_interpreter(sys.executable)
+    assert info["version"][:2] == [3, 12] and info["bits"] == 64
+    assert Path(info["executable"]).is_file() and info["implementation"] == "CPython"
+    assert dict(os.environ) == before and not manager.cache_root.exists()
 
 
 def test_actual_oversized_unterminated_output_is_bounded_and_reaped(tmp_path):
