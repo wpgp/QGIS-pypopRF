@@ -68,7 +68,9 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
     "core/__init__.py", "core/pypoprf/__main__.py", "core/pypoprf/algorithms/model.py",
     "gui/__init__.py", "controllers/__init__.py", "services/__init__.py", "shared/__init__.py",
     "services/engine_snapshot.py",
-    "services/project_location.py", "gui/widgets/workflow_status.py",
+    "services/project_location.py", "gui/widgets/workflow_status.py", "gui/widgets/visual_style.py",
+    "gui/widgets/fitted_label.py",
+    "docs/assets/screenshots/home.png", "docs/assets/screenshots/engine.png",
     "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 ])
 def test_missing_runtime_boundary_file_cannot_publish_an_incomplete_archive(tmp_path, missing):
@@ -111,7 +113,7 @@ def test_packaged_readme_and_guides_have_no_dangling_local_links_or_images(tmp_p
                     elif part != ".":
                         parts.append(part)
                 assert "/".join(parts) in names, (name, link)
-        for screenshot in ("workflow", "quality"):
+        for screenshot in ("home", "engine", "workflow", "quality"):
             assert package.read(f"pypopRF/docs/assets/screenshots/{screenshot}.png").startswith(b"\x89PNG\r\n\x1a\n")
 
 

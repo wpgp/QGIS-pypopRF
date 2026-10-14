@@ -59,7 +59,7 @@ def test_no_engine_project_allowed_and_setup_error_visible_persistent(native_pac
         assert not dialog.mainStartButton.isEnabled()
         assert dialog.home_panel.state["project"] and not dialog.home_panel.state["engine"]
         dialog.resize(720, 520)
-        capture_state(dialog, "onboarding-setup-error", tab=0)
+        capture_state(dialog, "onboarding-setup-error", tab="engine")
     finally:
         dialog.dispose_when_idle()
         wait_until(lambda: sip.isdeleted(dialog))
@@ -102,12 +102,14 @@ def test_disposal_does_not_probe_focused_manual_python(native_dialog, monkeypatc
     dialog = native_dialog
     calls = []
     monkeypatch.setattr(dialog.runtime_controller, "inspect", lambda path: calls.append(path) or False)
-    dialog.mainTabWidget.setCurrentWidget(dialog.tab_main)
+    dialog.mainTabWidget.setCurrentWidget(dialog.tab_engine)
+    dialog.engineAdvancedToggle.setChecked(True)
     dialog.manualPythonCheckBox.setChecked(True)
     dialog.show()
     dialog.pythonPathEdit.setText("unfinished user selection")
     dialog.pythonPathEdit.setFocus()
     QApplication.processEvents()
+    assert dialog.pythonPathEdit.isVisible() and dialog.pythonPathEdit.hasFocus()
     dialog.dispose_when_idle()
     wait_until(lambda: sip.isdeleted(dialog))
     assert calls == []

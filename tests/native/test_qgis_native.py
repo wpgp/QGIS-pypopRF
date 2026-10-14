@@ -43,7 +43,8 @@ def capture_state(dialog, name, tab=0):
         target = Path(directory)
         target.mkdir(parents=True, exist_ok=True)
         target_tab = {0: dialog.tab_main, 1: dialog.tab_inputs, 2: dialog.tab_settings,
-                      3: dialog.tab_results, 4: dialog.tab_details}.get(tab, dialog.tab_home)
+                      3: dialog.tab_results, 4: dialog.tab_details,
+                      "engine": dialog.tab_engine}.get(tab, dialog.tab_home)
         dialog.mainTabWidget.setCurrentWidget(target_tab)
         dialog.show()
         QApplication.processEvents()

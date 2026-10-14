@@ -2,17 +2,25 @@
 import time
 
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QTimer, Qt
+from qgis.PyQt.QtCore import QTimer
+
+from .fitted_label import FittedLabel
 
 
-class TaskActivity(QtWidgets.QLabel):
+class TaskActivity(FittedLabel):
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTextFormat(Qt.TextFormat.PlainText)
-        self.setWordWrap(True)
-        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        # Footer line: long stages are fitted to two rendered lines; history keeps them whole.
+        super().__init__(parent, max_lines=2)
+        self.setObjectName("taskActivityLabel")
+        # Wrapped footer text must report its real height, or long stages are clipped.
+        policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Ignored,
+                                       QtWidgets.QSizePolicy.Policy.Preferred)
+        policy.setHeightForWidth(True)
+        self.setSizePolicy(policy)
         self.history = QtWidgets.QTreeWidget(parent)
+        self.history.setObjectName("taskHistory")
         self.history.setHeaderLabels(["Elapsed", "Task / stage"])
+        self.history.setAlternatingRowColors(True)
         self.history.setRootIsDecorated(False)
         self.history.setMaximumHeight(140)
         self.history.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)

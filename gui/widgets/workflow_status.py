@@ -1,9 +1,9 @@
-"""Qt-free text helpers for the readiness row, task status and path display."""
+"""Qt-free text/state helpers for the readiness row, engine view, task status and paths."""
 import html
 
 # key, label, hint shown while the item is missing
 READINESS = (
-    ("engine", "Engine", "Set up the analysis engine on the Project tab."),
+    ("engine", "Engine", "Set up the analysis engine on the Engine tab."),
     ("project", "Project", "Create or open the selected project folder."),
     ("mastergrid", "Zone grid", "Choose a zone grid in Input data."),
     ("census_data", "Census", "Choose a population census in Input data."),
@@ -46,3 +46,71 @@ def short_path(path, limit=72):
 def plain_tooltip(text):
     """Qt guesses rich text in tooltips; escape so paths and IDs show literally."""
     return "<qt>" + html.escape(str(text), quote=False).replace("\n", "<br>") + "</qt>"
+
+
+# Engine view states. They describe presentation only; RuntimeController.python
+# remains the single authority for whether calculations may use an engine.
+ENGINE_CHECKING = "checking"          # a check/discovery/inspection has not ended yet
+ENGINE_NO_PYTHON = "no_python"        # a completed discovery found no compatible Python
+ENGINE_UNDISCOVERED = "undiscovered"  # discovery did not complete; nothing is proven
+ENGINE_SELECTED = "selected"          # compatible Python listed, engine not prepared
+ENGINE_INSTALLING = "installing"      # setup/repair worker is running
+ENGINE_READY = "ready"                # verified engine available
+ENGINE_REPAIR_FAILED = "repair_failed"  # last repair/check failed, previous engine kept
+ENGINE_FAILED = "failed"              # last setup/check failed and no engine is usable
+
+
+def engine_view_state(operation, ready, has_choices, discovery_empty, failed):
+    """Derive the single engine view state.
+
+    ``operation`` is the running worker kind (``"setup"``, ``"check"``,
+    ``"discover"``, ``"inspect"``) or ``None`` once it ended. A pending check is
+    never reported as "no Python": only a completed, error-free discovery that
+    listed nothing sets ``discovery_empty``.
+    """
+    if operation == "setup":
+        return ENGINE_INSTALLING
+    if operation:
+        return ENGINE_CHECKING
+    if ready:
+        return ENGINE_REPAIR_FAILED if failed else ENGINE_READY
+    if failed:
+        return ENGINE_FAILED
+    if has_choices:
+        return ENGINE_SELECTED
+    return ENGINE_NO_PYTHON if discovery_empty else ENGINE_UNDISCOVERED
+
+
+def engine_next_step(state):
+    """Next workflow destination after the engine, from the dialog's live home state."""
+    state = state if isinstance(state, dict) else {}
+    if state.get("project_ready") is not True:
+        return "project", "Continue to Project"
+    if state.get("inputs_ready") is not True:
+        return "inputs", "Continue to Input data"
+    return "review", "Review settings"
+
+
+def run_action_role(text):
+    """Visual role mirrored from the controller-owned run button text."""
+    words = str(text).strip().casefold()
+    if words.startswith("stopping"):
+        return "stopping"
+    if words.startswith(("stop", "cancel")):
+        return "stop"
+    return "run"
+
+
+def interpreter_label(record, source_labels):
+    """Readable combo entry for one verified interpreter record."""
+    version = str(record.get("version") or "").strip()
+    parts = ["Python " + version if version and version != "unknown" else "Python"]
+    if record.get("bits"):
+        parts.append(f"{record['bits']}-bit")
+    source = record.get("source")
+    if source:
+        parts.append(source_labels.get(source, str(source)))
+    if record.get("recommended"):
+        parts.append("Recommended")
+    parts.append(short_path(record.get("path", ""), 48))
+    return " · ".join(parts)

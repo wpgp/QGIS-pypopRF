@@ -1,19 +1,24 @@
 # Interface
 
-The current interface has six tabs: **Home**, **Project**, **Input data**, **Settings**,
+The current interface has seven tabs: **Home**, **Engine**, **Project**, **Input data**, **Settings**,
 **Results** and **Details**. Historical screenshots from earlier plugin versions
 do not describe this layout.
 
-The compact **Before running** row is visible from every tab. Engine, Project,
+The compact **Selected for run** row sits below the tabs, beside the persistent
+run/status area, and is visible from every tab. Engine, Project,
 Zone grid, Census and Covariates show selection readiness; click an item to
 navigate to its existing controls. These checks do not replace the engine's
 scientific validation of grid alignment, census IDs or data support.
 
-Task text appears in a separate, selectable plain-text status area. The numeric
+Task text appears in a separate plain-text status area, fitted to at most three
+rendered lines so long messages cannot push the run action off-screen. A tooltip
+retains the caller-bounded text; **Details** contains the full diagnostics and
+**Copy log** copies them. Elapsed stage text is fitted to two rendered lines.
+The numeric
 progress bar is shown during analysis/import/tools work and hidden when idle.
 Failures remain visible after readiness refresh; **Details** opens the complete
 diagnostics when a long message is shortened. Engine setup also has its own
-progress on the Project tab.
+progress on the Engine tab.
 
 ## Project
 
@@ -37,7 +42,13 @@ different `output_dir`. Log files must be ordinary dedicated files, not links
 to another file. Locations are checked again before imports, analysis and
 switching the log destination, including manually edited configuration paths.
 
-The **Analysis engine** area checks for the plugin's isolated Python runtime.
+## Engine
+
+The **Engine** tab checks for the plugin's isolated Python runtime. Checking,
+missing Python, verified selection, preparation, readiness and failure have
+distinct visible states. A ready engine offers the next workflow step instead
+of installation controls. **Manage engine (advanced)** reveals repair, discovery
+and manual interpreter selection; downloading Python is offered only when needed.
 Choose a verified 64-bit CPython 3.12 from the discovery list and use **Set up engine**
 when needed. Setup downloads the locked wheel dependencies into a separate
 per-user environment; plugin activation does not install packages into QGIS.
@@ -94,7 +105,9 @@ Full descriptions and supported advanced YAML fields are in
 
 ## Running and stopping
 
-**Run analysis** starts a separate engine process. Numerical preflight,
+The prominent **Run analysis** action stays below every tab. Its appearance does
+not bypass readiness checks; it changes to the appropriate cancellation action
+during owned work. **Run analysis** starts a separate engine process. Numerical preflight,
 fingerprinting, fitting and raster computation occur outside the QGIS GUI.
 The progress area names the current stage; numerical stage percentages are
 milestones rather than an estimate of remaining wall-clock time.

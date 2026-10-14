@@ -7,7 +7,7 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout is the **0.3.2 development build**, not a published
+This checkout is the **0.3.3 development build**, not a published
 stable release. The [development guide](docs/development.md) describes the
 architecture, regression checks and packaging. Build a ZIP from this checkout;
 there is no published download of this development build.
@@ -17,6 +17,8 @@ there is no published download of this development build.
 ## A look at the workflow
 
 ![Guided native Home screen](docs/assets/screenshots/home.png)
+
+![Verified engine and its next workflow step](docs/assets/screenshots/engine.png)
 
 ![Native QGIS workflow](docs/assets/screenshots/workflow.png)
 
@@ -42,9 +44,11 @@ evidence of population-map accuracy in a real area.
   Compatible Python installations are offered instead of requiring file browsing;
   setup errors are shown next to the controls. Python is not silently installed.
 - Import name conflicts offer verified reuse or a separate copy, never overwrite.
-- A native-palette interface provides Home, Project, Input data, Settings, Results and
-  Details tabs, clickable readiness checks, separate task status and progress,
-  engine setup, elapsed stage history and run history that keeps your selected result.
+- A native-palette interface provides Home, Engine, Project, Input data, Settings,
+  Results and Details tabs. Engine readiness has its own page; verified setup
+  hides routine installation choices behind advanced maintenance. Clickable
+  checks, task status and a prominent run action stay together below the tabs.
+  Elapsed stage history and run history keep diagnostics and your selected result.
 - Guided data preparation creates a new derived project with explicit grid,
   quantity/resampling choices and diagnostics, preserving the original sources.
 - A quality dashboard distinguishes held-out zone-density validation from census
@@ -71,7 +75,7 @@ into QGIS or download an interpreter.
 
 1. Build a development ZIP: `python scripts/build_plugin.py` → `dist/pypopRF.zip`.
 2. In QGIS: Plugins → Manage and Install Plugins → Install from ZIP.
-3. Open pypopRF, choose Python 3.12 if needed, then set up the isolated engine.
+3. Open pypopRF → **Engine**, choose a compatible Python if needed, then **Set up engine**.
 4. Create/open a project and follow the [quick start](docs/getting-started/quickstart.md).
 
 First-time setup downloads SHA-256-verified binary wheels from the packaged lock. Failed/cancelled updates
@@ -102,13 +106,15 @@ and [recovery checks](docs/user-guide/troubleshooting.md#plugin-update-or-locked
 
 ## Minimal workflow
 
-1. **Project:** create or open an analysis project and check engine readiness.
-2. **Input data:** add the zone grid, census CSV and covariates. Use
+1. **Engine:** verify readiness or prepare the separate calculation environment.
+2. **Project:** create or open an analysis project outside plugin/cache folders.
+3. **Input data:** add the zone grid, census CSV and covariates. Use
    **Prepare / align inputs…** if the source grids need explicit preparation.
-3. **Settings:** set the exact census ID/population columns and processing options.
-4. **Run analysis:** follow progress and diagnostics; cancellation remains scoped
+4. **Settings:** set the exact census ID/population columns and processing options.
+5. **Run analysis:** review the checks next to the bottom action, then follow progress
+   and diagnostics; cancellation remains scoped
    to the current task.
-5. **Results:** inspect a completed run, review its validation limits and add its
+6. **Results:** inspect a completed run, review its validation limits and add its
    verified population maps to QGIS.
 
 The [quick start](docs/getting-started/quickstart.md) explains each step.

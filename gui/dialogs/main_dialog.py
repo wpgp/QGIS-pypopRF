@@ -26,7 +26,7 @@ import configparser
 from typing import Optional, Any
 
 from qgis.PyQt import uic, QtWidgets
-from qgis.PyQt.QtCore import QThread, QStandardPaths, pyqtSignal, Qt
+from qgis.PyQt.QtCore import QThread, QStandardPaths, pyqtSignal, Qt, QEvent
 from qgis.PyQt.QtGui import QKeySequence
 from qgis.core import QgsApplication
 from pathlib import Path
@@ -34,7 +34,9 @@ from pathlib import Path
 from ...services.config_manager import ConfigManager, validate_log_filename
 from ..widgets.console_handler import ConsoleHandler
 from ..widgets.covariate_table import CovariateTableHandler
-from ..widgets.workflow_status import READINESS, readiness_states, readiness_tooltip, bounded_status
+from ..widgets import visual_style
+from ..widgets.workflow_status import (READINESS, SCOPE, readiness_states, readiness_tooltip, bounded_status,
+                                       run_action_role)
 from ...services.file_handlers import FileHandler
 from ...controllers.process_executor import ProcessExecutor
 from ...controllers.settings_handler import SettingsHandler
@@ -49,6 +51,7 @@ from ..presenters.results_presenter import ResultsPresenter
 from ..presenters.preparation_presenter import PreparationPresenter
 from ..presenters.runtime_presenter import RuntimePresenter
 from ..widgets.task_activity import TaskActivity
+from ..widgets.fitted_label import FittedLabel
 from ..widgets.home_panel import HomePanel
 from ..dialogs.about_dialog import AboutDialog
 from ...services.plugin_info import load_plugin_info
@@ -91,6 +94,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PyPopRFDialog, self).__init__(parent)
         self.iface = iface
         self.setupUi(self)
+        self._install_status_label()
         self._loading_project = False
         self._project_ready = False
         self._close_pending = False
@@ -133,8 +137,11 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._summary_window = None
         self._about_window = None
         self.activity = TaskActivity(self)
-        self.mainLayout.insertWidget(self.mainLayout.count() - 1, self.activity)
+        # Footer order: selection readiness, current task/elapsed time, status + Run.
+        self.runFooterLayout.insertWidget(1, self.activity)
         self.detailsLayout.insertWidget(1, self.activity.history)
+        self._run_role = None
+        self._restyling = False
         self.runtime_presenter = RuntimePresenter(self)
         self._input_errors = {}
         self._setup_onboarding()
@@ -153,6 +160,27 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._set_initial_state()
         self._setup_visuals()
         self.runtime_controller.check()
+        # Present the asynchronous first check as "checking" everywhere (Home
+        # included) instead of implying that no engine or Python exists yet.
+        self._refresh_readiness()
+
+    def _install_status_label(self):
+        """Footer status fitted to three rendered lines of its current width and font.
+
+        Same name, position and size policy as the form's label; the complete
+        message stays in text(), its tooltip and Details.
+        """
+        form_label = self.statusLabel
+        label = FittedLabel(form_label.parentWidget(), max_lines=3)
+        label.setObjectName(form_label.objectName())
+        policy = form_label.sizePolicy()
+        policy.setHeightForWidth(True)
+        label.setSizePolicy(policy)
+        label.setText(form_label.text())
+        self.runActionsLayout.replaceWidget(form_label, label)
+        form_label.hide()
+        form_label.deleteLater()
+        self.statusLabel = label
 
     def _connect_signals(self):
         """Connect all UI signals to their respective handlers."""
@@ -395,6 +423,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             self.process_executor.start_analysis()
         else:
             self.process_executor.stop_analysis()
+        self._sync_run_action()
 
     def _save_processing_settings(self, *args):
         if not self._loading_project and self.config_manager.config_path:
@@ -431,6 +460,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             return
         self.mainProgressBar.hide()
         self.activity.finish()
+        self._sync_run_action()
         self.workCompleted.emit()
         if self._dispose_pending:
             self._dispose_resources()
@@ -479,14 +509,20 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         metadata = configparser.ConfigParser()
         metadata.read(self.plugin_root / "metadata.txt", encoding="utf-8")
         self.setWindowTitle("pypopRF " + metadata.get("general", "version", fallback=""))
-        for label in (self.currentProjectLabel, self.readinessLabel, self.runtimeStatusLabel,
-                      self.resultSummaryLabel, self.statusLabel):
+        for label in (self.currentProjectLabel, self.readinessLabel, self.workflowHint, self.projectIntroLabel,
+                      self.resultSummaryLabel, self.resultsHint, self.detailsLabel, self.inputHint,
+                      self.covariateHeading, self.validationHint, self.subtitleLabel):
+            visual_style.wrap_label(label)
+        self.currentProjectLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        for label in (self.runtimeStatusLabel, self.statusLabel):
             label.setTextFormat(Qt.TextFormat.PlainText)
-        self.statusLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        visual_style.set_font(self.titleLabel, delta=4, bold=True)
+        visual_style.set_font(self.readinessLabel, bold=True)
         self.mainProgressBar.hide()
         self._readiness_icons = {True: QgsApplication.getThemeIcon("/mIconSuccess.svg"),
                                  False: QgsApplication.getThemeIcon("/mIconWarning.svg")}
         self._show_readiness(readiness_states(False, False, {}))
+        self.readinessRowLabel.setToolTip(SCOPE)
         for button, icon in ((self.initProjectButton, "/mActionFileNew.svg"),
                              (self.openProjectFolder, "/mActionFileOpen.svg"),
                              (self.addCovariateButton, "/mActionAddRasterLayer.svg"),
@@ -494,21 +530,69 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             button.setIcon(QgsApplication.getThemeIcon(icon))
         self.mainStartButton.setDefault(True)
         self.mainStartButton.setMinimumWidth(130)
+        visual_style.set_font(self.mainStartButton, delta=1, bold=True)
         self.mainStartButton.setShortcut(QKeySequence("Alt+R"))
         self.initProjectButton.setShortcut(QKeySequence("Alt+O"))
         self.addCovariateButton.setShortcut(QKeySequence("Alt+A"))
-        self.mainStartButton.setToolTip("Run or stop the current analysis (Alt+R)")
         self.initProjectButton.setToolTip("Create or open the selected project folder (Alt+O)")
         self.selectionThresholdLimit.setToolTip(
             "Minimum normalized permutation importance. Higher values usually keep fewer predictors. "
             "A fallback retains usable predictors when none pass the threshold.")
         self.pythonPathEdit.setPlaceholderText("Python 3.12 executable")
-        self.runtimeProgressBar.hide()
-        self.cancelSetupButton.hide()
         self.openRunButton.setEnabled(False)
         self.addRunLayersButton.setEnabled(False)
         self.resultsTree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.detailsLayout.setStretchFactor(self.scrollAreaWidgetContents, 1)
+        # Wrapped (width-ignoring) text columns take the free width, not their neighbours.
+        self.headerLayout.setStretch(0, 1)
+        self.covariateHeader.setStretch(0, 1)
+        self.engineHeaderLayout.setStretch(1, 1)
         self.covariate_handler.on_changed = self._refresh_readiness
+        self._styled = True
+        self._apply_styles()
+
+    def _apply_styles(self):
+        """Palette-derived scoped styles; re-run when the native palette changes."""
+        if self._restyling:
+            return
+        self._restyling = True
+        try:
+            for label in (self.subtitleLabel, self.readinessRowLabel, self.activity, self.projectIntroLabel,
+                          self.workflowHint, self.inputHint, self.covariateHeading, self.validationHint,
+                          self.resultsHint, self.detailsLabel):
+                visual_style.muted(label)
+            self.runtime_presenter.apply_style()
+            self.home_panel.apply_style()
+            self._run_role = None
+            self._sync_run_action()
+        finally:
+            self._restyling = False
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.PaletteChange and getattr(self, "_styled", False):
+            self._apply_styles()
+
+    def _sync_run_action(self):
+        """Mirror the run button's controller-owned text as a visual role.
+
+        Never changes the button's text or enabled state: ProcessExecutor, the
+        import/tool controllers and _refresh_readiness keep that authority.
+        """
+        if not getattr(self, "_styled", False):
+            return
+        role = run_action_role(self.mainStartButton.text())
+        if role == self._run_role:
+            return
+        self._run_role = role
+        visual_style.action_button(self.mainStartButton, "primary" if role == "run" else role)
+        pixmap = (QtWidgets.QStyle.StandardPixmap.SP_MediaPlay if role == "run"
+                  else QtWidgets.QStyle.StandardPixmap.SP_MediaStop)
+        self.mainStartButton.setIcon(self.style().standardIcon(pixmap))
+        self.mainStartButton.setToolTip(
+            "Run the analysis with the selected project, inputs and settings (Alt+R)" if role == "run" else
+            "Stop the current task; earlier results are kept (Alt+R)" if role == "stop" else
+            "Stopping: waiting for the current operation to end safely")
 
     def _runtime_changed(self, result):
         return self.runtime_presenter.changed(result)
@@ -523,10 +607,17 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         return self.runtime_presenter.setup()
 
     def _refresh_readiness(self):
+        self._refresh_workflow_state()
+        # Presentation follows the authoritative state computed above; it never
+        # enables Run or engine actions on its own.
+        self.runtime_presenter.render()
+        self._sync_run_action()
+
+    def _refresh_workflow_state(self):
         self.runtime_presenter._controls(not self.is_busy)
         if self.process_executor.is_running or self.import_controller.is_running or self.tools_controller.is_running:
             state = dict(getattr(self, "_home_state", {}))
-            state.update(busy=True, status=self.statusLabel.text())
+            state.update(busy=True, status=self.statusLabel.text(), engine_state=self.runtime_presenter.view_state())
             self.home_panel.refresh(state)
             return
         self.prepareInputsButton.setEnabled(bool(self.runtime_controller.python) and not self.is_busy)
@@ -544,7 +635,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.readinessLabel.setText("Project settings cannot be read. Reopen the project.")
                 self._show_readiness(readiness_states(self.runtime_controller.python, False, {}))
                 self._home_state = {"engine_ready": bool(self.runtime_controller.python), "project_ready": False,
-                    "inputs_ready": False, "busy": self.is_busy, "status": "Project settings cannot be read. Reopen the project."}
+                    "inputs_ready": False, "busy": self.is_busy, "status": "Project settings cannot be read. Reopen the project.",
+                    "engine_state": self.runtime_presenter.view_state()}
                 self.home_panel.refresh(self._home_state)
                 self.logger.error(str(exc))
                 return
@@ -555,15 +647,18 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self._show_readiness(readiness_states(engine, active, config))
         self._home_state = {"engine_ready": engine, "project_ready": active,
             "inputs_ready": ready and active, "busy": self.is_busy,
-            "status": self.statusLabel.text(), "project_path": str(self.config_manager.working_dir or "")}
+            "status": self.statusLabel.text(), "project_path": str(self.config_manager.working_dir or ""),
+            "engine_state": self.runtime_presenter.view_state()}
         self.home_panel.refresh(self._home_state)
         self.mainStartButton.setEnabled(ready and active and engine and not self.is_busy)
         self.mainStartButton.setText("Run analysis")
         self.readinessLabel.setText(
-            "Ready to run your population analysis." if ready and active and engine else
-            "Set up the analysis engine." if not engine else
-            "Create or open a project." if not active else
-            "Add a zone grid, population census and at least one covariate.")
+            "Ready to run your population analysis. Review Settings, then use Run analysis below."
+            if ready and active and engine else
+            "Create or open a project folder above." if not active else
+            "Add a zone grid, population census and at least one covariate in Input data."
+            if not ready else
+            "Inputs are selected. Prepare the analysis engine on the Engine tab before running.")
 
     def _show_readiness(self, states):
         for key, label, hint in READINESS:
@@ -573,13 +668,22 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             button.setAccessibleName(f"{label}: {'ready' if ready else 'needed'}")
 
     def _navigate_readiness(self, key):
-        tab, widget = {"engine": (self.tab_main, self.setupRuntimeButton),
+        tab, widget = {"engine": (self.tab_engine, self.runtime_presenter.focus_target()),
                        "project": (self.tab_main, self.workingDirEdit),
                        "mastergrid": (self.tab_inputs, self.mastergridFileWidget),
                        "census_data": (self.tab_inputs, self.populationCensusFileWidget),
                        "covariates": (self.tab_inputs, self.addCovariateButton)}[key]
         self.mainTabWidget.setCurrentWidget(tab)
         widget.setFocus()
+
+    def _go_to_step(self, key):
+        """Navigation only; destinations keep their own enablement rules."""
+        if key in ("engine", "project"):
+            self._navigate_readiness(key)
+        elif key == "inputs":
+            self.mainTabWidget.setCurrentWidget(self.tab_inputs)
+        else:
+            self.mainTabWidget.setCurrentWidget(self.tab_settings)
 
     def set_task_status(self, message, percent=None):
         """Show task text in the plain status label; the bar shows only percent while work runs."""
@@ -594,6 +698,8 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             self.mainProgressBar.show()
         if self.activity.active:
             self.activity.record(message)
+        # Controllers change the run button text right before reporting status.
+        self._sync_run_action()
 
     def begin_task(self, title):
         self.activity.begin(title)
@@ -611,9 +717,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         self.home_panel.requestedAbout.connect(self._show_about)
         self.aboutButton = QtWidgets.QToolButton(self)
         self.aboutButton.setText("About")
+        self.aboutButton.setToolTip("Version, authors, licence and citation")
         self.aboutButton.setAutoRaise(True)
         self.aboutButton.clicked.connect(self._show_about)
-        self.readinessRowLayout.addWidget(self.aboutButton)
+        self.headerLayout.addWidget(self.aboutButton, 0, Qt.AlignmentFlag.AlignTop)
         for kind, widget in (("mastergrid", self.mastergridFileWidget), ("census_data", self.populationCensusFileWidget),
                              ("mask", self.maskFileWidget), ("constrain", self.constrainFileWidget),
                              ("agesex_data", self.agesexCensusFileWidget)):
@@ -633,11 +740,12 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             layout.addWidget(label)
             parent_layout.setWidget(row, QtWidgets.QFormLayout.ItemRole.FieldRole, container)
             self._input_errors[kind] = label
-        self._input_errors["covariate"] = QtWidgets.QLabel(self.tab_inputs)
+        self._input_errors["covariate"] = QtWidgets.QLabel(self.covariatesGroup)
         self._input_errors["covariate"].setTextFormat(Qt.TextFormat.PlainText)
         self._input_errors["covariate"].setWordWrap(True)
         self._input_errors["covariate"].hide()
-        self.inputLayout.insertWidget(0, self._input_errors["covariate"])
+        # Shown with the covariate table it describes, not above unrelated inputs.
+        self.covariatesGroupLayout.addWidget(self._input_errors["covariate"])
 
     def set_input_error(self, kind, message):
         label = self._input_errors.get(kind)
@@ -692,6 +800,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         if busy:
             self.mainStartButton.setText("Stop data tool")
             self.mainStartButton.setEnabled(True)
+            self._sync_run_action()
         else:
             self._refresh_readiness()
             self._result_selected()

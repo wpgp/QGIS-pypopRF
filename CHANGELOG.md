@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - Unreleased
+
+### Changed
+
+- Separate Engine page from project-folder selection, with explicit discovery,
+  selection, preparation, readiness and recoverable failure states.
+- Replace routine ready-engine installation controls with a contextual next step;
+  keep repair and manual selection under advanced maintenance.
+- Group readiness, elapsed task status and a prominent run/cancel action below
+  every tab. Preserve controller-owned action gates and scientific validation.
+- Use scoped native-palette cards and actions, retaining project branding,
+  About/citation and diagnostic history.
+
+### Fixed
+
+- Drop obsolete discovered Python choices after a successful empty refresh;
+  retain them after failed or cancelled discovery.
+- Distinguish verified manual interpreter selection from an unprobed path and
+  from a prepared engine; invalidate selection verification on edits.
+
 ## [0.3.2] - Unreleased
 
 ### Added

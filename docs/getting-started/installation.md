@@ -1,6 +1,6 @@
 # Installation and updates
 
-This is the development build (0.3.2), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
+This is the development build (0.3.3), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
 
 ## Two separate components
 
@@ -13,7 +13,7 @@ The declared range is QGIS 3.44–4.x. Native acceptance targets Windows AMD64 a
 1. Build with `python scripts/build_plugin.py` from the repository root, using a development Python. The resulting ZIP excludes datasets, tests and developer environments.
 2. In QGIS, choose **Plugins → Manage and Install Plugins → Install from ZIP** and select the generated ZIP.
 3. Enable pypopRF and open its dialog.
-4. On **Home**, follow the next-step controls. On **Project**, choose a recommended compatible Python from the discovered list, then choose **Set up engine**. If none is found, **Get Python 3.12…** explains the requirement and can open the official download page after confirmation. Install 64-bit Python 3.12, then **Find Python again**. Manual executable selection is an advanced option; selected files are checked asynchronously.
+4. On **Home**, follow the next-step controls. On **Engine**, choose a recommended compatible Python from the discovered list, then choose **Set up engine**. If none is found, **Get Python 3.12…** explains the requirement and can open the official download page after confirmation. Install 64-bit Python 3.12, then **Find Python again**. Manual executable selection is an advanced option; selected files are checked asynchronously. A ready engine hides routine installation controls and offers the next workflow step instead.
 5. Wait for binary-wheel SHA-256 verification, exact package-version, native-import and dependency checks to finish. Start analysis only when the engine is ready.
 
 Setup downloads the locked binary dependencies and needs network access, sufficient disk space and permission to write to the user's QGIS cache. It does not automatically download a Python interpreter. Install Python 3.12 separately from [python.org](https://www.python.org/downloads/) if necessary. On Windows, select `python.exe`, not `pythonw.exe` or the Microsoft Store alias.
@@ -26,7 +26,8 @@ The initial package installation can take several minutes. You can cancel it fro
 2. Use **Plugins → Manage and Install Plugins → Install from ZIP** to install the
    newly built ZIP. There is no need to uninstall the modern plugin first.
 3. Reopen pypopRF and wait for the engine check. If the packaged dependency lock
-   changed, choose **Update / repair engine** and wait for verification.
+   changed, open **Engine → Manage engine (advanced)** and choose
+   **Repair / update engine**, then wait for verification.
 
 Analysis and preparation jobs use a private, verified source snapshot and working
 directory outside the installation. Unloading the plugin requests cancellation;

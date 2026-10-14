@@ -8,7 +8,7 @@ reporting an issue. Avoid sending personal census data publicly.
 ## Engine setup
 
 The interface does not need NumPy, pandas, rasterio or scikit-learn installed in
-QGIS. Select a 64-bit CPython 3.12 executable and use Project → Set up engine.
+QGIS. Select a compatible 64-bit CPython 3.12 on **Engine** and use **Set up engine**.
 QGIS 4 may use Python 3.13; that interpreter is not the calculation engine.
 Setup uses a separate cache and exact packaged dependency lock. Check proxy,
 network, free space and write permissions if package downloads fail. Setup output

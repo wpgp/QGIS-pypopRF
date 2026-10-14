@@ -54,7 +54,7 @@ def test_readiness_navigation_tracks_active_project_not_folder_selection(native_
     dialog.zoneGridReadyButton.click()
     assert dialog.mainTabWidget.currentWidget() is dialog.tab_inputs
     dialog.engineReadyButton.click()
-    assert dialog.mainTabWidget.currentWidget() is dialog.tab_main
+    assert dialog.mainTabWidget.currentWidget() is dialog.tab_engine
     dialog.workingDirEdit.setFilePath(str(tmp_path / "unopened-project"))
     assert dialog.projectReadyButton.accessibleName() == "Project: needed"
     assert not dialog.mainStartButton.isEnabled()
