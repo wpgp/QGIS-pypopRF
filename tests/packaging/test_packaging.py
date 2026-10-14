@@ -70,6 +70,9 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
     "services/engine_snapshot.py",
     "services/project_location.py", "gui/widgets/workflow_status.py", "gui/widgets/visual_style.py",
     "gui/widgets/fitted_label.py",
+    "gui/widgets/light_theme.py", "gui/icons/check.svg", "gui/icons/down.svg",
+    "gui/icons/partial.svg", "gui/icons/up.svg", "gui/icons/radio.svg",
+    "gui/icons/play.svg", "gui/icons/play-disabled.svg", "gui/icons/stop.svg", "gui/icons/stop-disabled.svg",
     "docs/assets/screenshots/home.png", "docs/assets/screenshots/engine.png",
     "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 ])

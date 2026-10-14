@@ -685,7 +685,7 @@ dialog.close()
     assert result.returncode == 0, result.stderr
 
 
-def test_palette_change_restyles_primary_action(native_dialog):
+def test_host_palette_change_keeps_fixed_primary_action(native_dialog):
     dialog = native_dialog
     original = QApplication.palette()
     dark = QPalette(original)
@@ -697,8 +697,10 @@ def test_palette_change_restyles_primary_action(native_dialog):
         QApplication.setPalette(dark)
         dialog.show()
         QApplication.processEvents()
-        assert "#537ab6" in dialog.mainStartButton.styleSheet()
-        assert "#537ab6" in dialog.home_panel.next_button.styleSheet()
+        assert "#1d4ed8" in dialog.mainStartButton.styleSheet()
+        assert "#1d4ed8" in dialog.home_panel.next_button.styleSheet()
+        assert dialog.palette().color(QPalette.ColorRole.Window) == QColor("#ffffff")
+        assert QApplication.palette().color(QPalette.ColorRole.Highlight) == QColor("#537ab6")
     finally:
         QApplication.setPalette(original)
         QApplication.processEvents()
@@ -762,7 +764,7 @@ def assert_readable(image, dialog, label, background, style, skip_left=0):
 
 @pytest.mark.parametrize("theme", ["dark", "light"])
 @pytest.mark.parametrize("state", ["ready", "repair_failed", "failed"])
-def test_card_text_follows_host_window_palette(native_package, tmp_path, theme, state):
+def test_card_text_keeps_plugin_palette_under_host_theme(native_package, tmp_path, theme, state):
     alias, _ = native_package
     style = importlib.import_module(alias + ".gui.widgets.visual_style")
     manager = missing_engine(alias, True) if state == "failed" else PreparedRuntime(alias)
@@ -784,6 +786,8 @@ def test_card_text_follows_host_window_palette(native_package, tmp_path, theme, 
         assert presenter.state == state
         assert QApplication.palette().color(ACTIVE, QPalette.ColorRole.WindowText) == application_text
         host = dialog.palette()
+        assert host.color(ACTIVE, QPalette.ColorRole.Window) == QColor("#ffffff")
+        assert host.color(ACTIVE, QPalette.ColorRole.WindowText) == QColor("#0f172a")
         text = host.color(ACTIVE, QPalette.ColorRole.WindowText)
         image = dialog.grab().toImage()
 

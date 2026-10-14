@@ -10,6 +10,7 @@ from qgis.PyQt.QtCore import pyqtSignal, Qt
 
 from ..layer_integration import choose_project_layer
 from ..widgets.file_choice import FileChoice
+from ..widgets.light_theme import apply_light_theme
 from ...services.project_location import ensure_project_location
 
 
@@ -18,6 +19,7 @@ class PreparationWizard(QtWidgets.QWizard):
 
     def __init__(self, dialog):
         super().__init__(dialog)
+        apply_light_theme(self)
         self.dialog, self.controller = dialog, dialog.tools_controller
         self.setWindowTitle("Prepare population inputs — create a new project")
         self.setWindowModality(Qt.WindowModality.WindowModal)

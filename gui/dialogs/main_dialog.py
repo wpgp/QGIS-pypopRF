@@ -35,6 +35,7 @@ from ...services.config_manager import ConfigManager, validate_log_filename
 from ..widgets.console_handler import ConsoleHandler
 from ..widgets.covariate_table import CovariateTableHandler
 from ..widgets import visual_style
+from ..widgets.light_theme import action_icon, apply_light_theme
 from ..widgets.workflow_status import (READINESS, SCOPE, readiness_states, readiness_tooltip, bounded_status,
                                        run_action_role)
 from ...services.file_handlers import FileHandler
@@ -94,6 +95,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PyPopRFDialog, self).__init__(parent)
         self.iface = iface
         self.setupUi(self)
+        for button in (self.engineReadyButton, self.projectReadyButton, self.zoneGridReadyButton,
+                       self.censusReadyButton, self.covariatesReadyButton):
+            button.setProperty("pypoprfReadiness", True)
+        apply_light_theme(self)
         self._install_status_label()
         self._loading_project = False
         self._project_ready = False
@@ -514,6 +519,10 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
                       self.covariateHeading, self.validationHint, self.subtitleLabel):
             visual_style.wrap_label(label)
         self.currentProjectLabel.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        # Keep the caption out of the chips' width budget at 720px / larger host fonts.
+        self.readinessRowLayout.removeWidget(self.readinessRowLabel)
+        self.runFooterLayout.insertWidget(0, self.readinessRowLabel)
+        visual_style.wrap_label(self.readinessRowLabel)
         for label in (self.runtimeStatusLabel, self.statusLabel):
             label.setTextFormat(Qt.TextFormat.PlainText)
         visual_style.set_font(self.titleLabel, delta=4, bold=True)
@@ -586,9 +595,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
             return
         self._run_role = role
         visual_style.action_button(self.mainStartButton, "primary" if role == "run" else role)
-        pixmap = (QtWidgets.QStyle.StandardPixmap.SP_MediaPlay if role == "run"
-                  else QtWidgets.QStyle.StandardPixmap.SP_MediaStop)
-        self.mainStartButton.setIcon(self.style().standardIcon(pixmap))
+        self.mainStartButton.setIcon(action_icon(role))
         self.mainStartButton.setToolTip(
             "Run the analysis with the selected project, inputs and settings (Alt+R)" if role == "run" else
             "Stop the current task; earlier results are kept (Alt+R)" if role == "stop" else

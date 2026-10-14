@@ -445,7 +445,8 @@ def test_native_dark_palette_and_keyboard_access(native_dialog, tmp_path):
         QTest.keyClick(dialog.idColumnEdit, Qt.Key.Key_Tab)
         assert dialog.popColumnEdit.hasFocus()
         assert dialog.mainStartButton.shortcut().toString() == "Alt+R"
-        assert dialog.console_handler.console_text.palette().color(role.Base) == QColor("#1c1e21")
+        assert dialog.console_handler.console_text.palette().color(role.Base) == QColor("#ffffff")
+        assert QApplication.palette().color(role.Base) == QColor("#1c1e21")
         assert dialog.mainStartButton.minimumWidth() >= 130
         capture_state(dialog, "dark-settings", tab=2)
         dialog.logger.info("Plain text <tag> is displayed without rich-text interpretation.")

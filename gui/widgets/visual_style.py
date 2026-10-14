@@ -1,12 +1,13 @@
-"""Scoped appearance derived from the native palette.
+"""Scoped appearance using the plugin's own light color scheme.
 
 No application stylesheet, font or environment is changed. Styles are set on
-individual widgets, computed from the owning window's QPalette and re-applied
-by the owner on palette changes, so light, dark and QGIS themes stay coherent.
+individual widgets; the host's palette never chooses plugin colors.
 """
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor, QPalette
+
+from . import light_theme
 
 Role = QPalette.ColorRole
 Group = QPalette.ColorGroup
@@ -40,8 +41,8 @@ def contrast(first, second):
 
 
 def window_palette(widget):
-    """Palette of the owning window; widget stylesheets can alter a widget's own palette."""
-    return widget.window().palette()
+    """Independent colors even if the host changes palette during a task."""
+    return light_theme.palette()
 
 
 def is_dark(palette):
@@ -102,16 +103,17 @@ def muted(label):
         palette.setColor(group, Role.WindowText,
                          mix(base.color(group, Role.WindowText), base.color(group, Role.Window), 0.3))
     label.setPalette(palette)
+    label.setStyleSheet(f"QLabel {{ color: {light_theme.MUTED}; background-color: transparent; }}")
     label.setProperty(_MUTED, True)  # card() keeps it secondary when re-asserting foregrounds
 
 
 def host_foreground(widget):
-    """Give ``widget`` the owning window's text color explicitly.
+    """Give ``widget`` the plugin's text color explicitly.
 
     Polishing a widget stylesheet freezes the palette of the styled widget and
     its descendants as it was at that moment (typically the application palette),
-    so a later host-window palette (dark QGIS theme) no longer reaches their
-    text. Re-assert it after every stylesheet change; scoped to this widget only.
+    so inherited colors are unreliable. Re-assert our fixed light foreground
+    after stylesheet changes; scoped to this widget only.
     """
     base = window_palette(widget)
     palette = QPalette(widget.palette())

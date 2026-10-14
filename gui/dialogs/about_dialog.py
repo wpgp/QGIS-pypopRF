@@ -5,12 +5,14 @@ from qgis.PyQt.QtGui import QDesktopServices, QImageReader, QPixmap
 
 from ...services.plugin_info import safe_web_url
 from ..widgets import visual_style
+from ..widgets.light_theme import apply_light_theme
 from ..widgets.workflow_status import plain_tooltip
 
 
 class AboutDialog(QtWidgets.QDialog):
     def __init__(self, plugin_info, parent=None):
         super().__init__(parent)
+        apply_light_theme(self)
         self.plugin_info = plugin_info
         self.setWindowTitle(f"About {plugin_info.name}")
         self.setModal(False)

@@ -4,7 +4,13 @@ The current interface has seven tabs: **Home**, **Engine**, **Project**, **Input
 **Results** and **Details**. Historical screenshots from earlier plugin versions
 do not describe this layout.
 
-The compact **Selected for run** row sits below the tabs, beside the persistent
+The plugin uses one independent light color scheme: white surfaces, dark text,
+blue actions/selection and explicit semantic errors. It does not inherit QGIS's
+dark/gray theme or change the appearance of QGIS and other plugins. All plugin
+dialogs use this scheme; native operating-system file pickers remain controlled
+by the operating system. User fonts and display scaling are respected.
+
+The compact **Selected for run** checklist sits below the tabs, beside the persistent
 run/status area, and is visible from every tab. Engine, Project,
 Zone grid, Census and Covariates show selection readiness; click an item to
 navigate to its existing controls. These checks do not replace the engine's

@@ -4,12 +4,14 @@ from pathlib import Path
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import Qt
 from ..widgets.file_choice import FileChoice
+from ..widgets.light_theme import apply_light_theme
 from ...controllers.tools_controller import validate_population_summary
 
 
 class PopulationSummaryDialog(QtWidgets.QDialog):
     def __init__(self, dialog, maps, artifact_hashes=None):
         super().__init__(dialog)
+        apply_light_theme(self)
         self.dialog, self.controller = dialog, dialog.tools_controller
         self._active, self._close_pending = False, False
         self._artifact_hashes = dict(artifact_hashes or {})

@@ -5,6 +5,7 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QDialogButtonBox
 
 from ...services.file_handlers import FileHandler, FileHandlerError
+from ..widgets.light_theme import apply_light_theme
 
 
 class ImportConflictDialog(QDialog):
@@ -12,6 +13,7 @@ class ImportConflictDialog(QDialog):
 
     def __init__(self, conflict, parent=None):
         super().__init__(parent)
+        apply_light_theme(self)
         self.conflict = conflict
         self._chosen = False
         self.setWindowTitle("An input with this name already exists")

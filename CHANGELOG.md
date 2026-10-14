@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - Unreleased
+
+### Changed
+
+- Use one plugin-owned white/light color scheme independent of QGIS palette and
+  application stylesheet, including preparation, About, import conflict and
+  population-summary dialogs. Keep host and unrelated windows unchanged.
+- Use consistent blue selections/actions, readable disabled/error states and
+  packaged vector control indicators without changing fonts or display scaling.
+
+### Fixed
+
+- Keep the footer checklist caption and full readiness labels readable at 720px
+  with larger native fonts; separate the caption from compact navigation chips.
+
 ## [0.3.3] - Unreleased
 
 ### Changed
