@@ -15,6 +15,7 @@ core/pypoprf/                            isolated numerical engine
   config/, utils/                       engine validation and raster tasks
 gui/
   dialogs/, forms/, widgets/             native Qt views and Designer form
+  icons/                                packaged vector control/action indicators
   presenters/                           project, results and preparation views
 controllers/                            owned asynchronous workflows
 services/                               configuration, runtime and saved metadata
@@ -48,6 +49,28 @@ Runtime provisioning uses the shared environment contract; importing that
 contract does not start setup, mutate the parent environment or import numerical
 libraries. `services/owned_process.py` implements platform process ownership;
 `services/process_exit_guard.py` verifies actual Windows launch descendants.
+
+### GUI state and appearance contracts
+
+`ProjectInputsPresenter.selection_is_active()` distinguishes folder selection
+from successful activation. Central readiness refresh also calls
+`refresh_project_action()`: an active folder shows Project open (disabled), a
+different candidate requires explicit Create/Open, and a failed candidate is
+never labelled active. Duplicate direct activation calls do not reload settings
+or reinitialize logging. Worker completion must restore this state, not blindly
+enable the activation button. Keep location/configured-path/log checks before
+activating any new folder.
+
+`gui/widgets/light_theme.py` owns one full light palette, window-scoped QSS and
+parent-owned event guard. Never call application-global palette/style/font setters
+to implement plugin colors. Vector glyphs in `gui/icons/` must remain in the
+packaging allowlist; Run/Stop have explicit normal and disabled variants.
+`FittedLabel` bounds rendered footer lines without losing caller-bounded text;
+tests must check actual font/DPI geometry, not just source newline count.
+
+Maintain native state, import, lifecycle, hostile-host-theme and project-activation
+tests alongside changes. Public screenshots use real QGIS synthetic fixtures;
+private user paths/data and qualification reports stay in `.local/`.
 
 QProcess stdout carries newline-delimited JSON progress/result events; stderr
 carries diagnostics. A successful result requires normal exit, a matching

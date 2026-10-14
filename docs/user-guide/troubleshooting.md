@@ -5,6 +5,60 @@ directory under `output/runs`; failed and cancelled attempts never replace a
 previous completed result. Include the run's log and `manifest.json` when
 reporting an issue. Avoid sending personal census data publicly.
 
+## Start with the symptom
+
+| What you see | First safe action |
+| --- | --- |
+| Project shows Open/Create even though a folder was chosen | Selection is not activation. Click the action and look for Project open / Active project. |
+| Project open is disabled | Normal: that folder is already active. Choose a different folder to switch, not repeatedly reopen it. |
+| Run analysis is disabled | Use the bottom checklist to find the missing engine, active project or required input; green selection checks do not guarantee numerical validity. |
+| No compatible Python / requires 64-bit CPython 3.12 | Follow Engine's compatible choices or Get Python instructions, then Find Python again. |
+| Repair failed, previous engine remains available | Read the inline error and Details; do not delete the working environment. |
+| Import would overwrite an existing input | Resolve the nonmodal reuse / separate-copy / cancel choice, not filesystem deletion. |
+| An input field became empty or restored its old value | Read its inline error and Details; a rejected import is not registered as a new input. |
+| Waiting / Stopping… | Wait for owned work to finish; no terminal result is accepted before process completion. |
+| Existing folders cannot be opened | Check config.yaml, the selected location and configured data/output/log paths; do not create a replacement config over the original. |
+
+## Project selection and activation
+
+The folder picker is only a candidate. A successful **Create project** or **Open
+project** changes the button to **Project open** (disabled) and shows **Active
+project: …** below the picker. Changing the selected folder gates inputs/settings
+and analysis until that selection is explicitly activated. Selecting the same
+canonical active folder does not reset it. See [Projects](projects.md).
+
+If opening fails, retain the original `config.yaml` and inputs. Read the exact
+error before editing a backup copy. Malformed YAML, missing required saved
+settings and protected/log-alias locations are refused, not silently repaired.
+The plugin does not create a compatible project merely by selecting any old data
+folder or replace a malformed configuration with defaults.
+
+Before editing configuration externally, finish work, save your QGIS project,
+close QGIS and back up the configuration. After editing, reopen QGIS and explicitly
+open the analysis folder again. Closing only the plugin dialog hides and reuses
+it; it does not reread YAML. **Project open** is a state indicator, not a reload
+button. Do not change live configuration files while importing or calculating.
+
+## Import conflicts and cleared references
+
+An existing filename can refer to an earlier copied input even after its field
+was cleared. Clearing a field or deleting a covariate row removes the saved
+reference, not its file. The conflict dialog offers verified identical-file reuse
+when eligible, a separate copy with a new name, or cancellation. A byte difference
+or external raster resources can make reuse unavailable. Never delete an original
+file just to dismiss the conflict; inspect the choice and [input rules](input-data.md).
+
+## Appearance and lengthy messages
+
+Plugin windows use an independent light scheme even when QGIS is dark. Operating
+system file pickers/title bars remain operating-system controlled. At a small
+window size, tab contents may need scrolling; the bottom checklist/status/actions
+stay accessible. Increase the window size if you use large fonts.
+
+Status text is fitted to three rendered lines; hover for caller-bounded text or
+open **Details** for diagnostics. **Copy diagnostics** copies the displayed log,
+and **Clear view** affects that view, not saved files or completed results.
+
 ## Engine setup
 
 The interface does not need NumPy, pandas, rasterio or scikit-learn installed in
@@ -85,6 +139,19 @@ population is placed in the correct buildings or pixels. Validation metrics
 describe held-out census zones in population-per-supported-pixel units. Grouped
 or spatial validation must be interpreted according to its recorded split
 strategy; random-zone diagnostics do not establish spatial independence.
+
+## What to include in a useful report
+
+1. Plugin build, QGIS version, operating system and whether this is installation,
+   engine setup, project opening, importing or running.
+2. Exact message from **Details → Copy diagnostics**, not only the final percent.
+3. For a run, its `manifest.json` and run log; for opening, a redacted configuration
+   and the distinction between selected and active paths.
+4. Minimal reproduction with synthetic/public data when possible.
+
+Redact personal paths, credentials, identifying census records and restricted
+source data. A screenshot may show filenames or user names; check it before
+posting to a public issue. Do not publish a whole project/cache/profile to obtain help.
 
 ## Development diagnostics
 

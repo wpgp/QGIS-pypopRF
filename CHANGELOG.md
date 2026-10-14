@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - Unreleased
+
+### Fixed
+
+- Distinguish a selected folder from an active project. Show Project open and
+  disable repeated activation after success; keep an explicit active-path caption.
+- Keep the active project on repeated same-path selection and prevent duplicate
+  open calls from reloading settings or reopening log handlers. Restore correct
+  project action state after owned work completes.
+- Keep project activation unavailable after a late initialization failure instead
+  of showing a false Project open state.
+
+### Documentation
+
+- Expand the first-run guide and project lifecycle/backups guide, modernize the
+  documentation index and navigation, and document current input/import,
+  processing, results and recovery workflows with native synthetic screenshots.
+
 ## [0.3.4] - Unreleased
 
 ### Changed

@@ -615,6 +615,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def _refresh_readiness(self):
         self._refresh_workflow_state()
+        self.project_presenter.refresh_project_action()
         # Presentation follows the authoritative state computed above; it never
         # enables Run or engine actions on its own.
         self.runtime_presenter.render()

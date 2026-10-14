@@ -15,9 +15,11 @@ PUBLIC_DOCUMENTATION = (
     "docs/index.md", "docs/development.md",
     "docs/getting-started/installation.md", "docs/getting-started/quickstart.md",
     "docs/user-guide/interface.md", "docs/user-guide/input-data.md",
+    "docs/user-guide/projects.md",
     "docs/user-guide/settings.md", "docs/user-guide/running-analysis.md",
     "docs/user-guide/troubleshooting.md",
     "docs/assets/screenshots/home.png", "docs/assets/screenshots/engine.png",
+    "docs/assets/screenshots/project.png",
     "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 )
 REQUIRED_FILES = (
@@ -31,6 +33,7 @@ REQUIRED_FILES = (
     "gui/icons/down.svg", "gui/icons/up.svg", "gui/icons/radio.svg",
     "gui/icons/play.svg", "gui/icons/play-disabled.svg", "gui/icons/stop.svg", "gui/icons/stop-disabled.svg",
     "gui/dialogs/import_conflict_dialog.py", "gui/presenters/runtime_presenter.py", "services/plugin_info.py",
+    "gui/presenters/project_presenter.py",
     "core/__init__.py", "core/pypoprf/__init__.py", "core/pypoprf/__main__.py",
     "core/pypoprf/cli.py", "core/pypoprf/pipeline.py", "core/pypoprf/tools.py",
     "core/pypoprf/algorithms/model.py",

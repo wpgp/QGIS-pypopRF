@@ -7,7 +7,7 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout is the **0.3.4 development build**, not a published
+This checkout is the **0.3.5 development build**, not a published
 stable release. The [development guide](docs/development.md) describes the
 architecture, regression checks and packaging. Build a ZIP from this checkout;
 there is no published download of this development build.
@@ -19,6 +19,8 @@ there is no published download of this development build.
 ![Guided native Home screen](docs/assets/screenshots/home.png)
 
 ![Verified engine and its next workflow step](docs/assets/screenshots/engine.png)
+
+![Explicitly opened analysis project](docs/assets/screenshots/project.png)
 
 ![Native QGIS workflow](docs/assets/screenshots/workflow.png)
 
@@ -120,6 +122,30 @@ and [recovery checks](docs/user-guide/troubleshooting.md#plugin-update-or-locked
    verified population maps to QGIS.
 
 The [quick start](docs/getting-started/quickstart.md) explains each step.
+
+Selecting a folder is not the same as opening it. **Project** offers **Create
+project** when there is no `config.yaml`, or **Open project** when one exists.
+After successful activation it shows **Project open** (disabled) and **Active
+project: …**. Choosing another folder disables analysis until you explicitly
+create/open it; your existing configuration and results are not replaced.
+See [project lifecycle and backups](docs/user-guide/projects.md).
+
+## Guides for this modernized build
+
+| What you want to do | Start here |
+| --- | --- |
+| Install, choose Python, or upgrade an old plugin | [Installation and safe updates](docs/getting-started/installation.md) |
+| Complete your first calculation, step by step | [Quick start](docs/getting-started/quickstart.md) |
+| Open, switch, move or back up an analysis project | [Projects](docs/user-guide/projects.md) |
+| Understand every tab and the bottom run/checklist area | [Interface](docs/user-guide/interface.md) |
+| Prepare rasters, map census columns or resolve import conflicts | [Inputs and preparation](docs/user-guide/input-data.md) |
+| Choose processing options and interpret validation settings | [Settings](docs/user-guide/settings.md) |
+| Inspect results, logs, conservation and area summaries | [Running analysis](docs/user-guide/running-analysis.md) |
+| Recover from an engine, project, input or update error | [Troubleshooting](docs/user-guide/troubleshooting.md) |
+
+These repository guides are the documentation for this checkout and are included
+in its ZIP. The [published website](https://wpgp.github.io/QGIS-pypopRF/) may lag
+an unpublished development build; changing local files does not deploy the site.
 
 ## Inputs and outputs
 

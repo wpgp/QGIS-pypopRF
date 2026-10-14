@@ -73,6 +73,8 @@ def test_build_cannot_write_an_archive_into_any_runtime_package(tmp_path, direct
     "gui/widgets/light_theme.py", "gui/icons/check.svg", "gui/icons/down.svg",
     "gui/icons/partial.svg", "gui/icons/up.svg", "gui/icons/radio.svg",
     "gui/icons/play.svg", "gui/icons/play-disabled.svg", "gui/icons/stop.svg", "gui/icons/stop-disabled.svg",
+    "gui/presenters/project_presenter.py", "docs/user-guide/projects.md",
+    "docs/assets/screenshots/project.png",
     "docs/assets/screenshots/home.png", "docs/assets/screenshots/engine.png",
     "docs/assets/screenshots/workflow.png", "docs/assets/screenshots/quality.png",
 ])
@@ -116,7 +118,7 @@ def test_packaged_readme_and_guides_have_no_dangling_local_links_or_images(tmp_p
                     elif part != ".":
                         parts.append(part)
                 assert "/".join(parts) in names, (name, link)
-        for screenshot in ("home", "engine", "workflow", "quality"):
+        for screenshot in ("home", "engine", "project", "workflow", "quality"):
             assert package.read(f"pypopRF/docs/assets/screenshots/{screenshot}.png").startswith(b"\x89PNG\r\n\x1a\n")
 
 

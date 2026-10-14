@@ -83,17 +83,54 @@ class ProjectInputsPresenter:
         view._refresh_readiness()
 
     def on_working_dir_changed(self, path: str):
-        """Handle working directory change"""
+        """Selecting a different folder is not activation; repeating the active path is a no-op."""
         view = self.view
-        view.initProjectButton.setEnabled(bool(path))
+        if self.selection_is_active():
+            view._refresh_readiness()
+            return
         view._project_ready = False
-        view.initProjectButton.setText("Open Project" if (Path(path) / "config.yaml").is_file()
-                                       else "Create Project")
         # A candidate directory is not the active project until Create/Open.
         view.mainStartButton.setEnabled(False)
         view.set_input_widgets_enabled(False)
         view.set_settings_widgets_enabled(False)
         view._refresh_readiness()
+
+    def selection_is_active(self):
+        view = self.view
+        selected = view.workingDirEdit.filePath()
+        if not (selected and view._project_ready and view.config_manager.config_path
+                and view.config_manager.working_dir):
+            return False
+        try:
+            return Path(selected).resolve() == Path(view.config_manager.working_dir).resolve()
+        except (OSError, RuntimeError, ValueError):
+            return False
+
+    def refresh_project_action(self):
+        """Present selected/open state after every readiness or worker transition."""
+        view = self.view
+        selected = view.workingDirEdit.filePath()
+        active = self.selection_is_active()
+        try:
+            existing = bool(selected and (Path(selected) / "config.yaml").is_file())
+        except (OSError, ValueError):
+            existing = False
+        view.initProjectButton.setText("Project open" if active else "Open project" if existing
+                                       else "Create project" if selected else "Choose project folder")
+        view.initProjectButton.setEnabled(bool(selected) and not active and not view.is_busy)
+        view.openProjectFolder.setEnabled(active)
+        if active:
+            project = str(Path(view.config_manager.working_dir))
+            view.currentProjectLabel.setText("Active project: " + short_path(project))
+            view.currentProjectLabel.setToolTip(plain_tooltip(project))
+            view.initProjectButton.setToolTip("This project is already open. Select another folder to switch projects.")
+        else:
+            view.currentProjectLabel.setText("Selected folder is not open yet. Choose " +
+                ("Open project." if existing else "Create project.") if selected else
+                "No project is open. Choose a project folder first.")
+            view.currentProjectLabel.setToolTip(plain_tooltip(selected) if selected else "")
+            view.initProjectButton.setToolTip("Open the selected project's saved inputs and settings (Alt+O)."
+                if existing else "Create a project in the selected folder (Alt+O). Existing files are not overwritten.")
 
     def init_project(self):
         """Initialize new pypopRF project.
@@ -107,6 +144,10 @@ class ProjectInputsPresenter:
         view = self.view
 
         if view.is_busy:
+            return
+        if self.selection_is_active():
+            # Direct callers and shortcuts must not reload settings or reopen log handlers.
+            view._refresh_readiness()
             return
         working_dir = view.workingDirEdit.filePath()
         if not working_dir:
@@ -161,12 +202,10 @@ class ProjectInputsPresenter:
                 view._project_ready = True
                 view.set_input_widgets_enabled(True)
                 view.set_settings_widgets_enabled(True)
-                view.initProjectButton.setText("Open project")
-                project = str(Path(view.config_manager.working_dir))
-                view.currentProjectLabel.setText(short_path(project))
-                view.currentProjectLabel.setToolTip(plain_tooltip(project))
                 view.refresh_results()
                 view._refresh_readiness()
+                view.set_task_status("Project opened. Saved inputs and settings restored." if existing else
+                                     "Project created. Add the required inputs in Input data.")
 
                 # Show next steps
                 view.logger.info("Project initialized successfully!")
@@ -174,6 +213,7 @@ class ProjectInputsPresenter:
                 view.logger.info("Review processing settings, then start the analysis.")
 
         except Exception as e:
+            view._project_ready = False
             view.logger.error(f"Error initializing project: {str(e)}")
             view.set_task_status(f"Error initializing project: {e}")
             view.set_input_widgets_enabled(False)
@@ -181,6 +221,7 @@ class ProjectInputsPresenter:
             view.mainStartButton.setEnabled(False)
         finally:
             view._loading_project = False
+            view._refresh_readiness()
 
     def add_covariate(self):
         """Add new covariate files to the project.

@@ -11,23 +11,54 @@ history. Computation runs in a separate 64-bit Python 3.12 environment rather
 than importing the numerical stack into QGIS. Existing projects and earlier
 run results are preserved.
 
-The 0.3.0 feature update adds a guided preparation workflow that creates a
-separate project, a saved-evidence quality dashboard, and population summaries
-for local polygon areas. Local QGIS layers can supply supported inputs; completed
-population maps are grouped and styled without changing their values. See the
-[interface guide](user-guide/interface.md) for these controls and their limits.
+## Modernized development workflow
+
+These guides describe the **0.3.5 development build** in this repository, not an
+older released plugin. They are shipped with the ZIP; an already deployed website
+may be behind this checkout until a separate documentation deployment occurs.
+
+**Home → Engine → Project → Input data → Settings → Run analysis → Results**
+
+Home provides the next step and project identity. Engine discovers compatible
+Python and prepares the isolated environment. Project distinguishes a selected
+folder from a successfully opened project. Inputs and settings remain gated until
+activation. The checklist, task status and Run/Stop action stay below every tab;
+Details retains diagnostics. All plugin windows use one independent light scheme.
+
+![Guided first-use Home](assets/screenshots/home.png)
+
+## Start with your situation
+
+| Situation | Guide |
+| --- | --- |
+| First installation or a missing calculation engine | [Installation and updates](getting-started/installation.md) |
+| First calculation with prepared inputs | [Step-by-step quick start](getting-started/quickstart.md) |
+| Existing project, a new folder, moving data or making a backup | [Projects](user-guide/projects.md) |
+| Need to know what a control does | [Seven-tab interface](user-guide/interface.md) |
+| Grids do not match, CSV fields differ or importing a filename fails | [Input data and preparation](user-guide/input-data.md) |
+| Need sensible processing options or validation interpretation | [Settings](user-guide/settings.md) |
+| Need completed maps, quality diagnostics or an AOI summary | [Running analysis and results](user-guide/running-analysis.md) |
+| An error, locked folder or disabled action blocks progress | [Troubleshooting](user-guide/troubleshooting.md) |
 
 ## Start here
 
 - [Installation](getting-started/installation.md): prepare the plugin and engine.
 - [Quick start](getting-started/quickstart.md): create or open a project and run it.
-- [Interface](user-guide/interface.md): Project, Input data, Settings, Results and Details.
+- [Projects](user-guide/projects.md): selected folder, activation, storage and backups.
+- [Interface](user-guide/interface.md): Home, Engine, Project, Input data, Settings, Results and Details.
 - [Input data](user-guide/input-data.md): grid, census, covariates and optional masks/groups.
 - [Settings](user-guide/settings.md): controls, target units and spatial validation.
 - [Running analysis](user-guide/running-analysis.md): inspect completed outputs.
+- [Troubleshooting](user-guide/troubleshooting.md): recover without deleting original data.
 - [Development](development.md): architecture, checks and reproducible packaging.
 
 ## Calculation
+
+When inputs need alignment, use the guided **Prepare / align inputs…** workflow
+to create a separate derived project, not overwrite the originals. When a run
+finishes, Results combines a saved-evidence quality dashboard, QGIS layer actions
+and explicit cell-centre population summaries. These conveniences do not relax
+the data or scientific contracts below.
 
 1. Validate the complete raster alignment and population-table contracts.
 2. Apply optional water exclusion to a temporary zone grid.

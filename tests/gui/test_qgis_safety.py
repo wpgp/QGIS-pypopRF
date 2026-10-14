@@ -756,16 +756,30 @@ def test_gui_atomic_publication_retries_sharing_and_preserves_old_on_permanent_e
         path = Path(manager.config_path)
     before = path.read_bytes()
     helper = importlib.import_module(module.__package__.rsplit(".", 1)[0] + ".shared.atomic_files")
-    original, attempts = os.replace, []
+    original, attempts, real_sharing_errors = os.replace, [], []
     def sharing(source, target):
+        if Path(target).resolve() != path.resolve():
+            return original(source, target)
         attempts.append(source)
         assert path.read_bytes() == before
         if permanent or len(attempts) < 3:
             raise PermissionError(errno.EACCES, "temporary Windows reader sharing")
-        original(source, target)
+        try:
+            return original(source, target)
+        except OSError as exc:
+            # Real Windows readers/antivirus may add an incidental retry after
+            # the two controlled failures. Record only the helper's supported
+            # sharing errors; all other filesystem failures remain failures.
+            if (getattr(exc, "winerror", None) not in {5, 32, 33}
+                    and exc.errno not in {errno.EACCES, errno.EPERM}):
+                raise
+            real_sharing_errors.append(exc)
+            raise
     monkeypatch.setattr(helper, "_IS_WINDOWS", True)
-    monkeypatch.setattr(helper.time, "sleep", lambda delay: None)
-    monkeypatch.setattr(os, "replace", sharing)
+    # Patch this imported helper only, not process-global os/time functions:
+    # unrelated jobs must not inflate the publication's attempt count.
+    monkeypatch.setattr(helper, "time", SimpleNamespace(sleep=lambda delay: None))
+    monkeypatch.setattr(helper, "os", SimpleNamespace(replace=sharing))
     if target_kind == "config":
         if permanent:
             with pytest.raises(PermissionError):
@@ -779,7 +793,9 @@ def test_gui_atomic_publication_retries_sharing_and_preserves_old_on_permanent_e
         assert not controller.is_running
         if not permanent:
             assert json.loads(path.read_text())["status"] == "cancelled"
-    assert len(attempts) == (6 if permanent else 3)
+    assert len(attempts) == (6 if permanent else 3 + len(real_sharing_errors))
+    assert len(attempts) <= 6
+    assert len(set(map(str, attempts))) == 1
     if permanent:
         assert path.read_bytes() == before
     assert not list(path.parent.glob(".gui-terminal-*.tmp"))

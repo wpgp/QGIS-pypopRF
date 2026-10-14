@@ -19,14 +19,14 @@ scientific validation of grid alignment, census IDs or data support.
 Task text appears in a separate plain-text status area, fitted to at most three
 rendered lines so long messages cannot push the run action off-screen. A tooltip
 retains the caller-bounded text; **Details** contains the full diagnostics and
-**Copy log** copies them. Elapsed stage text is fitted to two rendered lines.
+**Copy diagnostics** copies the displayed messages. Elapsed stage text is fitted to two rendered lines.
 The numeric
 progress bar is shown during analysis/import/tools work and hidden when idle.
 Failures remain visible after readiness refresh; **Details** opens the complete
 diagnostics when a long message is shortened. Engine setup also has its own
 progress on the Engine tab.
 
-## Project
+## Home
 
 **Home** shows the packaged project logo, the two installation steps and a next
 action based on current readiness. Guidance can be collapsed; readiness is always
@@ -34,19 +34,6 @@ recomputed, not remembered as a stale completed step. Projects remain usable
 without an engine for inspection; calculations and preparation require it.
 **About / citation…** shows packaged authors, version, links and citation. Links
 open only when explicitly clicked.
-
-Choose a project folder, then use **Create project** for a new folder or
-**Open project** when `config.yaml` already exists. Opening restores the saved
-inputs and settings rather than resetting the project. Merely selecting another
-folder does not switch the active project; open it explicitly.
-
-Projects and prepared output folders must be outside the installed plugin and
-engine/job-cache directories. A refused location does not move or delete existing
-data; back it up and move the complete project to an external folder yourself.
-The GUI log stays in the project's `output` folder, even when analysis uses a
-different `output_dir`. Log files must be ordinary dedicated files, not links
-to another file. Locations are checked again before imports, analysis and
-switching the log destination, including manually edited configuration paths.
 
 ## Engine
 
@@ -64,6 +51,34 @@ Setup and discovery run in a background worker. **Cancel setup** requests
 cancellation of setup. Read the readiness message to see whether a project,
 inputs or engine preparation is still needed. See the
 [installation guide](../getting-started/installation.md) for platform details.
+
+![Verified engine and next step](../assets/screenshots/engine.png)
+
+## Project
+
+Choose a folder outside the plugin/cache, then explicitly activate it:
+
+| Folder state | Action / state | What it means |
+| --- | --- | --- |
+| Nothing selected | Choose project folder (disabled) | Select a folder first. |
+| Selected folder has no `config.yaml` | Create project | Add a new configuration and project data directory; unrelated files are not imported or overwritten. |
+| Selected folder contains `config.yaml` | Open project | Validate and restore saved inputs/settings. |
+| Successfully active folder | Project open (disabled) | Ready for input/settings work; repeated clicks do not reload the project. |
+
+**Active project: …** identifies the folder actually opened. Merely selecting a
+different folder does not activate it: input/settings controls and Run are gated
+until you explicitly create/open that selection. Selecting the same active path
+does not invalidate the project. **Open folder** opens the active project's
+directory in your file manager; it does not activate a new selection.
+
+Opening preserves the saved configuration and earlier runs, although the GUI may
+create or append its diagnostic log. Locations are checked before activation,
+imports, analysis and log switching. The GUI log stays in the project's `output`
+folder even when numerical `output_dir` differs; dedicated regular log files are
+required. Refused locations are not moved or deleted. See
+[Projects](projects.md) for folder layout, switching, movement and backup rules.
+
+![Active project state](../assets/screenshots/project.png)
 
 ## Input data
 

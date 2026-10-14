@@ -219,7 +219,8 @@ def test_native_create_open_preserves_config_logs_and_flags(native_dialog, tmp_p
     assert not dialog.enableBlockProcessingCheckBox.isChecked()
     assert dialog.logsColumnEdit.text() == "native.log"
     assert "preserved-native-log-marker" in log.read_text()
-    assert dialog.initProjectButton.text() == "Open project"
+    assert dialog.initProjectButton.text() == "Project open"
+    assert not dialog.initProjectButton.isEnabled()
     capture_state(dialog, "project-open")
 
 
