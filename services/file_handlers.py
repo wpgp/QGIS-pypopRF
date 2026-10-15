@@ -161,7 +161,8 @@ class FileHandler:
                     # A producer may finish replacing a valid CSV after its
                     # initial preview but before the source SHA is captured.
                     # Validate the copied snapshot, not that earlier header.
-                    self._validate_csv_header(pending, file_type)
+                    headers = self._validate_csv_header(pending, file_type)
+                    self._validate_age_id_header(headers, file_type, id_column)
                 if cancellation_token:
                     cancellation_token.check()
                 # Publishing a hard link is atomic and refuses concurrent collisions.
@@ -229,7 +230,19 @@ class FileHandler:
             return []
         if path.suffix.lower() != ".csv":
             raise FileHandlerError("Choose a CSV table for this input role")
-        return FileHandler._validate_csv_header(path, kind)
+        headers = FileHandler._validate_csv_header(path, kind)
+        FileHandler._validate_age_id_header(headers, kind, id_column)
+        return headers
+
+    @staticmethod
+    def _validate_age_id_header(headers, kind, id_column):
+        if kind == "agesex_data" and id_column not in headers:
+            available = ", ".join(str(column)[:80] for column in headers[:12])
+            raise FileHandlerError(
+                f"Age-sex CSV is missing the project zone-ID column {str(id_column)[:80]!r}. "
+                "Use the same ID column in both tables (Settings: Zone identifier). "
+                "Different ID systems need a verified crosswalk, not row-order matching. "
+                f"Available columns: {available}")
 
     @staticmethod
     def _validate_csv_header(path, kind):

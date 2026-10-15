@@ -243,13 +243,27 @@ class Settings:
             if Path(self.agesex_data).suffix.lower() != ".csv":
                 raise ValueError("Age-sex census file must be CSV format")
             frame = self._read_csv(self.agesex_data, zone)
+            if zone not in frame:
+                available = ", ".join(str(column)[:80] for column in list(frame.columns)[:12])
+                raise ValueError(
+                    f"Age-sex census is missing the project zone-ID column {zone[:80]!r}. "
+                    "Use the same ID column in both tables (Settings: Zone identifier). "
+                    "Different ID systems need a verified crosswalk, not row-order matching. "
+                    f"Available columns: {available}")
             age_column = re.compile(r"^[fm](?:_)?\d+(?:[_-]\d+|\+)?$", re.IGNORECASE)
             groups = [c for c in frame.columns if c != zone and age_column.fullmatch(c)]
             if not groups:
                 raise ValueError("Age-sex census must contain population columns")
             self.validate_census_frame(frame, zone, groups, "Age-sex census")
-            if set(pd.to_numeric(frame[zone])) != set(pd.to_numeric(census[zone])):
-                raise ValueError("Age-sex census IDs must match census IDs")
+            age_ids, census_ids = set(frame[zone]), set(census[zone])
+            if age_ids != census_ids:
+                missing, extra = sorted(census_ids - age_ids), sorted(age_ids - census_ids)
+                raise ValueError(
+                    "Age-sex census IDs must match census IDs. "
+                    f"Missing {len(missing)} census zones (examples: {missing[:5]}); "
+                    f"extra {len(extra)} age-sex zones (examples: {extra[:5]}). "
+                    "Choose a matching table or apply a verified crosswalk to a separate copy. "
+                    "Renaming a column does not convert IDs; never match rows by position.")
         self._check_cancelled()
         inputs = [self.mastergrid, self.mask, self.constrain, self.census["path"],
                   self.agesex_data, *self.covariate.values()]

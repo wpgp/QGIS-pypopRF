@@ -130,6 +130,22 @@ def test_agesex_metadata_is_ignored_and_ids_are_checked(settings_inputs, tmp_pat
         Settings(**settings_inputs, agesex_data=str(age))
 
 
+def test_agesex_missing_id_explains_mapping_without_rewriting_source(settings_inputs, tmp_path):
+    age = tmp_path / "age.csv"
+    age.write_text("IDX,f_00,m_00\n188720000001,5,6\n", encoding="utf-8")
+    before = age.read_bytes()
+    with pytest.raises(ValueError, match="zone-ID column 'id'.*verified crosswalk.*IDX"):
+        Settings(**settings_inputs, agesex_data=str(age))
+    assert age.read_bytes() == before
+
+
+def test_agesex_different_ids_report_counts_and_never_pair_rows(settings_inputs, tmp_path):
+    age = tmp_path / "age.csv"
+    age.write_text("id,f0\n188720000001,5\n188720000002,6\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Missing 2 census zones.*extra 2 age-sex zones.*never match rows"):
+        Settings(**settings_inputs, agesex_data=str(age))
+
+
 @pytest.mark.parametrize("content", ["", "[]", "work_dir: .", "null"])
 def test_yaml_structure_validation(tmp_path, content):
     path = tmp_path / "config.yaml"

@@ -255,6 +255,31 @@ def test_first_census_import_allows_custom_id_before_mapping(tmp_path):
     assert (tmp_path / "project/data/census.csv").read_bytes() == source.read_bytes()
 
 
+def test_age_sex_missing_project_id_is_refused_before_copy(tmp_path):
+    source = tmp_path / "age.csv"
+    source.write_bytes(b"IDX,f_00,m_00\n188720000001,5,6\n")
+    handler = FileHandler(str(tmp_path / "project"), logging.getLogger("test"))
+    with pytest.raises(FileHandlerError, match="zone-ID column 'id'.*verified crosswalk"):
+        handler.copy_to_data_dir(str(source), "agesex_data")
+    assert not list((tmp_path / "project/data").iterdir())
+    assert source.read_bytes() == b"IDX,f_00,m_00\n188720000001,5,6\n"
+
+
+def test_staged_age_sex_id_header_is_rechecked_before_publication(tmp_path, monkeypatch):
+    source = tmp_path / "age.csv"
+    source.write_bytes(b"id,f0,m0\n1,5,6\n")
+    handler = FileHandler(str(tmp_path / "project"), logging.getLogger("test"))
+    preview = handler.validate_role
+    def producer_finishes(path, role, id_column="id"):
+        headers = preview(path, role, id_column)
+        source.write_bytes(b"IDX,f0,m0\n1,5,6\n")
+        return headers
+    monkeypatch.setattr(handler, "validate_role", producer_finishes)
+    with pytest.raises(FileHandlerError, match="zone-ID column"):
+        handler.copy_to_data_dir(str(source), "agesex_data")
+    assert not list((tmp_path / "project/data").iterdir())
+
+
 def test_age_column_pattern_tracks_core_contract_without_importing_engine():
     root = Path(__file__).resolve().parents[2]
     tree = ast.parse((root / "core/pypoprf/algorithms/dasymetric.py").read_text(encoding="utf-8"))

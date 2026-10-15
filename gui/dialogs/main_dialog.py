@@ -784,6 +784,7 @@ class PyPopRFDialog(QtWidgets.QDialog, FORM_CLASS):
         label = self._input_errors.get(kind)
         if label:
             label.setText(bounded_status(message, limit=350, lines=2))
+            label.setToolTip(bounded_status(message, limit=4000, lines=20))
             label.setVisible(bool(message))
 
     def _show_about(self):

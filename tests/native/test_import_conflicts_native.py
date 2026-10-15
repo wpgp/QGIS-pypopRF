@@ -50,6 +50,23 @@ def test_identical_choice_reuses_only_in_worker_and_restores_canonical_widget(na
     assert len(threads) >= 4 and all(threads)
 
 
+def test_age_sex_missing_id_shows_actionable_inline_error_and_keeps_input(native_dialog, tmp_path):
+    project = tmp_path / "project"
+    initialize(native_dialog, project)
+    source = tmp_path / "age.csv"
+    source.write_bytes(b"IDX,f_00,m_00\n188720000001,5,6\n")
+    native_dialog._begin_import([str(source)], "agesex_data")
+    wait_until(lambda: not native_dialog.is_busy)
+    label = native_dialog._input_errors["agesex_data"]
+    assert not label.isHidden()
+    assert "zone-ID column 'id'" in label.text()
+    assert "crosswalk" in label.toolTip() and "IDX" in label.toolTip()
+    assert not native_dialog.config_manager.get_config().get("agesex_data")
+    assert native_dialog.agesexCensusFileWidget.filePath() == ""
+    assert not (project / "data/age.csv").exists()
+    assert source.read_bytes() == b"IDX,f_00,m_00\n188720000001,5,6\n"
+
+
 def test_different_choice_can_only_copy_to_new_portable_name(native_dialog, tmp_path):
     source, target, popup = collision(native_dialog, tmp_path, different=True)
     assert not popup.reuseButton.isEnabled()

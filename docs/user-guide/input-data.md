@@ -148,6 +148,15 @@ summary in the run manifest. Check that consistency if the columns form a
 complete demographic partition: a mismatch is diagnostic, not forced rescaling
 or a hard error. Different row order does not change which zone receives a group.
 
+Both CSVs must contain the **Zone identifier** column selected in Settings.
+An age-sex import without that column is refused with an inline explanation;
+the original file and previous selection are retained. This is not an automatic
+ID conversion. If one dataset uses `IDX` and another uses `id`, first establish
+whether their values identify the same zones. Different ID systems need a
+verified correspondence table (crosswalk), applied explicitly to a separate copy.
+Never pair records by their row order or guess a mapping from similar ID suffixes.
+Preflight reports missing/extra zone counts and examples before modelling.
+
 For the population example above, a synthetic complete partition could be:
 
 ```csv
