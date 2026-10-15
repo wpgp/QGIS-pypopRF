@@ -72,6 +72,36 @@ def test_new_self_contained_project_passes_settings_and_preserves_sources(inputs
     assert not list(root.glob(".scratch-*"))
 
 
+def test_reports_each_source_before_slow_raster_normalization(inputs, monkeypatch):
+    from core.pypoprf import preparation
+    messages, starts = [], []
+    original = preparation._normalized
+    def normalize(path, *args, **kwargs):
+        assert messages and Path(path).name in messages[-1][1]
+        assert "Validating source raster" in messages[-1][1]
+        starts.append(str(path))
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(preparation, "_normalized", normalize)
+    report = prepare_or_inspect(dict(inputs, operation="inspect"),
+                                progress=lambda value, message: messages.append((value,message)))
+    assert json.loads(report.read_text())["ready"]
+    assert starts == [inputs["reference_raster"], inputs["covariates"][0]["path"]]
+    assert [value for value,_ in messages] == sorted(value for value,_ in messages)
+
+
+def test_source_stage_cancellation_prevents_normalization(inputs, monkeypatch):
+    from core.pypoprf import preparation
+    token = CancellationToken()
+    normalized = []
+    monkeypatch.setattr(preparation, "_normalized", lambda *args: normalized.append(args))
+    def progress(value, message):
+        if "Validating source raster" in message:
+            token.cancel()
+    with pytest.raises(CancelledError):
+        prepare_or_inspect(dict(inputs, operation="inspect"), token=token, progress=progress)
+    assert not normalized
+
+
 def test_reference_nodata_is_only_grid_template_not_implicit_study_mask(inputs):
     root = Path(inputs["reference_raster"]).parent
     zones = inputs["reference_raster"]

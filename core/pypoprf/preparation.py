@@ -515,6 +515,8 @@ def _process_grid(root, scratch, grid, zone_path, polygons, specs, census, reque
         readers, writers = {}, {}
         all_specs = ([{"name": "zones", "path": zone_path, "quantity": "ids", "resampling": "nearest"}] if zone_path else []) + specs
         for index, spec in enumerate(all_specs):
+            stage(1 + int(8 * index / len(all_specs)),
+                  f"Validating source raster {index + 1} of {len(all_specs)}: {Path(spec['path']).name}")
             normalized = scratch / f"normalized_{index}.tif"
             try:
                 _normalized(spec["path"], normalized, size, token, spec["quantity"] == "categorical", spec["quantity"] == "ids", spec["quantity"] == "count")

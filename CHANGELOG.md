@@ -66,6 +66,8 @@ action; building this source does not publish a release.
   warnings about retained potentially incomplete preparation directories.
 - Early actionable age-sex ID-column errors and missing/extra zone diagnostics;
   different identifier systems are never silently joined by row position.
+- Preparation identifies each source raster during the potentially long initial
+  validation pass, before reference-grid coverage processing begins.
 - Package verification rejects aliased/nonportable archive members, inconsistent
   manifest identity and excessive expanded payloads before publication.
 
