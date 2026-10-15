@@ -7,10 +7,10 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout is the **0.3.7 development build**, not a published
-stable release. The [development guide](docs/development.md) describes the
-architecture, regression checks and packaging. Build a ZIP from this checkout;
-there is no published download of this development build.
+This checkout contains **version 0.3.7**. Use a matching plugin ZIP or build one
+from this source. The [development guide](docs/development.md) describes the
+architecture, regression checks and release procedure. Building a local ZIP
+does not publish a GitHub or QGIS release.
 
 ![WorldPop SDI](wp_logo.png)
 
@@ -79,7 +79,7 @@ The calculation engine requires an installed **64-bit CPython 3.12**. QGIS itsel
 may use a different Python version. Enabling the plugin does not install packages
 into QGIS or download an interpreter.
 
-1. Build a development ZIP: `python scripts/build_plugin.py` → `dist/pypopRF.zip`.
+1. Build the plugin ZIP: `python scripts/build_plugin.py` → `dist/pypopRF.zip`.
 2. In QGIS: Plugins → Manage and Install Plugins → Install from ZIP.
 3. Open pypopRF → **Engine**, choose a compatible Python if needed, then **Set up engine**.
 4. Create/open a project and follow the [quick start](docs/getting-started/quickstart.md).
@@ -146,8 +146,8 @@ See [project lifecycle and backups](docs/user-guide/projects.md).
 | Recover from an engine, project, input or update error | [Troubleshooting](docs/user-guide/troubleshooting.md) |
 
 These repository guides are the documentation for this checkout and are included
-in its ZIP. The [published website](https://wpgp.github.io/QGIS-pypopRF/) may lag
-an unpublished development build; changing local files does not deploy the site.
+in its ZIP. The [published website](https://wpgp.github.io/QGIS-pypopRF/) is
+deployed separately and may lag this checkout; a local build does not deploy it.
 
 ## Inputs and outputs
 
@@ -197,10 +197,11 @@ documents those commands and the JSON-event headless CLI.
   synthetic or public inputs where possible.
 - [WorldPop SDI](https://sdi.worldpop.org).
 
-The repository contains [MIT LICENSE](LICENSE) and GPL notices in generated
-QGIS-plugin files. Those notices are retained. Reconciling copyright provenance
-and distribution licensing is a release gate; this build does not silently
-relicense third-party/generated code or claim that the conflict is resolved.
+The repository contains the unchanged [MIT LICENSE](LICENSE), copyright
+WorldPop SDI Team, and GPLv2-or-later notices in individual QGIS-plugin files.
+The original authorship and file-specific notices are retained; consult those
+notices as well as the repository license when redistributing the code.
+This modernization does not relicense existing contributions.
 
 ## Citation
 

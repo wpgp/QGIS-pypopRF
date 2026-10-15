@@ -11,9 +11,9 @@ history. Computation runs in a separate 64-bit Python 3.12 environment rather
 than importing the numerical stack into QGIS. Existing projects and earlier
 run results are preserved.
 
-## Modernized development workflow
+## Modernized workflow
 
-These guides describe the **0.3.7 development build** in this repository, not an
+These guides describe **version 0.3.7** in this repository, not an
 older released plugin. They are shipped with the ZIP; an already deployed website
 may be behind this checkout until a separate documentation deployment occurs.
 

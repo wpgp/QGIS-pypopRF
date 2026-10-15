@@ -1,6 +1,8 @@
 # Installation and updates
 
-This is the development build (0.3.7), not a published stable release. Use a ZIP built from this checkout; earlier released ZIPs do not contain these changes.
+These instructions describe version **0.3.7**. Use a matching plugin ZIP or build
+one from this checkout; older packages do not contain this workflow. A local ZIP
+build is not publication to GitHub or the QGIS plugin repository.
 
 ## Before you start
 
@@ -24,9 +26,9 @@ The interface runs inside QGIS. Numerical processing runs in a dedicated, per-us
 
 The declared range is QGIS 3.44–4.x. Native acceptance targets Windows AMD64 and Linux glibc x86_64 QGIS 3.44 / Qt 5 and QGIS 4.2 / Qt 6, each with a separate engine. macOS, ARM and musl are not qualified by this build. The [development guide](../development.md) explains the reproducible checks; private local qualification reports are not published as repository files.
 
-## Install the development ZIP
+## Install the plugin ZIP
 
-1. Use a valid development ZIP supplied for this build, or, if working from source,
+1. Use a verified plugin ZIP matching this version, or, if working from source,
    build with `python scripts/build_plugin.py` from the repository root. Building
    the interface archive itself needs Python's standard library, not pip or QGIS.
    The resulting ZIP excludes datasets, tests and developer environments.

@@ -227,6 +227,30 @@ environments do not belong in the distributable. `python -m scripts.plugin_uploa
 explicit maintainer publishing command; normal builds and activation do not
 upload anything.
 
+### Release checklist
+
+1. Finish regression/native-QGIS checks and owner acceptance before formatting
+   a release. Keep private qualification evidence under ignored `.local/`.
+2. Update the canonical version in `metadata.txt` (also read by the engine).
+   For a stable release set
+   `experimental=False` and put the matching version/date first in `CHANGELOG.md`.
+   Retain repository and file-specific license/authorship notices.
+3. Run `python scripts/check_release.py`, headless tests, Ruff and native tests
+   against the exact newly built ZIP. Build twice and compare SHA-256 hashes;
+   preserve the previously accepted archive before replacing local artifacts.
+4. Build the documentation with `mkdocs build --strict` and check local links and
+   packaged assets. Commit only maintained project sources, tests, guides and CI.
+5. With owner approval, push the commit and require GitHub Actions to pass for
+   that commit. Local checks do not establish remote CI success. Pushing `master`
+   also triggers the existing documentation deployment workflow.
+6. Prepare a `v<version>` tag pointing at the accepted commit. Tag pushes run the
+   test workflow and verify tag/metadata identity. Publishing to GitHub or QGIS
+   remains a separate, explicitly authorized maintainer action.
+
+For example, `python scripts/build_plugin.py --output dist/pypopRF-0.3.7.zip`
+builds this version without tagging, uploading or deploying it. The CI test
+workflow has read-only repository permissions; it does not publish packages.
+
 When submitting a change, include the concrete before/after behaviour, meaningful
 validation and material limits. Preserve unrelated user changes and historical
 data. Keep source attribution, `CITATION.cff`, the repository
