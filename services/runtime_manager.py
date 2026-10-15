@@ -22,7 +22,7 @@ import re
 import shutil
 import signal
 import stat
-import subprocess
+import subprocess  # nosec B404 -- Required for the isolated engine; audited argv-only calls below.
 import sys
 import tempfile
 import threading
@@ -139,10 +139,11 @@ class RuntimeManager:
                 return
             taskkill = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "taskkill.exe"
             try:
-                subprocess.run([str(taskkill), "/PID", str(process.pid), "/T", "/F"],
+                # Absolute system utility, PID from our owned Popen, no command shell.
+                subprocess.run([str(taskkill), "/PID", str(process.pid), "/T", "/F"],  # nosec B603
                                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, timeout=10,
-                               creationflags=subprocess.CREATE_NO_WINDOW, check=False)
+                               creationflags=subprocess.CREATE_NO_WINDOW, check=False, shell=False)
             except (OSError, subprocess.TimeoutExpired):
                 process.kill()
         else:
@@ -172,20 +173,29 @@ class RuntimeManager:
     def _run(self, command, cancellation_token=None, progress=None, percent=0, timeout=300):
         """Bound diagnostic output; drain pipes and check cancellation regularly."""
         self._check_cancel(cancellation_token)
-        working = Path(command[0]).resolve().parent
+        if not isinstance(command, (list, tuple)) or not command:
+            raise RuntimeSetupError("Runtime commands must be a nonempty argument list")
+        if not Path(command[0]).is_absolute():
+            raise RuntimeSetupError("Runtime interpreter must use an absolute executable path")
+        # Validate the target, but keep the invocation path: dereferencing a
+        # Linux venv's python symlink would silently run the base interpreter.
+        executable = Path(command[0])
+        self._interpreter_path(executable)
+        working = executable.resolve().parent
         if not working.is_dir() or working.is_relative_to(self.package_root):
             working = Path(tempfile.gettempdir()).resolve()
         if working.is_relative_to(self.package_root):
             raise RuntimeSetupError("Cannot choose an external runtime working directory")
         kwargs = dict(stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                      env=self._environment(command[0]), cwd=working)
+                      env=self._environment(executable), cwd=working, shell=False)
         if os.name == "nt":
             kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
         else:
             kwargs["start_new_session"] = True
         job = _WindowsJob() if os.name == "nt" else None
         try:
-            process = subprocess.Popen([str(argument) for argument in command], **kwargs)
+            # Validated user-selected/managed Python; internal argv, isolated env, no shell.
+            process = subprocess.Popen([str(executable), *map(str, command[1:])], **kwargs)  # nosec B603
         except OSError as exc:
             if job is not None:
                 job.close()
@@ -303,6 +313,8 @@ class RuntimeManager:
     @staticmethod
     def _interpreter_path(python_executable):
         raw = Path(python_executable).expanduser().absolute()
+        if raw.suffix.lower() in {".bat", ".cmd", ".ps1"}:
+            raise RuntimeSetupError("Choose an installed Python executable, not a shell wrapper")
         if any(part.casefold() == "windowsapps" for part in raw.parts):
             raise RuntimeSetupError("Choose an installed Python executable, not a Windows Store alias")
         executable = raw.resolve()

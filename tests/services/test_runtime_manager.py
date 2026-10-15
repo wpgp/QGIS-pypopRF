@@ -437,6 +437,41 @@ def test_actual_runtime_child_uses_explicit_external_cwd_without_changing_parent
     assert not Path(value).is_relative_to(package) and Path.cwd() == before
 
 
+@pytest.mark.parametrize("command", [[], "python -c unsafe", ["python.exe", "-V"]])
+def test_runtime_rejects_non_explicit_commands_before_spawn(tmp_path, monkeypatch, command):
+    manager = RuntimeManager(tmp_path / "package", tmp_path / "cache")
+    monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: pytest.fail("Must reject before spawning"))
+    with pytest.raises(RuntimeSetupError, match="argument list|absolute executable"):
+        manager._run(command)
+
+
+@pytest.mark.parametrize("extension", [".bat", ".cmd", ".ps1"])
+def test_runtime_rejects_shell_wrappers_at_process_boundary(tmp_path, monkeypatch, extension):
+    wrapper = tmp_path / ("python" + extension)
+    wrapper.write_text("not executed", encoding="utf-8")
+    manager = RuntimeManager(tmp_path / "package", tmp_path / "cache")
+    monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: pytest.fail("Must reject before spawning"))
+    with pytest.raises(RuntimeSetupError, match="shell wrapper"):
+        manager._run([wrapper, "-V"])
+
+
+def test_actual_runtime_preserves_shell_metacharacters_as_literal_arguments(tmp_path):
+    manager = RuntimeManager(tmp_path / "package", tmp_path / "cache")
+    argument = "a & echo unexpected | more > injected; $(whoami) %PATH%"
+    output = manager._run([sys.executable, "-I", "-c", "import json,sys;print(json.dumps(sys.argv[1]))", argument])
+    assert json.loads(output) == argument
+
+
+def test_runtime_keeps_virtual_environment_interpreter_invocation(tmp_path):
+    import venv
+    environment = tmp_path / "isolated"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    executable = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    manager = RuntimeManager(tmp_path / "package", tmp_path / "cache")
+    output = manager._run([executable, "-I", "-c", "import sys;print(sys.prefix)"], timeout=15)
+    assert Path(output.strip()).resolve() == environment.resolve()
+
+
 @pytest.mark.parametrize("failure", ["create", "configure", "assign"])
 def test_extracted_windows_job_retains_runtime_error_and_handle_cleanup(monkeypatch, failure):
     import ctypes

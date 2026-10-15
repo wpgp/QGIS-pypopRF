@@ -25,6 +25,15 @@ def tool_request(project, source, operation="inspect"):
                         "quantity": "continuous", "resampling": "bilinear"}], "tile_size": 16}
 
 
+def test_current_qgis_enums_work_in_packaged_dialog(native_dialog):
+    from qgis.core import Qgis, QgsColorRampShader
+    from qgis.gui import QgsFileWidget
+    ramp = QgsColorRampShader(0, 100)
+    ramp.setColorRampType(Qgis.ShaderInterpolationMethod.Linear)
+    assert ramp.colorRampType() == Qgis.ShaderInterpolationMethod.Linear
+    assert native_dialog.workingDirEdit.storageMode() == QgsFileWidget.StorageMode.GetDirectory
+
+
 def polygon_file(dialog, path, xmax=80):
     script = '''
 import sys

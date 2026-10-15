@@ -5,7 +5,7 @@ from pathlib import Path
 from qgis.PyQt.QtCore import QMetaType, QVariant
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import QInputDialog
-from qgis.core import (QgsProject, QgsProviderRegistry, QgsRasterLayer, QgsVectorLayer,
+from qgis.core import (Qgis, QgsProject, QgsProviderRegistry, QgsRasterLayer, QgsVectorLayer,
     QgsRasterShader, QgsColorRampShader, QgsSingleBandPseudoColorRenderer,
     QgsCoordinateReferenceSystem, QgsField, QgsFeature, QgsGeometry, QgsPointXY, QgsLayerTreeGroup)
 
@@ -150,10 +150,7 @@ class LayerIntegration:
         if not math.isfinite(high) or high <= 0:
             return
         ramp = QgsColorRampShader(0, high)
-        try:
-            ramp.setColorRampType(QgsColorRampShader.Type.Interpolated)
-        except AttributeError:
-            ramp.setColorRampType(QgsColorRampShader.Interpolated)
+        ramp.setColorRampType(Qgis.ShaderInterpolationMethod.Linear)
         colors = ("#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494")
         breaks = [math.expm1(math.log1p(high) * index / 4) for index in range(5)]
         ramp.setColorRampItemList([QgsColorRampShader.ColorRampItem(value, QColor(color),

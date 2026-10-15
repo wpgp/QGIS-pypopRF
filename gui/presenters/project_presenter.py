@@ -88,10 +88,7 @@ class ProjectInputsPresenter:
         """Configure file widgets with appropriate filters and titles."""
         view = self.view
 
-        try:
-            mode = QgsFileWidget.StorageMode.GetDirectory
-        except AttributeError:
-            mode = QgsFileWidget.GetDirectory
+        mode = QgsFileWidget.StorageMode.GetDirectory
         view.workingDirEdit.setStorageMode(mode)
         # Mastergrid
         view.mastergridFileWidget.setDialogTitle("Select Mastergrid File (Required)")
