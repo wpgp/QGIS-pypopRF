@@ -46,7 +46,8 @@ jobs:
           sys.path.insert(0, str(Path.cwd()))
           from services.runtime_manager import RuntimeManager
           before = dict(os.environ)
-          cache = Path(tempfile.mkdtemp(prefix="pypoprf-clean-")) / "engine"
+          # Windows TEMP may use an 8.3 alias; RuntimeManager canonicalizes paths.
+          cache = Path(tempfile.mkdtemp(prefix="pypoprf-clean-")).resolve() / "engine"
           manager = RuntimeManager(Path.cwd(), cache)
           engine = manager.setup(sys.executable)
           assert manager.get_python() == engine
