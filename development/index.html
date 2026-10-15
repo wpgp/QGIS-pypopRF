@@ -863,6 +863,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#catalog-submission-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog submission checks
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -980,6 +991,17 @@
     <span class="md-ellipsis">
       
         Release checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#catalog-submission-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catalog submission checks
       
     </span>
   </a>
@@ -1243,9 +1265,29 @@ upload anything.</p>
    test workflow and verify tag/metadata identity. Publishing to GitHub or QGIS
    remains a separate, explicitly authorized maintainer action.</li>
 </ol>
-<p>For example, <code>python scripts/build_plugin.py --output dist/pypopRF-0.3.7.zip</code>
+<p>For example, <code>python scripts/build_plugin.py --output dist/pypopRF-0.3.8.zip</code>
 builds this version without tagging, uploading or deploying it. The CI test
 workflow has read-only repository permissions; it does not publish packages.</p>
+<h3 id="catalog-submission-checks">Catalog submission checks</h3>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">pip</span> <span class="n">install</span> <span class="p">-</span><span class="n">-require-hashes</span> <span class="n">-r</span> <span class="n">requirements-security</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">python</span> <span class="n">scripts</span><span class="p">/</span><span class="n">check_catalog</span><span class="p">.</span><span class="n">py</span> <span class="n">dist</span><span class="p">/</span><span class="n">pypopRF</span><span class="p">-</span><span class="n">0</span><span class="p">.</span><span class="n">3</span><span class="p">.</span><span class="n">8</span><span class="p">.</span><span class="n">zip</span> <span class="p">-</span><span class="n">-report</span> <span class="p">.</span><span class="n">local</span><span class="p">/</span><span class="n">reports</span><span class="p">/</span><span class="n">catalog</span><span class="p">.</span><span class="n">json</span>
+</code></pre></div>
+<p>This runs all default Bandit rules and a fresh, offline detect-secrets scan on
+the extracted verified ZIP. It never accepts scanner errors or empty output as
+success. Only exact known checksum fingerprints in the generated baseline are
+acknowledged; detectors remain enabled and a new finding fails the gate. The
+catalog's own scan and manual approval remain separate external checks.</p>
+<p>The packaged <code>.secrets.baseline</code> is generated from verified file hashes and
+wheel hashes present in <code>requirements-engine.lock</code>, not arbitrary scan findings.
+It explicitly keeps all 27 detect-secrets 1.5 default detectors and the standard
+filters, with no added regex/file exclusions. To avoid circular hashing, the baseline
+is a control file outside the integrity manifest; <code>verify_package()</code> checks its
+exact derived bytes separately. Never add whole-rule or whole-file suppressions
+to make a submission pass. Subprocess exceptions explain the reviewed argv-only
+Python invocation and the owned-process Windows termination call at their lines.</p>
+<p>CI also runs the official QGIS Qt6 migration checker in a digest-pinned image,
+on the built ZIP with a read-only source mount. It supplements, not replaces,
+the actual Qt5/Qt6 native application tests.</p>
 <p>When submitting a change, include the concrete before/after behaviour, meaningful
 validation and material limits. Preserve unrelated user changes and historical
 data. Keep source attribution, <code>CITATION.cff</code>, the repository
