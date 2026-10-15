@@ -42,6 +42,8 @@ jobs:
           from pathlib import Path
           import sys
           import tempfile
+          # Actions writes shell: python scripts under RUNNER_TEMP, not the checkout.
+          sys.path.insert(0, str(Path.cwd()))
           from services.runtime_manager import RuntimeManager
           before = dict(os.environ)
           cache = Path(tempfile.mkdtemp(prefix="pypoprf-clean-")) / "engine"
