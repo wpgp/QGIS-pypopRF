@@ -11,12 +11,15 @@
         <link rel="canonical" href="https://wpgp.github.io/QGIS-pypopRF/development/">
       
       
-        <link rel="prev" href="../user-guide/running-analysis/">
+        <link rel="prev" href="../user-guide/troubleshooting/">
       
+      
+      
+        
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -24,10 +27,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -54,7 +57,6 @@
 
     
     
-    
   </head>
   
   
@@ -74,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development-guide" class="md-skip">
+        <a href="#development" class="md-skip">
           Skip to content
         </a>
       
@@ -146,11 +148,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -182,13 +186,14 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -214,9 +219,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href=".." class="md-tabs__link">
         
+  
   
     
   
@@ -231,11 +238,13 @@
   
   
   
+  
     
     
       <li class="md-tabs__item">
         <a href="../getting-started/installation/" class="md-tabs__link">
           
+  
   
   Getting Started
 
@@ -249,11 +258,13 @@
   
   
   
+  
     
     
       <li class="md-tabs__item">
         <a href="../user-guide/interface/" class="md-tabs__link">
           
+  
   
   User Guide
 
@@ -266,12 +277,14 @@
         
   
   
+  
     
   
   
     <li class="md-tabs__item md-tabs__item--active">
       <a href="./" class="md-tabs__link">
         
+  
   
     
   
@@ -317,7 +330,7 @@
       <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -337,10 +350,16 @@
       <a href=".." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -354,6 +373,7 @@
   
   
   
+    
     
     
     
@@ -375,10 +395,16 @@
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     Getting Started
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -387,7 +413,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Getting Started
+            
+  
+    Getting Started
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -401,10 +431,16 @@
       <a href="../getting-started/installation/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Installation
+  
+
     
   </span>
+  
   
 
       </a>
@@ -423,10 +459,16 @@
       <a href="../getting-started/quickstart/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Quick Start
+  
+
     
   </span>
+  
   
 
       </a>
@@ -451,6 +493,7 @@
     
     
     
+    
       
       
         
@@ -469,10 +512,16 @@
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     User Guide
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -481,7 +530,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            User Guide
+            
+  
+    User Guide
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -495,10 +548,44 @@
       <a href="../user-guide/interface/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Interface
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -517,10 +604,16 @@
       <a href="../user-guide/input-data/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Input Data
+  
+
     
   </span>
+  
   
 
       </a>
@@ -539,10 +632,16 @@
       <a href="../user-guide/settings/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Settings
+  
+
     
   </span>
+  
   
 
       </a>
@@ -561,10 +660,44 @@
       <a href="../user-guide/running-analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Running Analysis
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -599,10 +732,16 @@
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
+  
   <span class="md-ellipsis">
+    
+  
     Development
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -611,10 +750,16 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Development
+  
+
     
   </span>
+  
   
 
       </a>
@@ -635,79 +780,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#project-structure" class="md-nav__link">
+  <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
-      Project Structure
-    </span>
-  </a>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      Core Components
+        Architecture
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Components">
+    <nav class="md-nav" aria-label="Architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-main-dialog-qgis_pypoprf_dialogpy" class="md-nav__link">
+  <a href="#gui-state-and-appearance-contracts" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Main Dialog (qgis_pypoprf_dialog.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-model-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Model Classes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Model Classes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#console-and-logging-console_handlerpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      Console and Logging (console_handler.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration-config_managerpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      Configuration (config_manager.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Management
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-ui-design-qgis_pypoprf_dialog_baseui" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. UI Design (qgis_pypoprf_dialog_base.ui)
+      
+        GUI state and appearance contracts
+      
     </span>
   </a>
   
@@ -719,28 +808,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#development-setup" class="md-nav__link">
+  <a href="#engine-development-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Development Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requirements
+      
+        Engine development environment
+      
     </span>
   </a>
   
 </li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-and-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests and acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerical-and-lifecycle-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Numerical and lifecycle invariants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging-and-contribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging and contribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Packaging and contribution">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#environment-setup" class="md-nav__link">
+  <a href="#release-checklist" class="md-nav__link">
     <span class="md-ellipsis">
-      Environment Setup
+      
+        Release checklist
+      
     </span>
   </a>
   
@@ -748,159 +865,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development-guidelines" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Guidelines
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Guidelines">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#code-style" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Style
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ui-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      UI Development
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Logging Best Practices
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#threading-and-performance" class="md-nav__link">
-    <span class="md-ellipsis">
-      Threading and Performance
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Threading and Performance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#thread-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Thread Management
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resource-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resource Management
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Contributing
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Contributing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-contribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to Contribute
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-to-contribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      What to Contribute
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#development-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Process
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-review-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Review Process
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#getting-help" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Help
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    <span class="md-ellipsis">
-      License
-    </span>
-  </a>
   
 </li>
       
@@ -939,79 +903,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#project-structure" class="md-nav__link">
+  <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
-      Project Structure
-    </span>
-  </a>
-  
-</li>
       
-        <li class="md-nav__item">
-  <a href="#core-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      Core Components
+        Architecture
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Components">
+    <nav class="md-nav" aria-label="Architecture">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-main-dialog-qgis_pypoprf_dialogpy" class="md-nav__link">
+  <a href="#gui-state-and-appearance-contracts" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Main Dialog (qgis_pypoprf_dialog.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-model-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Model Classes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Model Classes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#console-and-logging-console_handlerpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      Console and Logging (console_handler.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration-config_managerpy" class="md-nav__link">
-    <span class="md-ellipsis">
-      Configuration (config_manager.py)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Management
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-ui-design-qgis_pypoprf_dialog_baseui" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. UI Design (qgis_pypoprf_dialog_base.ui)
+      
+        GUI state and appearance contracts
+      
     </span>
   </a>
   
@@ -1023,28 +931,56 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#development-setup" class="md-nav__link">
+  <a href="#engine-development-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      Development Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requirements
+      
+        Engine development environment
+      
     </span>
   </a>
   
 </li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-and-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests and acceptance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numerical-and-lifecycle-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Numerical and lifecycle invariants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packaging-and-contribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Packaging and contribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Packaging and contribution">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#environment-setup" class="md-nav__link">
+  <a href="#release-checklist" class="md-nav__link">
     <span class="md-ellipsis">
-      Environment Setup
+      
+        Release checklist
+      
     </span>
   </a>
   
@@ -1052,159 +988,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development-guidelines" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Guidelines
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Guidelines">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#code-style" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Style
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ui-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      UI Development
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#logging-best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Logging Best Practices
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#threading-and-performance" class="md-nav__link">
-    <span class="md-ellipsis">
-      Threading and Performance
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Threading and Performance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#thread-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Thread Management
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resource-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resource Management
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      Contributing
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Contributing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-contribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to Contribute
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#what-to-contribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      What to Contribute
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#development-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Process
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#code-review-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Review Process
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#getting-help" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Help
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    <span class="md-ellipsis">
-      License
-    </span>
-  </a>
   
 </li>
       
@@ -1218,6 +1001,7 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
@@ -1227,185 +1011,247 @@
   
 
 
-<h1 id="development-guide">Development Guide</h1>
-<p>This guide is for developers who want to understand, modify, or contribute to the QGIS pypopRF plugin. We welcome contributions and suggestions from the community!  </p>
-<h2 id="project-structure">Project Structure</h2>
-<div class="highlight"><pre><span></span><code>QGIS-pypopRF/  
-├── core/                    # Core functionality  
-│   ├── pypoprf/            # Population modeling components  
-├── q_models/               # QGIS-specific models  
-│   ├── console_handler.py  # Console output management  
-│   ├── config_manager.py   # Configuration handling  
-│   ├── covariate_table.py # Covariate UI management  
-│   ├── file_handlers.py   # File operations  
-│   ├── process_executor.py # Analysis execution  
-│   └── settings_handler.py # Settings management  
-├── qgis_pypoprf_dialog.py  # Main dialog implementation  
-├── qgis_pypoprf_dialog_base.ui  # Qt UI definition  
-├── metadata.txt           # Plugin metadata  
-└── __init__.py           # Plugin entry point  
+<h1 id="development">Development</h1>
+<p>The plugin has two deliberately separate execution environments: the QGIS/Qt
+adapter and a locked CPython 3.12 numerical engine. Keep scientific imports and
+calculation inside the engine. Plugin activation must not run pip, add binary
+packages to the QGIS path, or select another interpreter implicitly for host
+installation.</p>
+<h2 id="architecture">Architecture</h2>
+<div class="highlight"><pre><span></span><code>__init__.py, metadata.txt, qgis_pypoprf.py  QGIS plugin entrypoint
+core/pypoprf/                            isolated numerical engine
+  algorithms/                           extraction, RF and allocation
+  config/, utils/                       engine validation and raster tasks
+gui/
+  dialogs/, forms/, widgets/             native Qt views and Designer form
+  icons/                                packaged vector control/action indicators
+  presenters/                           project, results and preparation views
+controllers/                            owned asynchronous workflows
+services/                               configuration, runtime and saved metadata
+shared/                                 stdlib atomic/environment contracts
+tests/
+  engine/, services/, gui/               focused regression suites
+  integration/, native/, packaging/     workflow, real QGIS and ZIP checks
+scripts/                                build, test, translation and upload tools
+docs/                                   maintained user/developer guides
+.local/                                 ignored reports, experiments and legacy files
+dist/                                   ignored generated plugin ZIPs
 </code></pre></div>
-<h2 id="core-components">Core Components</h2>
-<h3 id="1-main-dialog-qgis_pypoprf_dialogpy">1. Main Dialog (qgis_pypoprf_dialog.py)</h3>
-<ul>
-<li>Manages plugin UI lifecycle  </li>
-<li>Connects UI signals and slots  </li>
-<li>Coordinates between components  </li>
-<li>Handles user interactions  </li>
-</ul>
-<h3 id="2-model-classes">2. Model Classes</h3>
-<h4 id="console-and-logging-console_handlerpy">Console and Logging (console_handler.py)</h4>
-<ul>
-<li>Real-time console output  </li>
-<li>Log file management  </li>
-<li>Progress reporting  </li>
-<li>Error handling  </li>
-</ul>
-<h4 id="configuration-config_managerpy">Configuration (config_manager.py)</h4>
-<ul>
-<li>YAML configuration handling  </li>
-<li>Settings validation  </li>
-<li>Project structure management  </li>
-<li>Default configurations  </li>
-</ul>
-<h4 id="data-management">Data Management</h4>
-<ul>
-<li><strong>CovariateTableHandler</strong>: Manages covariate inputs and table UI  </li>
-<li><strong>FileHandler</strong>: Handles file operations and validation  </li>
-<li><strong>ProcessExecutor</strong>: Manages analysis execution and threading  </li>
-<li><strong>SettingsHandler</strong>: Manages plugin settings and preferences  </li>
-</ul>
-<h3 id="3-ui-design-qgis_pypoprf_dialog_baseui">3. UI Design (qgis_pypoprf_dialog_base.ui)</h3>
-<ul>
-<li>Qt Designer UI definition  </li>
-<li>Intuitive tab-based interface  </li>
-<li>Progress monitoring  </li>
-<li>File selection widgets  </li>
-<li>Advanced settings panels  </li>
-</ul>
-<h2 id="development-setup">Development Setup</h2>
-<h3 id="requirements">Requirements</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Install plugin requirements  </span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w">  </span>
+<p>The required QGIS files remain at the plugin root. Internal modules are not
+compatibility aliases: update their imports when developing against this layout.
+The public engine commands remain <code>python -m core.pypoprf</code> and
+<code>python -m core.pypoprf.tools</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Boundary</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core</code></td>
+<td>Numerical/geospatial computation; no Qt, GUI, controllers or provisioning services.</td>
+</tr>
+<tr>
+<td><code>gui</code></td>
+<td>Widgets, dialog composition, native layer presentation and desktop actions; no numerical imports.</td>
+</tr>
+<tr>
+<td><code>controllers</code></td>
+<td>Owned tasks and view coordination; no numerical imports.</td>
+</tr>
+<tr>
+<td><code>services</code></td>
+<td>Config files, runtime setup/process ownership and saved artifacts; no Qt or numerical imports.</td>
+</tr>
+<tr>
+<td><code>shared</code></td>
+<td>Standard library only; no engine, services or GUI dependencies.</td>
+</tr>
+</tbody>
+</table>
+<p>The main dialog composes project/input, result and preparation presenters rather
+than mixing all tab behavior into one class. Dialogs and reusable widgets live
+separately. Opening folders is a GUI desktop action, not a file-copy service.
+Runtime provisioning uses the shared environment contract; importing that
+contract does not start setup, mutate the parent environment or import numerical
+libraries. <code>services/owned_process.py</code> implements platform process ownership;
+<code>services/process_exit_guard.py</code> verifies actual Windows launch descendants.</p>
+<h3 id="gui-state-and-appearance-contracts">GUI state and appearance contracts</h3>
+<p><code>ProjectInputsPresenter.selection_is_active()</code> distinguishes folder selection
+from successful activation. Central readiness refresh also calls
+<code>refresh_project_action()</code>: an active folder shows Project open (disabled), a
+different candidate requires explicit Create/Open, and a failed candidate is
+never labelled active. Duplicate direct activation calls do not reload settings
+or reinitialize logging. Worker completion must restore this state, not blindly
+enable the activation button. Keep location/configured-path/log checks before
+activating any new folder.</p>
+<p><code>gui/widgets/light_theme.py</code> owns one full light palette, window-scoped QSS and
+parent-owned event guard. Never call application-global palette/style/font setters
+to implement plugin colors. Vector glyphs in <code>gui/icons/</code> must remain in the
+packaging allowlist; Run/Stop have explicit normal and disabled variants.
+<code>FittedLabel</code> bounds rendered footer lines without losing caller-bounded text;
+tests must check actual font/DPI geometry, not just source newline count.</p>
+<p>Maintain native state, import, lifecycle, hostile-host-theme and project-activation
+tests alongside changes. Public screenshots use real QGIS synthetic fixtures;
+private user paths/data and qualification reports stay in <code>.local/</code>.</p>
+<p>QProcess stdout carries newline-delimited JSON progress/result events; stderr
+carries diagnostics. A successful result requires normal exit, a matching
+complete result event, a complete manifest and present contained result paths.
+Progress alone never establishes successful completion. Native process/thread
+completion determines when a controller can release its owned resources.</p>
+<p>Before analysis or preparation starts, <code>services/engine_snapshot.py</code> freezes a
+bounded, verified copy of engine/shared code, provenance resources and dependency
+locks in the owned job cache. The child starts with <code>-I -B</code>, verifies the snapshot
+manifest, exact file inventory and installed dependency versions before importing
+the numerical engine, and uses an external job working directory. Replacing the
+installed plugin cannot change that child's imports or recorded source hashes.
+Analysis manifests distinguish <code>verified_snapshot</code> from direct CLI <code>live_source</code>
+execution and retain the frozen-manifest digest. No snapshot is shared between
+jobs or removed before the actual owned child exits.</p>
+<p>Setup creates a venv at its permanent unique location. It does not move a venv
+after creation. Installation accepts exact pinned requirements, uses binary
+wheels, checks package consistency and native imports, and activates through a
+small atomic pointer after health checks. A failed update preserves the previous
+environment. Readiness and discovery belong in background workers as they run
+subprocesses. Cancellation must reach those subprocess checks as well as setup.</p>
+<h2 id="engine-development-environment">Engine development environment</h2>
+<p>Use an independent environment, not the QGIS interpreter:</p>
+<div class="highlight"><pre><span></span><code><span class="n">py</span> <span class="p">-</span><span class="n">3</span><span class="p">.</span><span class="n">12</span> <span class="n">-m</span> <span class="n">venv</span> <span class="p">.</span><span class="n">venv-dev</span>
+<span class="p">.\.</span><span class="n">venv-dev</span><span class="p">\</span><span class="n">Scripts</span><span class="p">\</span><span class="n">python</span> <span class="n">-m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">-r</span> <span class="n">requirements-dev</span><span class="p">.</span><span class="n">txt</span>
+<span class="p">.\.</span><span class="n">venv-dev</span><span class="p">\</span><span class="n">Scripts</span><span class="p">\</span><span class="n">python</span> <span class="n">-m</span> <span class="n">pytest</span> <span class="n">-m</span> <span class="s2">"not qgis"</span> <span class="n">-q</span>
+<span class="p">.\.</span><span class="n">venv-dev</span><span class="p">\</span><span class="n">Scripts</span><span class="p">\</span><span class="n">python</span> <span class="n">-m</span> <span class="n">ruff</span> <span class="n">check</span> <span class="n">core</span> <span class="n">gui</span> <span class="n">controllers</span> <span class="n">services</span> <span class="n">shared</span> <span class="n">qgis_pypoprf</span><span class="p">.</span><span class="n">py</span> <span class="n">__init__</span><span class="p">.</span><span class="n">py</span> <span class="n">scripts</span> <span class="n">tests</span>
 </code></pre></div>
-<h3 id="environment-setup">Environment Setup</h3>
+<p>On Linux use an installed <code>python3.12</code>, then <code>.venv-dev/bin/python</code> for the
+same commands. <code>requirements-dev.txt</code> includes the exact engine lock plus test
+and lint tools. Dependency upgrades are a separate change: validate clean
+installation and regression/artifact compatibility before replacing the lock.</p>
+<p>For native development, build the plugin ZIP and install it into a dedicated
+QGIS profile using its plugin manager. This avoids suggesting a hard-coded
+profile directory or a module directory name containing a hyphen.</p>
+<h2 id="tests-and-acceptance">Tests and acceptance</h2>
+<p>The headless suite tests production code with temporary GeoTIFF/CSV fixtures,
+including keyed joins, NoData, alignment, singleton zones, population
+conservation, target inversion, CV isolation, model reload, cancellation,
+atomic failures and provenance. The bundled Rwanda test checks extraction and
+416-zone allocation; it skips explicitly if the case-study data are absent.</p>
+<p>Qt doubles exercise controller state and error paths; they do not validate
+native Qt ownership or widget binding compatibility. Run
+<code>tests/native/</code> in a genuine QGIS application/runtime with an
+available separate engine. Offscreen container acceptance is useful, but it
+does not replace an interactive operating-system smoke test. CI configuration
+in <code>.github/workflows/test.yml</code> declares the actual current test matrix.</p>
+<p>The Windows headless job also creates an empty temporary engine cache and invokes
+the real locked setup and health checks. Installing development dependencies or
+using a prepared engine is not evidence that a fresh Windows installation works.
+New environments use a shorter full-UUID basename; legacy verified names remain
+accepted without moving their virtual environments. Arbitrarily long custom cache
+paths remain subject to operating-system and wheel path limits.</p>
+<p><code>scripts/run_native_tests.py</code> discovers all test modules in <code>tests/native/</code> by default;
+this includes the original adapter, preparation/layer/AOI workflow and quality
+widget tests plus isolated actual-installer replacement/recovery tests. Set
+<code>PYPOPRF_TEST_PLUGIN_ROOT</code> to the freshly extracted plugin and
+<code>PYPOPRF_TEST_PLUGIN_ZIP</code> to the same verified ZIP. On Windows,
+<code>PYPOPRF_TEST_ENGINE</code> must name a standalone prepared engine, not the portable
+QGIS host interpreter. The installer subprocess tests redirect home, cache,
+profile and Qt INI settings into a nonce-owned temporary directory before any
+settings write; they never use an existing desktop profile. They include a
+Windows-only copied-DLL, normal-process-exit migration fixture, not forced DLL
+unloading or manual deletion of a user installation.</p>
+<p>Windows launcher termination is not itself proof that the redirected
+Python child has exited: the adapter asynchronously checks held, birth-identified
+Windows process handles before releasing metadata or deleting owned scratch.
+Tracking failures remain explicit and do not falsely establish cleanup safety.</p>
+<p>Maintainer ZIP verification checks portable raw member names (including Windows
+aliases/device names), regular-file inventory and manifest/version consistency
+without extracting files. It rejects more than 10,000 members, a member larger
+than 25 MiB, more than 100 MiB expanded data, a manifest larger than 4 MiB, or an
+archive larger than 25 MB before content verification. These are resource and
+consistency checks, not publisher signatures or proof of authentic code.</p>
+<p>An access-denied candidate can be excluded only when a limited query proves its
+creation time lies outside every held parent's lifetime. Query-only handles are
+never retained or used to establish exit; Windows live-process exit-time fields
+are undefined. Fully inaccessible or possibly owned children remain fail-closed,
+with explicit tracking diagnostics rather than premature resource cleanup.</p>
+<p>The extra tools protocol is
+<code>python -m core.pypoprf.tools --request absolute-request.json --cancel-file marker</code>.
+Schema1 requests choose <code>inspect</code>, <code>prepare</code> or <code>population_summary</code>; both progress
+and final events carry an ownership nonce. Complete output requires an owned new
+directory, fixed <code>report.json</code>, matching request ID and (for preparation) validated
+<code>config.yaml</code>. GUI preparation additionally carries the inspected <code>expected_inputs</code>
+fingerprint list. AOI summaries can bind a population map to its recorded artifact
+SHA, and explain partial coverage separately. No tool imports QGIS into the engine
+or numerical libraries into the QGIS host.</p>
+<p>The research command compares predeclared candidates on identical spatial
+outer folds and saves the predictions, source hashes and split provenance:</p>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">-m</span> <span class="n">scripts</span><span class="p">.</span><span class="n">benchmark_models</span> <span class="p">-</span><span class="n">-output</span> <span class="p">.</span><span class="n">local</span><span class="p">/</span><span class="n">benchmarks</span><span class="p">/</span><span class="n">new_comparison</span> <span class="p">-</span><span class="n">-trees</span> <span class="n">100</span> <span class="p">-</span><span class="n">-spatial-grid</span> <span class="n">4</span> <span class="n">4</span>
+</code></pre></div>
+<p>It requires a fresh output directory and does not change the production model.
+Experiment results and qualification evidence belong under ignored <code>.local/</code>,
+not in Git or the runtime ZIP. Do not turn an improvement on one block partition
+into a pixel-accuracy guarantee. Old generated resources and historical
+screenshots are archived locally; the live interface uses filesystem icons and
+the maintained Designer form, not a PyQt5-only generated resources module.</p>
+<p><code>tests/packaging/test_architecture.py</code> checks import boundaries, canonical and
+plugin-alias loading, and an extracted ZIP without repository paths. Tests,
+maintained documentation, dependency locks, scripts and CI are project sources;
+private audits/reviews, run outputs, caches, environments and experiments are not.
+Commit a coherent tested stage with explicit paths; never force-add <code>.local/</code> or
+<code>dist/</code>, and do not push without the owner's request.</p>
+<h2 id="numerical-and-lifecycle-invariants">Numerical and lifecycle invariants</h2>
+<ul>
+<li>Inputs are never rewritten by validation or replaced by output publication.</li>
+<li>Census joins are by unique ID; density support comes from eligible mastergrid pixels.</li>
+<li>Missing predictors remain distinct from numeric zero; errors propagate from every tile.</li>
+<li>A positive population without positive eligible prediction support fails explicitly.</li>
+<li>Every published population raster is read back and checked per zone.</li>
+<li>Every outer validation fit recomputes preprocessing and selection from training data only.</li>
+<li>Spatial grouping metadata states CRS, scale, centroid method and lack of buffers.</li>
+<li>Failed/cancelled attempts cannot become complete maps or remove earlier runs.</li>
+<li>Temporary files and process/thread resources belong to one run and are cleaned only after use ends.</li>
+</ul>
+<p>Model bundles include feature order, target transform, version and training-grid
+contracts. Treat joblib as trusted executable serialization; mismatched old
+model/scaler pairs require retraining. Effective settings must be recorded using
+<code>Settings.to_config()</code> rather than copying only explicit YAML fields.</p>
+<h2 id="packaging-and-contribution">Packaging and contribution</h2>
+<div class="highlight"><pre><span></span><code><span class="n">python</span> <span class="n">scripts</span><span class="p">/</span><span class="n">build_plugin</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-output</span> <span class="n">dist</span><span class="p">/</span><span class="n">pypopRF</span><span class="p">.</span><span class="n">zip</span>
+</code></pre></div>
+<p>The builder uses an explicit runtime allowlist, deterministic ZIP metadata and
+a hashed package manifest. User data, tests, benchmark outputs and local engine
+environments do not belong in the distributable. <code>python -m scripts.plugin_upload</code> is an
+explicit maintainer publishing command; normal builds and activation do not
+upload anything.</p>
+<h3 id="release-checklist">Release checklist</h3>
 <ol>
-<li>
-<p>Clone repository:<br />
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/wpgp/QGIS-pypopRF.git<span class="sb">```</span><span class="w">  </span>
-
-<span class="m">2</span>.<span class="w"> </span>Install<span class="w"> </span><span class="k">for</span><span class="w"> </span>development:<span class="w">  </span>
-<span class="sb">```</span>bash<span class="w">  </span>
-<span class="c1"># Linux/macOS  </span>
-ln<span class="w"> </span>-s<span class="w"> </span>/path/to/QGIS-pypopRF<span class="w"> </span>~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/<span class="w">  </span>
-
-<span class="c1"># Windows (PowerShell)  </span>
-New-Item<span class="w"> </span>-ItemType<span class="w"> </span>SymbolicLink<span class="w"> </span>-Path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$env</span><span class="s2">:APPDATA\QGIS\QGIS3\profiles\default\python\plugins\QGIS-pypopRF&quot;</span><span class="w"> </span>-Target<span class="w"> </span><span class="s2">&quot;path\to\QGIS-pypopRF&quot;</span><span class="w">  </span>
-</code></pre></div></p>
-</li>
-<li>
-<p>Reload QGIS plugins  </p>
-</li>
+<li>Finish regression/native-QGIS checks and owner acceptance before formatting
+   a release. Keep private qualification evidence under ignored <code>.local/</code>.</li>
+<li>Update the canonical version in <code>metadata.txt</code> (also read by the engine).
+   For a stable release set
+   <code>experimental=False</code> and put the matching version/date first in <code>CHANGELOG.md</code>.
+   Retain repository and file-specific license/authorship notices.</li>
+<li>Run <code>python scripts/check_release.py</code>, headless tests, Ruff and native tests
+   against the exact newly built ZIP. Build twice and compare SHA-256 hashes;
+   preserve the previously accepted archive before replacing local artifacts.</li>
+<li>Build the documentation with <code>mkdocs build --strict</code> and check local links and
+   packaged assets. Commit only maintained project sources, tests, guides and CI.</li>
+<li>With owner approval, push the commit and require GitHub Actions to pass for
+   that commit. Local checks do not establish remote CI success. Pushing <code>master</code>
+   also triggers the existing documentation deployment workflow.</li>
+<li>Prepare a <code>v&lt;version&gt;</code> tag pointing at the accepted commit. Tag pushes run the
+   test workflow and verify tag/metadata identity. Publishing to GitHub or QGIS
+   remains a separate, explicitly authorized maintainer action.</li>
 </ol>
-<h2 id="development-guidelines">Development Guidelines</h2>
-<h3 id="code-style">Code Style</h3>
-<ul>
-<li>Follow PEP 8 conventions  </li>
-<li>Use type hints for better code clarity  </li>
-<li>Write comprehensive docstrings  </li>
-<li>Keep methods focused and maintainable  </li>
-<li>Comment complex logic sections  </li>
-<li>Use meaningful variable names  </li>
-</ul>
-<h3 id="ui-development">UI Development</h3>
-<ul>
-<li>Use Qt Designer for UI modifications  </li>
-<li>Maintain consistent tab-based organization  </li>
-<li>Follow QGIS UI guidelines  </li>
-<li>Consider user workflow and experience  </li>
-<li>Ensure responsive interface  </li>
-</ul>
-<h3 id="error-handling">Error Handling</h3>
-<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>  
- <span class="c1"># Operation process_data()except Exception as e:  </span>
- <span class="c1"># Log error self.logger.error(f&quot;Operation failed: {str(e)}&quot;) # Inform user self.show_error_message(&quot;Operation failed&quot;, str(e))finally:  </span>
- <span class="c1"># Cleanup self.cleanup_resources()  </span>
-</code></pre></div>
-<h3 id="logging-best-practices">Logging Best Practices</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Use appropriate log levels  </span>
-<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Detailed technical information&quot;</span><span class="p">)</span>  
-<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;General process information&quot;</span><span class="p">)</span>  
-<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning about potential issues&quot;</span><span class="p">)</span>  
-<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error that needs attention&quot;</span><span class="p">)</span>  
-</code></pre></div>
-<h2 id="threading-and-performance">Threading and Performance</h2>
-<h3 id="thread-management">Thread Management</h3>
-<ul>
-<li>Use QThread for heavy processing  </li>
-<li>Emit progress signals  </li>
-<li>Handle cancellation properly  </li>
-<li>Manage memory usage  </li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ProcessWorker</span><span class="p">(</span><span class="n">QThread</span><span class="p">):</span>  
- <span class="n">progress</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="n">finished</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  
- <span class="k">try</span><span class="p">:</span> <span class="c1"># Processing steps self.progress.emit(50, &quot;Processing...&quot;)             # Check for cancellation  </span>
- <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span><span class="p">:</span> <span class="k">return</span>         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  
- <span class="bp">self</span><span class="o">.</span><span class="n">finished</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>  
-</code></pre></div>
-<h3 id="resource-management">Resource Management</h3>
-<ul>
-<li>Implement block processing for large datasets  </li>
-<li>Monitor memory usage  </li>
-<li>Clean up temporary files  </li>
-<li>Release resources properly  </li>
-<li>Handle large input files efficiently  </li>
-</ul>
-<h2 id="contributing">Contributing</h2>
-<p>We welcome contributions from the community! Here's how you can help:  </p>
-<h3 id="how-to-contribute">How to Contribute</h3>
-<ol>
-<li>Fork the repository  </li>
-<li>Create a feature branch  </li>
-<li>Make your changes  </li>
-<li>Write/update tests  </li>
-<li>Submit a pull request  </li>
-</ol>
-<h3 id="what-to-contribute">What to Contribute</h3>
-<ul>
-<li>Bug fixes  </li>
-<li>New features  </li>
-<li>Documentation improvements  </li>
-<li>Performance enhancements  </li>
-<li>UI/UX improvements  </li>
-<li>Translations  </li>
-</ul>
-<h3 id="development-process">Development Process</h3>
-<ol>
-<li>Check existing issues or create a new one  </li>
-<li>Discuss proposed changes  </li>
-<li>Implement changes  </li>
-<li>Submit pull request  </li>
-<li>Respond to review comments  </li>
-</ol>
-<h3 id="code-review-process">Code Review Process</h3>
-<ul>
-<li>All changes require review  </li>
-<li>Follow the pull request template  </li>
-<li>Include test cases  </li>
-<li>Update documentation  </li>
-<li>Maintain code quality  </li>
-</ul>
-<h2 id="getting-help">Getting Help</h2>
-<ul>
-<li>GitHub Issues: Report bugs and feature requests  </li>
-<li>Discussions: Ask questions and share ideas  </li>
-<li>Wiki: Additional documentation  </li>
-<li>Email: Contact the development team  </li>
-</ul>
-<h2 id="license">License</h2>
-<p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for details.  </p>
-<hr />
-<p>We appreciate your interest in contributing to the QGIS pypopRF plugin! Your contributions help make the tool better for everyone.</p>
+<p>For example, <code>python scripts/build_plugin.py --output dist/pypopRF-0.3.7.zip</code>
+builds this version without tagging, uploading or deploying it. The CI test
+workflow has read-only repository permissions; it does not publish packages.</p>
+<p>When submitting a change, include the concrete before/after behaviour, meaningful
+validation and material limits. Preserve unrelated user changes and historical
+data. Keep source attribution, <code>CITATION.cff</code>, the repository
+<a href="https://github.com/wpgp/QGIS-pypopRF/blob/master/LICENSE">LICENSE</a> and individual
+file notices intact. Report reproducible issues through
+<a href="https://github.com/wpgp/QGIS-pypopRF/issues">GitHub Issues</a>.</p>
 
 
 
@@ -1452,10 +1298,13 @@ New-Item<span class="w"> </span>-ItemType<span class="w"> </span>SymbolicLink<sp
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -14,11 +14,14 @@
         <link rel="prev" href="../settings/">
       
       
-        <link rel="next" href="../../development/">
+        <link rel="next" href="../troubleshooting/">
+      
+      
+        
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -26,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -56,7 +59,6 @@
 
     
     
-    
   </head>
   
   
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#running-analysis" class="md-skip">
+        <a href="#run-an-analysis-and-interpret-its-results" class="md-skip">
           Skip to content
         </a>
       
@@ -148,11 +150,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -184,13 +188,14 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -216,9 +221,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../.." class="md-tabs__link">
         
+  
   
     
   
@@ -233,11 +240,13 @@
   
   
   
+  
     
     
       <li class="md-tabs__item">
         <a href="../../getting-started/installation/" class="md-tabs__link">
           
+  
   
   Getting Started
 
@@ -250,6 +259,7 @@
         
   
   
+  
     
   
   
@@ -258,6 +268,7 @@
       <li class="md-tabs__item md-tabs__item--active">
         <a href="../interface/" class="md-tabs__link">
           
+  
   
   User Guide
 
@@ -271,9 +282,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../../development/" class="md-tabs__link">
         
+  
   
     
   
@@ -319,7 +332,7 @@
       <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -339,10 +352,16 @@
       <a href="../.." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -356,6 +375,7 @@
   
   
   
+    
     
     
     
@@ -377,10 +397,16 @@
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     Getting Started
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -389,7 +415,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Getting Started
+            
+  
+    Getting Started
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -403,10 +433,16 @@
       <a href="../../getting-started/installation/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Installation
+  
+
     
   </span>
+  
   
 
       </a>
@@ -425,10 +461,16 @@
       <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Quick Start
+  
+
     
   </span>
+  
   
 
       </a>
@@ -455,6 +497,7 @@
     
     
     
+    
       
         
         
@@ -474,10 +517,16 @@
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     User Guide
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -486,7 +535,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            User Guide
+            
+  
+    User Guide
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -500,10 +553,44 @@
       <a href="../interface/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Interface
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -522,10 +609,16 @@
       <a href="../input-data/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Input Data
+  
+
     
   </span>
+  
   
 
       </a>
@@ -544,10 +637,16 @@
       <a href="../settings/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Settings
+  
+
     
   </span>
+  
   
 
       </a>
@@ -575,10 +674,16 @@
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
+  
   <span class="md-ellipsis">
+    
+  
     Running Analysis
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -587,10 +692,16 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Running Analysis
+  
+
     
   </span>
+  
   
 
       </a>
@@ -611,194 +722,68 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#before-starting" class="md-nav__link">
+  <a href="#from-project-to-run" class="md-nav__link">
     <span class="md-ellipsis">
-      Before Starting
+      
+        From project to Run
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Before Starting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quick-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quick Checklist
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-verification" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Verification
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-the-analysis" class="md-nav__link">
+  <a href="#what-runs-and-how-to-stop-it" class="md-nav__link">
     <span class="md-ellipsis">
-      Running the Analysis
+      
+        What runs, and how to stop it
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Running the Analysis">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-starting-the-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Starting the Process
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-processing-stages" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Processing Stages
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Processing Stages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#feature-extraction-20" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feature Extraction (20%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#model-training-40" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model Training (40%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#population-prediction-60" class="md-nav__link">
-    <span class="md-ellipsis">
-      Population Prediction (60%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#distribution-mapping-80" class="md-nav__link">
-    <span class="md-ellipsis">
-      Distribution Mapping (80%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#finalization-100" class="md-nav__link">
-    <span class="md-ellipsis">
-      Finalization (100%)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#monitoring-progress" class="md-nav__link">
+  <a href="#find-the-saved-run" class="md-nav__link">
     <span class="md-ellipsis">
-      Monitoring Progress
+      
+        Find the saved run
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Monitoring Progress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#console-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Console Output
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#progress-bar" class="md-nav__link">
-    <span class="md-ellipsis">
-      Progress Bar
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#process-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      Process Control
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-files" class="md-nav__link">
+  <a href="#read-the-quality-dashboard" class="md-nav__link">
     <span class="md-ellipsis">
-      Output Files
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Output Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#main-outputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Main Outputs
+      
+        Read the quality dashboard
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-outputs" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#estimate-population-inside-an-aoi" class="md-nav__link">
     <span class="md-ellipsis">
-      Additional Outputs
+      
+        Estimate population inside an AOI
+      
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-or-diagnose-a-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce or diagnose a run
+      
+    </span>
+  </a>
   
 </li>
       
@@ -806,6 +791,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -828,10 +841,16 @@
       <a href="../../development/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Development
+  
+
     
   </span>
+  
   
 
       </a>
@@ -866,194 +885,68 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#before-starting" class="md-nav__link">
+  <a href="#from-project-to-run" class="md-nav__link">
     <span class="md-ellipsis">
-      Before Starting
+      
+        From project to Run
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Before Starting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quick-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quick Checklist
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-verification" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Verification
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-the-analysis" class="md-nav__link">
+  <a href="#what-runs-and-how-to-stop-it" class="md-nav__link">
     <span class="md-ellipsis">
-      Running the Analysis
+      
+        What runs, and how to stop it
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Running the Analysis">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-starting-the-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Starting the Process
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-processing-stages" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Processing Stages
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Processing Stages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#feature-extraction-20" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feature Extraction (20%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#model-training-40" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model Training (40%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#population-prediction-60" class="md-nav__link">
-    <span class="md-ellipsis">
-      Population Prediction (60%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#distribution-mapping-80" class="md-nav__link">
-    <span class="md-ellipsis">
-      Distribution Mapping (80%)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#finalization-100" class="md-nav__link">
-    <span class="md-ellipsis">
-      Finalization (100%)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#monitoring-progress" class="md-nav__link">
+  <a href="#find-the-saved-run" class="md-nav__link">
     <span class="md-ellipsis">
-      Monitoring Progress
+      
+        Find the saved run
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Monitoring Progress">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#console-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Console Output
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#progress-bar" class="md-nav__link">
-    <span class="md-ellipsis">
-      Progress Bar
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#process-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      Process Control
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#output-files" class="md-nav__link">
+  <a href="#read-the-quality-dashboard" class="md-nav__link">
     <span class="md-ellipsis">
-      Output Files
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Output Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#main-outputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Main Outputs
+      
+        Read the quality dashboard
+      
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-outputs" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#estimate-population-inside-an-aoi" class="md-nav__link">
     <span class="md-ellipsis">
-      Additional Outputs
+      
+        Estimate population inside an AOI
+      
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-or-diagnose-a-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce or diagnose a run
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1067,6 +960,7 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
@@ -1076,131 +970,228 @@
   
 
 
-<h1 id="running-analysis">Running Analysis</h1>
-<p>This guide explains how to run population analysis using the pypopRF plugin and interpret the results.</p>
-<h2 id="before-starting">Before Starting</h2>
-<h3 id="quick-checklist">Quick Checklist</h3>
-<ul>
-<li>✓ All required files loaded</li>
-<li>✓ Optional files prepared (if using)</li>
-<li>✓ Settings configured</li>
-<li>✓ Sufficient disk space (3-4x input data size)</li>
-<li>✓ Adequate memory available</li>
-<li>✓ Column names verified</li>
-</ul>
-<h3 id="data-verification">Data Verification</h3>
-<ul>
-<li>Census data columns match settings</li>
-<li>Mastergrid IDs match census data</li>
-<li>Covariates cover study area</li>
-<li>Optional files properly configured:</li>
-<li>Water mask (if using)</li>
-<li>Constraints (if using)</li>
-<li>Age-sex data (if using)</li>
-</ul>
-<h2 id="running-the-analysis">Running the Analysis</h2>
-<h3 id="1-starting-the-process">1. Starting the Process</h3>
-<p>The Start button will be enabled when:</p>
-<ul>
-<li>All required files are loaded</li>
-<li>Settings are properly configured</li>
-<li>Project is initialized</li>
-</ul>
-<p>Click the green "Start" button to begin analysis.</p>
-<h3 id="2-processing-stages">2. Processing Stages</h3>
-<p>The analysis runs through several stages:</p>
-<h4 id="feature-extraction-20">Feature Extraction (20%)</h4>
-<ul>
-<li>Processing covariates</li>
-<li>Calculating zonal statistics</li>
-<li>Extracting predictive features</li>
-</ul>
-<h4 id="model-training-40">Model Training (40%)</h4>
-<ul>
-<li>Training Random Forest model</li>
-<li>Calculating feature importance</li>
-<li>Validating model performance</li>
-</ul>
-<h4 id="population-prediction-60">Population Prediction (60%)</h4>
-<ul>
-<li>Generating probability surface</li>
-<li>Applying water mask (if enabled)</li>
-<li>Processing spatial constraints (if enabled)</li>
-</ul>
-<h4 id="distribution-mapping-80">Distribution Mapping (80%)</h4>
-<ul>
-<li>Creating normalized census</li>
-<li>Generating population distribution</li>
-<li>Processing age-sex structure (if enabled)</li>
-</ul>
-<h4 id="finalization-100">Finalization (100%)</h4>
-<ul>
-<li>Saving output files</li>
-<li>Loading results in QGIS</li>
-<li>Cleaning temporary files</li>
-</ul>
-<h2 id="monitoring-progress">Monitoring Progress</h2>
-<h3 id="console-output">Console Output</h3>
-<p>The console shows:</p>
-<ul>
-<li>Current processing stage</li>
-<li>Progress information</li>
-<li>Warnings or errors</li>
-<li>Processing statistics</li>
-</ul>
-<h3 id="progress-bar">Progress Bar</h3>
-<ul>
-<li>Shows overall completion</li>
-<li>Displays current stage</li>
-<li>Updates in real-time</li>
-</ul>
-<h3 id="process-control">Process Control</h3>
-<ul>
-<li>Use Stop button to cancel (red)</li>
-<li>Processing will complete current stage</li>
-<li>Results up to stop point are saved</li>
-</ul>
-<h2 id="output-files">Output Files</h2>
-<h3 id="main-outputs">Main Outputs</h3>
+<h1 id="run-an-analysis-and-interpret-its-results">Run an analysis and interpret its results</h1>
+<p>Use an open external <a href="../projects/">project</a>, compatible <a href="../input-data/">input data</a>
+and reviewed <a href="../settings/">settings</a>. Every attempt creates a separate run; it
+does not replace an earlier population map.</p>
+<h2 id="from-project-to-run">From project to Run</h2>
 <ol>
-<li>
-<p><strong>normalized_census.tif</strong></p>
-<ul>
-<li>Census values adjusted to raster format</li>
-<li>Shows population distribution zones</li>
-</ul>
-</li>
-<li>
-<p><strong>population_unconstrained.tif</strong></p>
-<ul>
-<li>Basic population distribution</li>
-<li>Without spatial constraints</li>
-</ul>
-</li>
-<li>
-<p><strong>population_constrained.tif</strong></p>
-<ul>
-<li>Population distribution with constraints</li>
-<li>Only if constraints enabled</li>
-</ul>
-</li>
+<li>On <strong>Engine</strong>, wait for the engine check to finish. If it is not prepared,
+   choose a compatible Python and <strong>Set up engine</strong>. A ready engine needs no
+   routine repair before each analysis. You can open a project without an
+   installed engine once background work has finished, but cannot calculate yet.</li>
+<li>On <strong>Project</strong>, create/open the intended folder. Selecting a different folder
+   makes it a candidate and disables Run/input editing until you explicitly open
+   it. The candidate is not activated and the previous saved project is not
+   overwritten just by changing the selection.</li>
+<li>On <strong>Input data</strong>, select a zone grid and population census, and use <strong>Add
+   raster files…</strong> for at least one named covariate. Finish any copy/conflict
+   dialog or preparation first. Optional masks and age-sex counts must obey
+   their distinct <a href="../input-data/">input contracts</a>.</li>
+<li>On <strong>Settings</strong>, check the CSV column mapping, tile/worker budget and target
+   transform. On the footer, review <strong>Selected for run</strong>, then choose
+   <strong>Run analysis</strong>. Run is disabled when required selections/engine are missing.
+   While another task owns the interface, starting a new run is refused; the
+   same main control may instead offer Stop/Cancel for that task.</li>
 </ol>
-<h3 id="additional-outputs">Additional Outputs</h3>
-<p><strong>Age-sex maps</strong> (if enabled)</p>
+<p>The checklist describes selected inputs, not their numerical validity. The
+separate engine checks CSV schema and values, full raster alignment, validity
+masks and eligible census support before publishing population maps. Selecting
+a raster does not cause an implicit reprojection/resampling; use <strong>Prepare /
+align inputs…</strong> deliberately if needed.</p>
+<p>Keep project configuration, CSVs, rasters and sidecars stable during import or
+analysis. Fingerprints detect observed resource changes, not an adversarial
+point-in-time snapshot of another process repeatedly replacing/restoring data.
+Calculating raster statistics in QGIS or another GDAL application can create
+an <code>.aux.xml</code> sidecar. Do that before Run, not during calculation: adding a
+resource changes the input snapshot and the attempt is rejected rather than
+silently accepted with different provenance.</p>
+<h2 id="what-runs-and-how-to-stop-it">What runs, and how to stop it</h2>
+<p>The workflow applies water exclusion, derives any constrained zone grid,
+extracts zonal covariate means, trains/validates the seeded Random Forest,
+predicts nonnegative weights and redistributes census totals over eligible
+pixels. The main map is always unconstrained; a supplied support mask adds a
+separately normalized constrained map. Age-sex maps use ID-keyed totals for
+each supported group, not CSV row positions.</p>
+<p>While calculating, the main action becomes <strong>Stop</strong>. It requests cooperative
+cancellation without blocking the GUI. The interface retains the owned child
+and temporary files until actual process exit is verified. After the grace
+period, an unresponsive owned process may be stopped forcibly; unrelated Python
+or QGIS processes are not targeted. Closing/unloading follows the same ownership
+rule. Engine setup has its own <strong>Cancel setup</strong> action on Engine; cancelling a
+check is not the same as a failed engine verification.</p>
+<p>The footer shows compact status and elapsed task time. Long messages are fitted
+to a few painted lines; their complete caller-bounded text remains in the tooltip
+and <strong>Details</strong>. The Details page holds full diagnostic messages and stage
+history. Progress milestones are not an ETA, a download-byte percentage or an
+accuracy score. Engine package downloads use an indeterminate activity bar.</p>
+<p>Output files are published individually from temporary files after successful
+close/validation. A stopped or failed run can retain intermediate files for
+diagnosis, but that is <strong>not</strong> a complete result. Its terminal manifest records
+failure/cancellation; an attempt rejected before creating a run may have no
+history entry. Previous runs and source files are preserved.</p>
+<h2 id="find-the-saved-run">Find the saved run</h2>
+<p>Open <strong>Results</strong> and select a run. <strong>Refresh</strong> rereads history without discarding
+your selection. <strong>Open result folder</strong> opens its files; <strong>Add maps to QGIS</strong>
+loads population maps from a completed run. Failed/stopped attempts remain
+available for diagnosis, not map loading. A newly verified successful run takes
+selection; a failed attempt does not silently replace the selected earlier run.
+An existing run with malformed metadata or missing/unsafe outputs is shown as
+<strong>Invalid</strong>, not Complete. Its folder remains available for diagnosis; map
+loading and population summaries stay disabled until the data are repaired.</p>
+<p>Default location:</p>
+<div class="highlight"><pre><span></span><code>&lt;project&gt;/output/runs/&lt;timestamp-id&gt;/
+</code></pre></div>
+<p>If <code>output_dir</code> differs, use <code>&lt;output_dir&gt;/runs/&lt;timestamp-id&gt;/</code>. Run IDs are
+shown as local start times in Results; the exact ID/path is in the row tooltip.</p>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manifest.json</code></td>
+<td>Status, displayable outputs, input/resource fingerprints, artifact inventory, runtime/source provenance and diagnostics.</td>
+</tr>
+<tr>
+<td><code>run_config.yaml</code></td>
+<td>All effective settings/defaults and resolved input paths.</td>
+</tr>
+<tr>
+<td><code>population_unconstrained.tif</code></td>
+<td>Final estimated persons per pixel on unconstrained valid support.</td>
+</tr>
+<tr>
+<td><code>population_constrained.tif</code></td>
+<td>Additional persons-per-pixel map when a support mask was supplied.</td>
+</tr>
+<tr>
+<td><code>prediction.tif</code></td>
+<td>Model allocation weights; <strong>not final population counts</strong>.</td>
+</tr>
+<tr>
+<td><code>normalized_census*.tif</code></td>
+<td>Zone normalization coefficients, not a population map.</td>
+</tr>
+<tr>
+<td><code>agesex/population_&lt;group&gt;*.tif</code></td>
+<td>Group-specific population maps, optionally constrained.</td>
+</tr>
+<tr>
+<td><code>agesex/age_sex_totals.csv</code></td>
+<td>ID-keyed demographic-sum versus main-census comparison.</td>
+</tr>
+<tr>
+<td><code>features.csv</code></td>
+<td>Derived zonal training table, not a rewritten source census.</td>
+</tr>
+<tr>
+<td><code>cv_metrics.json</code>, <code>cv_predictions.csv</code>, <code>cv_zone_geometry.csv</code></td>
+<td>Actual held-out validation, folds and spatial diagnostics.</td>
+</tr>
+<tr>
+<td><code>feature_importance.csv</code></td>
+<td>Final training procedure's permutation selection scores/spread.</td>
+</tr>
+<tr>
+<td><code>model_bundle.pkl.gz</code></td>
+<td>Model/preprocessing/schema bundle; executable serialization, trusted sources only.</td>
+</tr>
+<tr>
+<td>Configured <code>.log</code> file</td>
+<td>Engine diagnostics for this run, if file logging is enabled.</td>
+</tr>
+</tbody>
+</table>
+<p>The manifest's displayable <code>outputs</code> list differs from its complete immutable
+artifact inventory. Mutable logs and the manifest itself are not included in
+that inventory. A file being present does not establish that its run completed;
+the GUI requires consistent terminal status and verified output metadata.</p>
+<h2 id="read-the-quality-dashboard">Read the quality dashboard</h2>
+<p>Selecting a saved run loads the dashboard beneath history. Keep two questions
+separate:</p>
 <ul>
-<li>Separate maps for each age-sex group</li>
-<li>Located in 'agesex' folder</li>
+<li><strong>Conservation</strong>: did redistribution match each supplied census zone/group
+  total within numerical tolerances? This is a correctness check, not evidence
+  that people were located correctly within the zone. The dashboard reports
+  the engine's recorded conservation result; opening history does not rerun
+  every per-zone raster sum.</li>
+<li><strong>Held-out density quality</strong>: how well did the complete training procedure
+  predict census-zone average density on held-out zones? The observed/predicted
+  scatter uses out-of-fold predictions, not in-sample fitting or independent
+  pixel observations.</li>
 </ul>
-<p><strong>Model files</strong></p>
-<ul>
-<li>model.pkl.gz: Trained model</li>
-<li>scaler.pkl.gz: Data scaler</li>
-<li>features.csv: Feature importance</li>
-</ul>
-<hr />
-<div align="right">
-  <a href="#top">↑ Back to Top</a>
-</div>
+<p>Inspect RMSE, MAE, R² where available, the validation strategy/limits, high-error
+zones and feature selection scores. A displayed mean baseline is derived from
+the other folds' training targets, not the held-out target itself. Missing,
+malformed or inconsistent saved artifacts make diagnostics unavailable rather
+than producing invented points or trustworthy-looking scores.</p>
+<p><strong>Show selected / top error zones in QGIS</strong> adds diagnostic centroid markers
+when saved spatial geometry/CRS is available. They are zone-centroid locations,
+not zone-boundary polygons or a pixel-confidence surface. Inspect them alongside
+your administrative boundaries and source data.</p>
+<p>Default spatial validation divides the <strong>full raster footprint</strong> into a 4×4
+grid and assigns eligible zone-pixel centroids to blocks. All zones within a
+block stay together; preprocessing/selection/forest are freshly fitted inside
+each outer training fold. There is no separation buffer: large zones may cross
+block boundaries and adjacent blocks may remain dependent. Too few occupied
+blocks makes metrics unavailable, with no hidden shuffled fallback. User groups
+and shuffled-zone diagnostics are explicitly labelled. See <a href="../settings/#advanced-configuration">advanced validation
+settings</a> before comparing block designs.</p>
+<p>The density target and RMSE/MAE use population per eligible mastergrid pixel,
+not people/km²; R² and normalized errors are dimensionless. None validates
+high-resolution accuracy. Changing blocks, support, grid resolution or target
+transform can change the comparison. Use independent data and a justified
+spatial design before making fine-pixel accuracy claims.</p>
+<h2 id="estimate-population-inside-an-aoi">Estimate population inside an AOI</h2>
+<ol>
+<li>Select a <strong>completed</strong> run in Results with the engine ready and no other task
+   running, then choose <strong>Population in an area…</strong>.</li>
+<li>Choose a published <strong>population</strong> map and local polygon file/QGIS layer.
+   Do not use <code>prediction.tif</code>, coefficients or an unrelated density raster.</li>
+<li>Choose <strong>Calculate population</strong> and read both the total and coverage warning.
+   During calculation, <strong>Stop</strong> requests cancellation; closing also waits for
+   the owned operation to stop.</li>
+</ol>
+<p>The tool unions overlapping polygons so cells are counted once, transforms valid
+polygon geometry into the raster CRS and sums finite supported cell counts.
+A cell is included when its <strong>center is inside or on the polygon boundary</strong>.
+There is no fractional boundary-cell allocation or area-weighted interpolation.</p>
+<p>The displayed estimate is rounded to whole persons; it is still a model estimate.
+Coverage is valid cells divided by selected raster cell centers, <strong>not the
+fraction of the AOI's physical area</strong>. An AOI extending beyond the raster or
+containing unsupported cells is reported as partial coverage, not an entire-AOI
+total. No selected centers gives no evidence of zero population. Invalid/empty
+geometry is rejected, not silently repaired.</p>
+<p>When the selected run provides an artifact SHA-256, the tool checks the population
+raster against it before summing. Legacy results without a saved fingerprint
+carry an explicit integrity warning. The summary dialog displays the result;
+it does not rewrite the raster or append an AOI total to the immutable run.</p>
+<h2 id="reproduce-or-diagnose-a-run">Reproduce or diagnose a run</h2>
+<p>Keep <code>run_config.yaml</code>, <code>manifest.json</code>, inputs including GDAL sidecars, and the
+runtime/source version information together. Input resources are fingerprinted
+and rechecked before completion. The GUI launches a verified private <strong>code</strong>
+snapshot in a separate job directory; replacing plugin files later does not
+change that already-started child. This is not a copy/snapshot of all input data.
+Direct engine CLI runs record <code>live_source</code> when no verified code snapshot is
+supplied; the manifest distinguishes that origin explicitly.</p>
+<p>Fixed seeds help repeat a given environment/input/validation design, but do not
+promise bitwise equivalence across changed libraries, platforms or data. Recorded
+effective defaults prevent silently adopting later defaults. The GUI does not
+load/reuse model bundles; API reuse rejects incompatible environment/grid
+contracts and accepts only trusted serialization. A compatible load is not a
+scientific guarantee about transfer to another region.</p>
+<p>For a failed run, read the final error in <strong>Details</strong> and inspect its manifest/log
+before changing inputs. Positive-population zones without positive eligible
+allocation weight fail; zero-population zones remain zero. Raster-only zones
+without census records are excluded and diagnosed. Age-sex totals are conserved
+per input group; their sum is compared with, not forcibly rescaled to, the main
+census. Fix the underlying support/schema issue rather than treating missing
+validation or a stopped run as success.</p>
+<p><a href="../projects/">Projects</a> · <a href="../input-data/">Input requirements</a> · <a href="../settings/">Settings</a> · <a href="../troubleshooting/">Troubleshooting</a></p>
 
 
 
@@ -1247,10 +1238,13 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

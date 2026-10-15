@@ -11,14 +11,17 @@
         <link rel="canonical" href="https://wpgp.github.io/QGIS-pypopRF/user-guide/input-data/">
       
       
-        <link rel="prev" href="../interface/">
+        <link rel="prev" href="../projects/">
       
       
         <link rel="next" href="../settings/">
       
       
+        
+      
+      
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -26,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -56,7 +59,6 @@
 
     
     
-    
   </head>
   
   
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#input-data-requirements" class="md-skip">
+        <a href="#input-data" class="md-skip">
           Skip to content
         </a>
       
@@ -148,11 +150,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -184,13 +188,14 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -216,9 +221,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../.." class="md-tabs__link">
         
+  
   
     
   
@@ -233,11 +240,13 @@
   
   
   
+  
     
     
       <li class="md-tabs__item">
         <a href="../../getting-started/installation/" class="md-tabs__link">
           
+  
   
   Getting Started
 
@@ -250,6 +259,7 @@
         
   
   
+  
     
   
   
@@ -258,6 +268,7 @@
       <li class="md-tabs__item md-tabs__item--active">
         <a href="../interface/" class="md-tabs__link">
           
+  
   
   User Guide
 
@@ -271,9 +282,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../../development/" class="md-tabs__link">
         
+  
   
     
   
@@ -319,7 +332,7 @@
       <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -339,10 +352,16 @@
       <a href="../.." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -356,6 +375,7 @@
   
   
   
+    
     
     
     
@@ -377,10 +397,16 @@
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     Getting Started
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -389,7 +415,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Getting Started
+            
+  
+    Getting Started
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -403,10 +433,16 @@
       <a href="../../getting-started/installation/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Installation
+  
+
     
   </span>
+  
   
 
       </a>
@@ -425,10 +461,16 @@
       <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Quick Start
+  
+
     
   </span>
+  
   
 
       </a>
@@ -455,6 +497,7 @@
     
     
     
+    
       
         
         
@@ -474,10 +517,16 @@
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     User Guide
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -486,7 +535,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            User Guide
+            
+  
+    User Guide
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -500,10 +553,44 @@
       <a href="../interface/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Interface
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -531,10 +618,16 @@
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
+  
   <span class="md-ellipsis">
+    
+  
     Input Data
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -543,10 +636,16 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Input Data
+  
+
     
   </span>
+  
   
 
       </a>
@@ -567,121 +666,111 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#required-files" class="md-nav__link">
+  <a href="#choose-an-input-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Required Files
+      
+        Choose an input workflow
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Required Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-mastergrid" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Mastergrid
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-census-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Census Data
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-covariates" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Covariates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-files" class="md-nav__link">
+  <a href="#raster-grid-contract" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional Files
+      
+        Raster grid contract
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Optional Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-water-mask" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Water Mask
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-constraints" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Constraints
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-age-sex-structure-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Age-Sex Structure Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#important-requirements" class="md-nav__link">
+  <a href="#zone-grid" class="md-nav__link">
     <span class="md-ellipsis">
-      Important Requirements
+      
+        Zone grid
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Important Requirements">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#population-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#covariates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Covariates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-masks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional masks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#age-and-sex-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Age and sex CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import behaviour
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import behaviour">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#coordinate-systems" class="md-nav__link">
+  <a href="#guided-preparation" class="md-nav__link">
     <span class="md-ellipsis">
-      Coordinate Systems
+      
+        Guided preparation
+      
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#data-values" class="md-nav__link">
+  <a href="#direct-file-import" class="md-nav__link">
     <span class="md-ellipsis">
-      Data Values
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#file-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      File Structure
+      
+        Direct file import
+      
     </span>
   </a>
   
@@ -711,10 +800,16 @@
       <a href="../settings/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Settings
+  
+
     
   </span>
+  
   
 
       </a>
@@ -733,10 +828,44 @@
       <a href="../running-analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Running Analysis
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -762,10 +891,16 @@
       <a href="../../development/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Development
+  
+
     
   </span>
+  
   
 
       </a>
@@ -800,121 +935,111 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#required-files" class="md-nav__link">
+  <a href="#choose-an-input-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Required Files
+      
+        Choose an input workflow
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Required Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-mastergrid" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Mastergrid
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-census-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Census Data
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-covariates" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Covariates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-files" class="md-nav__link">
+  <a href="#raster-grid-contract" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional Files
+      
+        Raster grid contract
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Optional Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-water-mask" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Water Mask
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-constraints" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Constraints
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-age-sex-structure-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Age-Sex Structure Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#important-requirements" class="md-nav__link">
+  <a href="#zone-grid" class="md-nav__link">
     <span class="md-ellipsis">
-      Important Requirements
+      
+        Zone grid
+      
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Important Requirements">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#population-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Population CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#covariates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Covariates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-masks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional masks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#age-and-sex-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Age and sex CSV
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Import behaviour
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import behaviour">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#coordinate-systems" class="md-nav__link">
+  <a href="#guided-preparation" class="md-nav__link">
     <span class="md-ellipsis">
-      Coordinate Systems
+      
+        Guided preparation
+      
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#data-values" class="md-nav__link">
+  <a href="#direct-file-import" class="md-nav__link">
     <span class="md-ellipsis">
-      Data Values
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#file-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      File Structure
+      
+        Direct file import
+      
     </span>
   </a>
   
@@ -935,6 +1060,7 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
@@ -944,121 +1070,224 @@
   
 
 
-<h1 id="input-data-requirements">Input Data Requirements</h1>
-<p>This guide explains the required and optional input data for the pypopRF plugin.</p>
-<h2 id="required-files">Required Files</h2>
-<h3 id="1-mastergrid">1. Mastergrid</h3>
-<p>A raster file defining your analysis zones:</p>
+<h1 id="input-data">Input data</h1>
+<p>An analysis needs one zone grid, a population CSV and at least one numeric
+raster covariate. Optional inputs are a water mask, a population-support mask
+and an age/sex CSV. Validation reads inputs and does not rename their columns
+or rewrite source CSV files.</p>
+<h2 id="choose-an-input-workflow">Choose an input workflow</h2>
+<p>Create or open an external project first; see <a href="../projects/">Projects</a>. Then use
+<strong>Input data</strong>:</p>
 <ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Values: Unique IDs for each zone</li>
-<li>Must match census data zone IDs</li>
-<li>No gaps or overlaps between zones</li>
+<li><strong>Already aligned data</strong>: select the zone grid and census CSV, then <strong>Add
+  raster files…</strong> in the covariate section. Direct import copies files; it does
+  not align them.</li>
+<li><strong>Data needing alignment or census polygons</strong>: with the engine ready, choose
+  <strong>Prepare / align inputs…</strong>. Check compatibility and create a <strong>new</strong> prepared
+  project. The wizard does not repair the current project in place.</li>
+<li><strong>A layer already in QGIS</strong>: choose <strong>Use a QGIS layer…</strong>, select its role, then
+  the layer. This uses a supported local file source, not an arbitrary live or
+  remote provider. Export unsupported layers first or use preparation.</li>
 </ul>
-<h3 id="2-census-data">2. Census Data</h3>
-<p>Population counts in tabular format:</p>
+<p>Selection in the footer is only a checklist. <strong>Run analysis</strong> performs full
+numerical validation. A successful copy does not prove that grids, census IDs
+or predictor support are compatible.</p>
+<h2 id="raster-grid-contract">Raster grid contract</h2>
+<p>Use single-band GeoTIFFs with a defined CRS. Mastergrid, covariates and optional
+masks must have the same CRS, dimensions and complete affine pixel transform:
+pixel size, origin and rotation all matter. A shifted grid is rejected even if
+its dimensions match. Small floating-point transform roundoff is tolerated;
+the engine does not automatically reproject or resample inputs.</p>
+<p>For a new GUI import, use a self-contained GeoTIFF. Imports with external mask
+or georeferencing sidecars such as <code>.msk</code>, <code>.aux.xml</code>, <code>.tfw</code>, <code>.tifw</code>, <code>.wld</code>
+or <code>.prj</code> are rejected with export guidance rather than silently losing those
+resources. A complete dataset already inside the project's data directory can
+be selected in place, keeping its sidecars. The headless engine records GDAL's
+input resource list, including available sidecars, in run provenance.</p>
+<p>NoData and GDAL valid-data masks are respected. Ordinary numeric zero is valid
+unless the raster declares it NoData. Mark missing data correctly rather than
+using a finite sentinel as an undeclared measurement.</p>
+<h2 id="zone-grid">Zone grid</h2>
+<p>Each valid pixel contains the integer ID of its census zone. An ID occurs in
+many pixels; pixel values do not have to be globally unique. Gaps outside the
+study area are allowed when marked NoData. IDs must match the population CSV.
+IDs must be exactly representable integers within the supported numeric range
+(absolute value no greater than <code>2**53</code>).</p>
+<p>Zero is a valid zone ID if it is not declared NoData. Numeric IDs such as <code>1</code>
+and <code>1.0</code> identify the same zone; text codes such as <code>A001</code> are not supported.
+The CSV identifier spelling is checked before floating-point parsing: out-of-range
+or fractional IDs are rejected, not rounded to a nearby zone. A Python API caller
+must also preserve its original values; precision already lost before calling the
+engine cannot be reconstructed.</p>
+<p>Every training census zone needs eligible grid pixels and a finite mean for
+each configured covariate. Zones without that support are reported as errors,
+including zones whose population is zero. Extra grid IDs without census totals
+are excluded from population outputs and recorded in diagnostics.</p>
+<h2 id="population-csv">Population CSV</h2>
+<p>Use a CSV with unique, nonempty headers. Map the ID and population columns in
+Settings; names are case-sensitive and must differ. For example:</p>
+<div class="highlight"><pre><span></span><code>id,pop
+1,100
+2,120
+3,0
+</code></pre></div>
+<p>Save this schema as <code>population.csv</code> and supply a zone raster with IDs 1, 2 and
+3. These illustrative numbers are not a downloadable raster dataset or an
+accuracy benchmark. Even zone 3 needs valid training support.</p>
+<p>For a table headed <code>zone_code,people</code>, import it normally, then set <strong>Zone
+identifier</strong> to <code>zone_code</code> and <strong>Population total</strong> to <code>people</code> in Settings.
+Import does not require the default <code>id</code>/<code>pop</code> names; the engine checks the
+chosen mapping when Run starts.</p>
+<p>IDs must be unique, finite integers. Population totals must be numeric, finite
+and nonnegative; zero and fractional totals are accepted. Empty tables,
+duplicate IDs and missing values fail validation. Rows can appear in any order:
+joins and output checks use zone IDs rather than row positions.</p>
+<p>Additional columns are not automatically used as predictors. A nonmissing
+group column may be retained for explicitly configured grouped validation.
+Avoid derived column names such as <code>dens</code>, <code>eligible_pixel_count</code> and names
+used for covariate statistics. A population column named <code>sum</code> is supported
+without changing the source file.</p>
+<h2 id="covariates">Covariates</h2>
+<p>Provide aligned single-band numeric rasters. The model trains on each
+covariate's valid-pixel mean within a zone and predicts from selected covariate
+values at individual pixels. Pixels lacking any selected predictor receive
+NoData predictions; they are not filled with arbitrary sentinel values.</p>
+<p>Continuous measurements, distances, counts and meaningful binary indicators
+can be used. Categorical class codes are not encoded automatically: averaging
+arbitrary land-use codes is not meaningful. Derive appropriate indicators or
+other numeric representations before supplying categorical information.</p>
+<p>Missing covariates can reduce allocation support. A zone with positive
+population and no positive eligible prediction weight fails instead of losing
+its population silently. Confirm that the remaining support is appropriate
+for the study; conserved totals alone do not validate its geographic coverage.</p>
+<h2 id="optional-masks">Optional masks</h2>
+<p>The water mask is binary: <strong>1 excludes</strong> a pixel and <strong>0 retains</strong> it. Masked or
+NoData mask pixels are also excluded.</p>
+<p>The population-support mask is binary: <strong>1 includes</strong> a pixel and <strong>0 excludes</strong>
+it from constrained allocation. NoData support pixels are excluded. The engine
+creates a temporary constrained zone-ID grid while preserving the original
+zone identifiers. Do not supply a second, unrelated administrative-ID raster
+as the GUI population-support mask.</p>
+<p>An unconstrained population map is always produced. When a support mask is
+provided, a separate constrained map is produced and checked against the same
+census totals. The source masks and mastergrid are not modified.</p>
+<p>Training uses the mastergrid after water exclusion, not the constrained subset.
+The constraint limits the additional constrained allocation; it does not
+silently change the training-density denominator or replace the unconstrained
+result.</p>
+<h2 id="age-and-sex-csv">Age and sex CSV</h2>
+<p>Use the configured ID column and the same unique zone-ID set as the main
+population CSV. Group columns must match the supported complete naming pattern,
+for example <code>f0</code>, <code>m0</code>, <code>f_0_4</code>, <code>m_5_9</code>, <code>f65+</code> or <code>m65+</code>. Names are matched
+case-insensitively; ambiguous duplicate group names are rejected. Unrelated
+metadata columns are ignored.</p>
+<p>Each group contains finite nonnegative totals and is joined by ID. Every group
+map is checked against that group's supplied totals. The engine does not
+require the sum of all group columns to equal the main population total. It
+records a keyed comparison in <code>agesex/age_sex_totals.csv</code> and a bounded mismatch
+summary in the run manifest. Check that consistency if the columns form a
+complete demographic partition: a mismatch is diagnostic, not forced rescaling
+or a hard error. Different row order does not change which zone receives a group.</p>
+<p>Both CSVs must contain the <strong>Zone identifier</strong> column selected in Settings.
+An age-sex import without that column is refused with an inline explanation;
+the original file and previous selection are retained. This is not an automatic
+ID conversion. If one dataset uses <code>IDX</code> and another uses <code>id</code>, first establish
+whether their values identify the same zones. Different ID systems need a
+verified correspondence table (crosswalk), applied explicitly to a separate copy.
+Never pair records by their row order or guess a mapping from similar ID suffixes.
+Preflight reports missing/extra zone counts and examples before modelling.</p>
+<p>For the population example above, a synthetic complete partition could be:</p>
+<div class="highlight"><pre><span></span><code>id,f_0_49,m_0_49,f50+,m50+
+2,40,40,20,20
+1,35,35,15,15
+3,0,0,0,0
+</code></pre></div>
+<p>The reversed row order is intentional. Each row sums to its main population
+total here, but that relationship is yours to establish. For a partial set of
+age bands, a mismatch diagnostic may be expected. A regular <code>id,pop</code> census is
+not silently assigned as an age-sex table; select the optional age-sex role
+explicitly and supply supported group headers.</p>
+<h2 id="import-behaviour">Import behaviour</h2>
+<h3 id="guided-preparation">Guided preparation</h3>
+<p>The preparation wizard creates a separate new project. Its reference raster is
+a <strong>grid template</strong> (CRS, extent, transform and dimensions), not an implicit
+study-area mask. Zone validity comes from the original zone raster or explicitly
+chosen census polygons. The tool does not silently clip a whole census polygon
+to a smaller reference extent and allocate its full population into the remnant.</p>
+<p>Follow the wizard's four pages: <strong>Source data</strong>, <strong>Census columns</strong>, <strong>Predictors
+and support</strong>, and <strong>Review and create</strong>. Choose either an existing zone-ID
+raster or census polygons, map the CSV columns explicitly, and choose a new
+output folder. Use <strong>Check compatibility</strong>, read errors/warnings and coverage,
+then confirm <strong>Create new files; preserve the sources and current project.</strong>
+Only an accepted compatibility report enables preparation. If a source changes,
+check again. Choose <strong>Create prepared project</strong>, then <strong>Open prepared project</strong>
+when creation succeeds; add optional age-sex inputs afterward.</p>
+<p>Choose predictor quantity and resampling explicitly (1–32 covariates in this
+guided preparation version):</p>
 <ul>
-<li>Format: CSV file</li>
-<li>Required columns:<ul>
-<li>Zone ID (matching mastergrid)</li>
-<li>Population count</li>
+<li><strong>Continuous</strong>: nearest, bilinear or average alignment. The choice changes
+  predictor values and must be appropriate for the measurement.</li>
+<li><strong>Binary indicator / mask</strong>: checked 0/1 values with nearest-neighbour alignment.
+  Multiclass category codes must first be encoded as meaningful indicators;
+  averaging arbitrary class numbers is not supported.</li>
+<li><strong>Count</strong>: already-aligned nearest passthrough only. Changing cell size or CRS
+  requires a separately justified conservative aggregation method; this wizard
+  refuses to pretend ordinary interpolation preserves counts.</li>
 </ul>
-</li>
-<li>
-<p>Example:</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>population</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>2500</td>
-</tr>
-<tr>
-<td>2</td>
-<td>3200</td>
-</tr>
-<tr>
-<td>3</td>
-<td>1800</td>
-</tr>
-</tbody>
-</table>
-</li>
-</ul>
-<h3 id="3-covariates">3. Covariates</h3>
-<p>At least one raster file containing predictive variables:</p>
+<p>The derived GeoTIFFs embed the source validity in NaN NoData. Original GDAL
+resources, CSV and vector resources are fingerprinted, rechecked, and retained
+unchanged. Diagnostics include zone-ID matching, grid changes, missing support,
+joint predictor coverage, warnings and a full coverage CSV. Review the report
+before committing preparation. Unsupported or invalid data are not automatically
+repaired. Census vectors and tables are materialized and must fit engine memory;
+this is not a streaming vector ETL pipeline. Geographic coordinates and spans
+that require antimeridian splitting are refused before or after reprojection.
+Split/export them explicitly; the wizard does not guess a dateline repair.
+The GUI binds preparation to the inspected source hashes. A changed CSV, raster
+or sidecar requires a new compatibility check, not reuse of the old confirmation.</p>
+<p>Existing project files with external masks can be prepared into self-contained
+GeoTIFFs; direct GUI copy still rejects sidecars to avoid losing them. The prepared
+project includes a compatible <code>config.yaml</code>, derived data, report and provenance.
+After a late cancellation or forced stop, a newly requested output folder may
+remain. The message identifies a retained folder; treat it as potentially
+incomplete, inspect it separately and choose a new destination for retry.
+Cancellation never silently deletes or overwrites it.</p>
+<p>Age-sex inputs are added after opening the prepared project; this first wizard
+does not automatically copy a previously configured age-sex table. The original
+project retains it. Preparation is deliberately conservative: lack of jointly
+valid predictor support is diagnosed rather than resolved by implicit imputation.</p>
+<h3 id="direct-file-import">Direct file import</h3>
+<p>New files are copied in cancellable background jobs into the project's data
+directory, normally <code>&lt;project&gt;/data/</code>. When typing a path manually, complete it
+and press Enter, Tab or leave the field to commit it. Enter confirms only that
+input, never Run or Cancel. If you click <strong>Run analysis</strong> with an uncommitted
+input path, that click commits the import first; wait for success and click
+<strong>Run analysis</strong> again. It does not calculate from the previous input.
+Intermediate keystrokes do not
+start imports; closing the dialog discards an uncommitted draft. Browsing still
+commits the selected path immediately. Existing destination names are never
+overwritten. A conflict dialog explains the selected role and offers:</p>
 <ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Must cover mastergrid extent</li>
-<li>Common examples:<ul>
-<li>Building footprints</li>
-<li>Road networks</li>
-<li>Land use</li>
-<li>Infrastructure</li>
+<li><strong>Use verified existing file</strong> only when source/destination bytes match and
+  raster sidecars do not make byte-only reuse unsafe.</li>
+<li><strong>Import separate copy</strong> under a new portable basename with the same extension.
+  For example, <code>elevation_copy.tif</code>, not a folder path.</li>
+<li><strong>Cancel</strong>, retaining the previous input selection and both files.</li>
 </ul>
-</li>
-</ul>
-<h2 id="optional-files">Optional Files</h2>
-<h3 id="1-water-mask">1. Water Mask</h3>
-<p>Excludes water bodies from analysis:</p>
-<ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Binary values:<ul>
-<li>1: Water</li>
-<li>0: Land</li>
-</ul>
-</li>
-<li>Must cover study area</li>
-</ul>
-<h3 id="2-constraints">2. Constraints</h3>
-<p>Defines areas with special population distribution rules:</p>
-<ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Binary values for restricted areas</li>
-<li>Must match mastergrid extent</li>
-</ul>
-<h3 id="3-age-sex-structure-data">3. Age-Sex Structure Data</h3>
-<p>Additional demographic breakdown:</p>
-<ul>
-<li>Format: CSV file</li>
-<li>Must include:<ul>
-<li>Zone ID (matching mastergrid)</li>
-<li>Age-sex group columns (e.g., m0_4, f0_4)</li>
-</ul>
-</li>
-<li>Population totals should match main census</li>
-</ul>
-<h2 id="important-requirements">Important Requirements</h2>
-<h3 id="coordinate-systems">Coordinate Systems</h3>
-<ul>
-<li>All raster files must use the same CRS</li>
-<li>Check alignment of pixels</li>
-<li>Verify extent coverage</li>
-</ul>
-<h3 id="data-values">Data Values</h3>
-<ul>
-<li>No negative population values</li>
-<li>Census IDs must match mastergrid</li>
-<li>Valid ranges for all covariates</li>
-<li>Proper NoData values</li>
-</ul>
-<h3 id="file-structure">File Structure</h3>
-<ul>
-<li>Use simple column names</li>
-<li>No special characters</li>
-<li>UTF-8 encoding for CSV files</li>
-</ul>
-<hr />
-<div align="right">
-  <a href="#top">↑ Back to Top</a>
-</div>
-
-<p><em>Next: <a href="../settings/">Settings Guide</a></em></p>
+<p>Hashing runs in the worker, not the GUI. A choice is rechecked before reuse or
+publication; changed sources/destinations are refused. A new-name collision also
+fails instead of overwriting. Selecting the ordinary canonical file already in
+the data directory reuses it in place, retaining its GDAL resources. File-symlink
+aliases and hardlinked existing collision targets are refused; select the
+canonical dedicated file or export a separate copy.</p>
+<p>Incomplete copies are staged and not registered. Clearing an optional file field
+or removing a covariate from the table removes only its configuration reference,
+not the physical file. Every new copied import verifies the source snapshot,
+staged bytes and current source before publication, even without a name conflict.
+This adds background reads but never installs packages or hashes on the GUI thread.
+Keep source files stable throughout import and analysis; this is change detection,
+not an adversarial point-in-time snapshot of another writer.</p>
+<p><a href="../projects/">Projects</a> · <a href="../settings/">Settings</a> · <a href="../running-analysis/">Run an analysis</a></p>
 
 
 
@@ -1105,10 +1334,13 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

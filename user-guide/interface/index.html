@@ -14,11 +14,14 @@
         <link rel="prev" href="../../getting-started/quickstart/">
       
       
-        <link rel="next" href="../input-data/">
+        <link rel="next" href="../projects/">
+      
+      
+        
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -26,10 +29,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -56,7 +59,6 @@
 
     
     
-    
   </head>
   
   
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#user-interface-guide" class="md-skip">
+        <a href="#interface" class="md-skip">
           Skip to content
         </a>
       
@@ -148,11 +150,13 @@
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
@@ -184,13 +188,14 @@
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -216,9 +221,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../.." class="md-tabs__link">
         
+  
   
     
   
@@ -233,11 +240,13 @@
   
   
   
+  
     
     
       <li class="md-tabs__item">
         <a href="../../getting-started/installation/" class="md-tabs__link">
           
+  
   
   Getting Started
 
@@ -250,6 +259,7 @@
         
   
   
+  
     
   
   
@@ -258,6 +268,7 @@
       <li class="md-tabs__item md-tabs__item--active">
         <a href="./" class="md-tabs__link">
           
+  
   
   User Guide
 
@@ -271,9 +282,11 @@
   
   
   
+  
     <li class="md-tabs__item">
       <a href="../../development/" class="md-tabs__link">
         
+  
   
     
   
@@ -319,7 +332,7 @@
       <a href="https://github.com/wpgp/QGIS-pypopRF" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     wpgp/QGIS-pypopRF
@@ -339,10 +352,16 @@
       <a href="../.." class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Home
+  
+
     
   </span>
+  
   
 
       </a>
@@ -356,6 +375,7 @@
   
   
   
+    
     
     
     
@@ -377,10 +397,16 @@
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     Getting Started
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -389,7 +415,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Getting Started
+            
+  
+    Getting Started
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -403,10 +433,16 @@
       <a href="../../getting-started/installation/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Installation
+  
+
     
   </span>
+  
   
 
       </a>
@@ -425,10 +461,16 @@
       <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Quick Start
+  
+
     
   </span>
+  
   
 
       </a>
@@ -455,6 +497,7 @@
     
     
     
+    
       
         
         
@@ -474,10 +517,16 @@
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
+  
   <span class="md-ellipsis">
+    
+  
     User Guide
+  
+
     
   </span>
+  
   
 
             <span class="md-nav__icon md-icon"></span>
@@ -486,7 +535,11 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            User Guide
+            
+  
+    User Guide
+  
+
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -509,10 +562,16 @@
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
   
+  
   <span class="md-ellipsis">
+    
+  
     Interface
+  
+
     
   </span>
+  
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -521,10 +580,16 @@
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Interface
+  
+
     
   </span>
+  
   
 
       </a>
@@ -545,225 +610,88 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#main-window-overview" class="md-nav__link">
+  <a href="#home" class="md-nav__link">
     <span class="md-ellipsis">
-      Main Window Overview
+      
+        Home
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Main Window Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tab-organization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Tab Organization
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#main-tab" class="md-nav__link">
+  <a href="#engine" class="md-nav__link">
     <span class="md-ellipsis">
-      Main Tab
+      
+        Engine
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Main Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#project-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Project Configuration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quick-start-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quick Start Guide
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#input-data-tab" class="md-nav__link">
+  <a href="#project" class="md-nav__link">
     <span class="md-ellipsis">
-      Input Data Tab
+      
+        Project
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Input Data Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#raster-inputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Raster Inputs
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#census-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Census Data
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#covariates-table" class="md-nav__link">
-    <span class="md-ellipsis">
-      Covariates Table
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#settings-tab" class="md-nav__link">
+  <a href="#input-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Settings Tab
+      
+        Input data
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Settings Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#logging-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Logging Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#census-file-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Census File Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#process-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Process Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      Additional Options
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#console-area" class="md-nav__link">
+  <a href="#settings" class="md-nav__link">
     <span class="md-ellipsis">
-      Console Area
+      
+        Settings
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Console Area">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#progress-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      Progress Monitoring
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-interface-effectively" class="md-nav__link">
+  <a href="#running-and-stopping" class="md-nav__link">
     <span class="md-ellipsis">
-      Using the Interface Effectively
+      
+        Running and stopping
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Using the Interface Effectively">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#workflow-tips" class="md-nav__link">
-    <span class="md-ellipsis">
-      Workflow Tips
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Best Practices
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#keyboard-shortcuts" class="md-nav__link">
-    <span class="md-ellipsis">
-      Keyboard Shortcuts
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interface-customization" class="md-nav__link">
+  <a href="#results" class="md-nav__link">
     <span class="md-ellipsis">
-      Interface Customization
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Details
+      
     </span>
   </a>
   
@@ -785,13 +713,47 @@
   
   
     <li class="md-nav__item">
+      <a href="../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../input-data/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Input Data
+  
+
     
   </span>
+  
   
 
       </a>
@@ -810,10 +772,16 @@
       <a href="../settings/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Settings
+  
+
     
   </span>
+  
   
 
       </a>
@@ -832,10 +800,44 @@
       <a href="../running-analysis/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Running Analysis
+  
+
     
   </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
   
 
       </a>
@@ -861,10 +863,16 @@
       <a href="../../development/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
+    
+  
     Development
+  
+
     
   </span>
+  
   
 
       </a>
@@ -899,225 +907,88 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#main-window-overview" class="md-nav__link">
+  <a href="#home" class="md-nav__link">
     <span class="md-ellipsis">
-      Main Window Overview
+      
+        Home
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Main Window Overview">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tab-organization" class="md-nav__link">
-    <span class="md-ellipsis">
-      Tab Organization
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#main-tab" class="md-nav__link">
+  <a href="#engine" class="md-nav__link">
     <span class="md-ellipsis">
-      Main Tab
+      
+        Engine
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Main Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#project-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Project Configuration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quick-start-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quick Start Guide
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#input-data-tab" class="md-nav__link">
+  <a href="#project" class="md-nav__link">
     <span class="md-ellipsis">
-      Input Data Tab
+      
+        Project
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Input Data Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#raster-inputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Raster Inputs
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#census-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Census Data
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#covariates-table" class="md-nav__link">
-    <span class="md-ellipsis">
-      Covariates Table
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#settings-tab" class="md-nav__link">
+  <a href="#input-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Settings Tab
+      
+        Input data
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Settings Tab">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#logging-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Logging Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#census-file-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Census File Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#process-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Process Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      Additional Options
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#console-area" class="md-nav__link">
+  <a href="#settings" class="md-nav__link">
     <span class="md-ellipsis">
-      Console Area
+      
+        Settings
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Console Area">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#progress-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      Progress Monitoring
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-the-interface-effectively" class="md-nav__link">
+  <a href="#running-and-stopping" class="md-nav__link">
     <span class="md-ellipsis">
-      Using the Interface Effectively
+      
+        Running and stopping
+      
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Using the Interface Effectively">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#workflow-tips" class="md-nav__link">
-    <span class="md-ellipsis">
-      Workflow Tips
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      Best Practices
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#keyboard-shortcuts" class="md-nav__link">
-    <span class="md-ellipsis">
-      Keyboard Shortcuts
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interface-customization" class="md-nav__link">
+  <a href="#results" class="md-nav__link">
     <span class="md-ellipsis">
-      Interface Customization
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Details
+      
     </span>
   </a>
   
@@ -1133,6 +1004,7 @@
           
           
             <div class="md-content" data-md-component="content">
+              
               <article class="md-content__inner md-typeset">
                 
                   
@@ -1142,157 +1014,188 @@
   
 
 
-<h1 id="user-interface-guide">User Interface Guide</h1>
-<p>The pypopRF plugin interface is organized into several tabs for different aspects of the population mapping workflow. This guide explains each component of the interface in detail.</p>
-<h2 id="main-window-overview">Main Window Overview</h2>
-<p>The plugin window consists of four main sections:</p>
-<ol>
-<li>Tab Navigation</li>
-<li>Input/Settings Area</li>
-<li>Console Output</li>
-<li>Progress Bar and Control</li>
-</ol>
-<h3 id="tab-organization">Tab Organization</h3>
-<ul>
-<li><strong>Main</strong>: Project initialization and overview</li>
-<li><strong>Input Data</strong>: Data file configuration</li>
-<li><strong>Settings</strong>: Processing and analysis parameters</li>
-</ul>
-<h2 id="main-tab">Main Tab</h2>
-<p>The main tab provides project management and quick start information.</p>
-<h3 id="project-configuration">Project Configuration</h3>
-<ul>
-<li><strong>Working Directory</strong>: Select or enter the root folder for your project</li>
-<li><strong>Initialize New Project</strong>: Create project structure and default configuration</li>
-<li><strong>Open Project Folder</strong>: Quick access to project directory</li>
-</ul>
-<h3 id="quick-start-guide">Quick Start Guide</h3>
-<ul>
-<li>Built-in guide with basic steps</li>
-<li>Links to online documentation</li>
-<li>Contact information and support resources</li>
-</ul>
-<h2 id="input-data-tab">Input Data Tab</h2>
-<p>This tab manages all input data files required for analysis.</p>
-<h3 id="raster-inputs">Raster Inputs</h3>
-<p><strong>Mastergrid</strong>: Zone definition raster (required)</p>
-<ul>
-<li>Format: GeoTIFF</li>
-<li>Must contain unique zone IDs</li>
-<li>Should align with census boundaries</li>
-</ul>
-<p><strong>Mask</strong> (optional): Water or exclusion mask</p>
-<ul>
-<li>Binary raster (0/1)</li>
-<li>Used to exclude specific areas</li>
-</ul>
-<p><strong>Constrain</strong> (optional): Additional constraints</p>
-<ul>
-<li>Used for refining population distribution</li>
-<li>Must match mastergrid extent</li>
-</ul>
-<h3 id="census-data">Census Data</h3>
-<p><strong>CSV File</strong>: Population data input</p>
-<ul>
-<li>Must contain zone IDs matching mastergrid</li>
-<li>Population counts required </li>
-<li>Additional attributes optional</li>
-</ul>
-<h3 id="covariates-table">Covariates Table</h3>
-<ul>
-<li>List of predictive variables</li>
-<li><strong>Add Covariate</strong>: Add new raster files</li>
-<li>Table columns:<ul>
-<li>Name: Covariate identifier</li>
-<li>Size: File size</li>
-<li>File Path: Location on disk</li>
-<li>Actions: Delete covariate</li>
-</ul>
-</li>
-</ul>
-<h2 id="settings-tab">Settings Tab</h2>
-<p>Configure processing parameters and analysis options.</p>
-<h3 id="logging-settings">Logging Settings</h3>
-<ul>
-<li><strong>Save Logs</strong>: Enable/disable log file creation</li>
-<li><strong>Log File Name</strong>: Custom name for log file</li>
-<li><strong>Logging Level</strong>:<ul>
-<li>INFO: Standard processing information</li>
-<li>DEBUG: Detailed debugging information</li>
-</ul>
-</li>
-</ul>
-<h3 id="census-file-settings">Census File Settings</h3>
-<ul>
-<li><strong>Population Column Name</strong>: Name of population count column</li>
-<li><strong>ID Column Name</strong>: Name of zone ID column</li>
-<li>Default values can be changed based on your data</li>
-</ul>
-<h3 id="process-settings">Process Settings</h3>
-<p><strong>Parallel Processing</strong>: Enable multi-core processing</p>
-<ul>
-<li>CPU Cores: Number of parallel workers</li>
-<li>Recommended: Leave 1-2 cores free for system</li>
-</ul>
-<p><strong>Block Processing</strong>: For large datasets</p>
-<ul>
-<li>Block Size: Processing chunk dimensions</li>
-<li>Default: 512x512 pixels</li>
-<li>Adjust based on available memory</li>
-</ul>
-<h3 id="additional-options">Additional Options</h3>
-<p><strong>Add Output to QGIS</strong>: Automatically load results</p>
-<ul>
-<li>Progress bar visibility</li>
-<li>Processing feedback options</li>
-</ul>
-<h2 id="console-area">Console Area</h2>
-<p>The lower section of the plugin window shows:</p>
-<ul>
-<li>Processing progress</li>
-<li>Error messages</li>
-<li>Status updates</li>
-<li>Important notifications</li>
-</ul>
-<h3 id="progress-monitoring">Progress Monitoring</h3>
-<ul>
-<li>Progress bar shows current operation status</li>
-<li>Percentage complete indication</li>
-<li>Current processing step display</li>
-<li>Start/Stop button for process control</li>
-</ul>
-<h2 id="using-the-interface-effectively">Using the Interface Effectively</h2>
-<h3 id="workflow-tips">Workflow Tips</h3>
-<ol>
-<li>Always initialize project first</li>
-<li>Verify input data before processing</li>
-<li>Monitor console for feedback</li>
-<li>Use appropriate block size for your data</li>
-</ol>
-<h3 id="best-practices">Best Practices</h3>
-<ul>
-<li>Keep input data in project's data directory</li>
-<li>Use descriptive names for covariates</li>
-<li>Monitor memory usage with large datasets</li>
-<li>Save logs for troubleshooting</li>
-</ul>
-<h3 id="keyboard-shortcuts">Keyboard Shortcuts</h3>
-<ul>
-<li>Delete: Remove selected covariates</li>
-<li>Tab: Navigate between fields</li>
-<li>Enter: Activate buttons/controls</li>
-</ul>
-<h2 id="interface-customization">Interface Customization</h2>
-<p>The interface adapts to your workflow:</p>
-<ul>
-<li>Resizable window</li>
-<li>Adjustable console area</li>
-<li>Collapsible sections</li>
-<li>Persistent settings between sessions</li>
-</ul>
-<div align="right">
-  <a href="#top">↑ Back to Top</a>
-</div>
+<h1 id="interface">Interface</h1>
+<p>The current interface has seven tabs: <strong>Home</strong>, <strong>Engine</strong>, <strong>Project</strong>, <strong>Input data</strong>, <strong>Settings</strong>,
+<strong>Results</strong> and <strong>Details</strong>. Historical screenshots from earlier plugin versions
+do not describe this layout.</p>
+<p>The plugin uses one independent light color scheme: white surfaces, dark text,
+blue actions/selection and explicit semantic errors. It does not inherit QGIS's
+dark/gray theme or change the appearance of QGIS and other plugins. All plugin
+dialogs use this scheme; native operating-system file pickers remain controlled
+by the operating system. User fonts and display scaling are respected.</p>
+<p>The compact <strong>Selected for run</strong> checklist sits below the tabs, beside the persistent
+run/status area, and is visible from every tab. Engine, Project,
+Zone grid, Census and Covariates show selection readiness; click an item to
+navigate to its existing controls. These checks do not replace the engine's
+scientific validation of grid alignment, census IDs or data support.</p>
+<p>Task text appears in a separate plain-text status area, fitted to at most three
+rendered lines so long messages cannot push the run action off-screen. A tooltip
+retains the caller-bounded text; <strong>Details</strong> contains the full diagnostics and
+<strong>Copy diagnostics</strong> copies the displayed messages. Elapsed stage text is fitted to two rendered lines.
+The numeric
+progress bar is shown during analysis/import/tools work and hidden when idle.
+Failures remain visible after readiness refresh; <strong>Details</strong> opens the complete
+diagnostics when a long message is shortened. Engine setup also has its own
+progress on the Engine tab.</p>
+<h2 id="home">Home</h2>
+<p><strong>Home</strong> shows the packaged project logo, the two installation steps and a next
+action based on current readiness. Guidance can be collapsed; readiness is always
+recomputed, not remembered as a stale completed step. Projects remain usable
+without an engine for inspection; calculations and preparation require it.
+<strong>About / citation…</strong> shows packaged authors, version, links and citation. Links
+open only when explicitly clicked.</p>
+<h2 id="engine">Engine</h2>
+<p>The <strong>Engine</strong> tab checks for the plugin's isolated Python runtime. Checking,
+missing Python, verified selection, preparation, readiness and failure have
+distinct visible states. A ready engine offers the next workflow step instead
+of installation controls. <strong>Manage engine (advanced)</strong> reveals repair, discovery
+and manual interpreter selection; downloading Python is offered only when needed.
+Choose a verified 64-bit CPython 3.12 from the discovery list and use <strong>Set up engine</strong>
+when needed. Setup downloads the locked wheel dependencies into a separate
+per-user environment; plugin activation does not install packages into QGIS.
+An update only switches to a verified new environment after its checks pass.</p>
+<p>Setup and discovery run in a background worker. <strong>Cancel setup</strong> requests
+cancellation of setup. Read the readiness message to see whether a project,
+inputs or engine preparation is still needed. See the
+<a href="../../getting-started/installation/">installation guide</a> for platform details.</p>
+<p><img alt="Verified engine and next step" src="../../assets/screenshots/engine.png" /></p>
+<h2 id="project">Project</h2>
+<p>Choose a folder outside the plugin/cache, then explicitly activate it:</p>
+<table>
+<thead>
+<tr>
+<th>Folder state</th>
+<th>Action / state</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nothing selected</td>
+<td>Choose project folder (disabled)</td>
+<td>Select a folder first.</td>
+</tr>
+<tr>
+<td>Selected folder has no <code>config.yaml</code></td>
+<td>Create project</td>
+<td>Add a new configuration and project data directory; unrelated files are not imported or overwritten.</td>
+</tr>
+<tr>
+<td>Selected folder contains <code>config.yaml</code></td>
+<td>Open project</td>
+<td>Validate and restore saved inputs/settings.</td>
+</tr>
+<tr>
+<td>Successfully active folder</td>
+<td>Project open (disabled)</td>
+<td>Ready for input/settings work; repeated clicks do not reload the project.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Active project: …</strong> identifies the folder actually opened. Merely selecting a
+different folder does not activate it: input/settings controls and Run are gated
+until you explicitly create/open that selection. Selecting the same active path
+does not invalidate the project. <strong>Open folder</strong> opens the active project's
+directory in your file manager; it does not activate a new selection.</p>
+<p>Opening preserves the saved configuration and earlier runs, although the GUI may
+create or append its diagnostic log. Locations are checked before activation,
+imports, analysis and log switching. The GUI log stays in the project's <code>output</code>
+folder even when numerical <code>output_dir</code> differs; dedicated regular log files are
+required. Refused locations are not moved or deleted. See
+<a href="../projects/">Projects</a> for folder layout, switching, movement and backup rules.</p>
+<p><img alt="Active project state" src="../../assets/screenshots/project.png" /></p>
+<h2 id="input-data">Input data</h2>
+<p>Select the <strong>Zone grid</strong> and <strong>Population census</strong> and add at least one covariate
+using <strong>Add raster files…</strong>. Optional fields are <strong>Water mask (1 = exclude)</strong>,
+<strong>Population support (1 = include)</strong> and <strong>Age and sex census</strong>.</p>
+<p>Imports run outside the GUI and report progress. Filename conflicts open a choice
+to reuse verified identical bytes (with raster-resource checks), import a separate
+copy under a new name, or cancel. Existing inputs are never overwritten. Clearing
+a field removes its configuration reference, not the copied file. CSV headers
+are previewed, but column mapping and numerical checks still occur before analysis.
+The run button becomes
+<strong>Cancel import</strong> while an import is active. Destination names are checked;
+inputs are not overwritten. On a failed selection the field is restored to
+the input actually configured in the project.</p>
+<p>The covariate table shows name, size, path and actions. Its informational cells
+are read-only. Use a row's <strong>Delete</strong> button or the Delete key to remove selected
+covariates from configuration; their copied files remain in the data directory.
+See <a href="../input-data/">input requirements</a> for alignment, NoData and sidecar rules.</p>
+<p><strong>Prepare / align inputs…</strong> opens a guided workflow using the separate numerical
+engine. Select a reference grid, an existing zone raster or census polygons, CSV
+ID/population columns, and explicit predictor quantities/resampling methods.
+Inspect the diagnostics and acknowledge the choices before creating a <strong>new</strong>
+prepared project. Existing projects and source files are not overwritten. The
+wizard opens the prepared project only after successful completion and your
+confirmation. See <a href="../input-data/#guided-preparation">preparation rules</a>.</p>
+<p>Local QGIS layers can be selected instead of browsing for supported raster/vector
+files. These controls use the underlying local dataset, not rendered colors.
+Remote, memory, virtual, filtered or edited layers must be explicitly exported
+first; a selection is not silently substituted for the complete file.</p>
+<h2 id="settings">Settings</h2>
+<p>Map census column names, configure workers and tile size, choose the target
+transform and feature-selection threshold, and set diagnostic logging. The
+option <strong>Add population maps to QGIS</strong> applies after successful completion.
+There is no model-import control or GUI control for advanced spatial-CV settings.</p>
+<p>Full descriptions and supported advanced YAML fields are in
+<a href="../settings/">Settings</a>.</p>
+<h2 id="running-and-stopping">Running and stopping</h2>
+<p>The prominent <strong>Run analysis</strong> action stays below every tab. Its appearance does
+not bypass readiness checks; it changes to the appropriate cancellation action
+during owned work. <strong>Run analysis</strong> starts a separate engine process. Numerical preflight,
+fingerprinting, fitting and raster computation occur outside the QGIS GUI.
+The progress area names the current stage; numerical stage percentages are
+milestones rather than an estimate of remaining wall-clock time.</p>
+<p><strong>Stop</strong> requests cooperative cancellation. If the owned calculation process
+does not respond within the grace period, the adapter stops that process.
+The GUI waits for native process completion before releasing job ownership or
+presenting a terminal result. Closing or unloading during background work
+requests cancellation and defers disposal until owned work has finished.
+Earlier runs remain available.</p>
+<h2 id="results">Results</h2>
+<p>Each attempt has its own directory beneath <code>&lt;output_dir&gt;/runs/</code>. The Results
+tab lists recent runs with status and population-map count. Use <strong>Refresh</strong>,
+<strong>Open result folder</strong>, or <strong>Add maps to QGIS</strong>. Only complete runs with valid,
+present population-map paths can be added. Failed, running or cancelled
+attempts can be inspected for diagnostics but are not treated as finished maps.
+Run timestamps are displayed in local time; the original directory ID remains
+in the tooltip. Refresh preserves your selected run, while a newly successful
+analysis selects its own results rather than a newer failed attempt.</p>
+<p>The raw <code>prediction.tif</code> contains model density weights and is not added as a
+population-count result. The result folder also contains the effective config,
+model bundle, extracted features, validation records and manifest.</p>
+<p>The quality dashboard below the run history reads the saved held-out
+zone-density predictions, not the final census-normalized map. It shows OOF
+observed/predicted scatter, highest absolute zone-density errors, permutation
+importance and explicit validation limitations. The training-mean baseline uses
+the same outer folds and only the other folds' observations. Missing, changed or
+unsupported diagnostic artifacts are reported rather than replaced by made-up
+scores. Conservation remains a separate engine-reported check; this panel does
+not independently recompute raster totals or establish pixel accuracy.</p>
+<p><strong>Show selected / top error zones in QGIS</strong> adds diagnostic zone-centre points
+when saved centroids and CRS are available. Those points identify census zones,
+not the location of pixel errors. Completed population maps are grouped by run
+under <strong>pypopRF</strong>, with log-spaced display colors and <strong>persons/pixel</strong> labels;
+styles do not alter values. Re-adding the same result does not duplicate it.</p>
+<p><strong>Population in an area…</strong> sums a selected completed population map inside a
+local polygon AOI. The rule is <strong>cell centre inside or on the polygon boundary</strong>;
+overlapping AOI polygons are unioned and counted once. Cells partly intersecting
+the boundary are not fractionally allocated. Coverage is the fraction of selected
+centres <em>within the raster</em> with valid values, not the fraction of the entire AOI
+area. An AOI outside the raster or containing NoData yields a clearly labelled
+partial supported-cell sum. This is a model-derived estimate, not a new census.</p>
+<h2 id="details">Details</h2>
+<p>The activity area shows the actual current message and elapsed time, not an ETA.
+Package downloading uses an indeterminate indicator rather than a false byte
+percentage. Details includes a bounded stage history, and opening a project or
+starting a calculation does not clear earlier diagnostic messages.</p>
+<p>Details shows bounded plain-text setup and processing messages. <strong>Clear view</strong>
+clears the displayed messages; <strong>Copy diagnostics</strong> copies them for a bug report.
+Clearing the view does not delete saved logs or previous runs.</p>
+<p>Verification of zone totals checks allocation arithmetic. It does not establish
+where people actually live within a zone; reported model scores describe
+held-out zone-average density rather than independent pixel-level accuracy.</p>
+<p><a href="../../getting-started/quickstart/">Quick start</a> · <a href="../running-analysis/">Running analysis</a></p>
 
 
 
@@ -1339,10 +1242,13 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
