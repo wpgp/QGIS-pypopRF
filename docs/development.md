@@ -247,9 +247,35 @@ upload anything.
    test workflow and verify tag/metadata identity. Publishing to GitHub or QGIS
    remains a separate, explicitly authorized maintainer action.
 
-For example, `python scripts/build_plugin.py --output dist/pypopRF-0.3.7.zip`
+For example, `python scripts/build_plugin.py --output dist/pypopRF-0.3.8.zip`
 builds this version without tagging, uploading or deploying it. The CI test
 workflow has read-only repository permissions; it does not publish packages.
+
+### Catalog submission checks
+
+```powershell
+python -m pip install --require-hashes -r requirements-security.txt
+python scripts/check_catalog.py dist/pypopRF-0.3.8.zip --report .local/reports/catalog.json
+```
+
+This runs all default Bandit rules and a fresh, offline detect-secrets scan on
+the extracted verified ZIP. It never accepts scanner errors or empty output as
+success. Only exact known checksum fingerprints in the generated baseline are
+acknowledged; detectors remain enabled and a new finding fails the gate. The
+catalog's own scan and manual approval remain separate external checks.
+
+The packaged `.secrets.baseline` is generated from verified file hashes and
+wheel hashes present in `requirements-engine.lock`, not arbitrary scan findings.
+It explicitly keeps all 27 detect-secrets 1.5 default detectors and the standard
+filters, with no added regex/file exclusions. To avoid circular hashing, the baseline
+is a control file outside the integrity manifest; `verify_package()` checks its
+exact derived bytes separately. Never add whole-rule or whole-file suppressions
+to make a submission pass. Subprocess exceptions explain the reviewed argv-only
+Python invocation and the owned-process Windows termination call at their lines.
+
+CI also runs the official QGIS Qt6 migration checker in a digest-pinned image,
+on the built ZIP with a read-only source mount. It supplements, not replaces,
+the actual Qt5/Qt6 native application tests.
 
 When submitting a change, include the concrete before/after behaviour, meaningful
 validation and material limits. Preserve unrelated user changes and historical

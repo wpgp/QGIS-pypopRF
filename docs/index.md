@@ -13,7 +13,7 @@ run results are preserved.
 
 ## Modernized workflow
 
-These guides describe **version 0.3.7** in this repository, not an
+These guides describe **version 0.3.8** in this repository, not an
 older released plugin. They are shipped with the ZIP; an already deployed website
 may be behind this checkout until a separate documentation deployment occurs.
 

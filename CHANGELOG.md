@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8] - 2026-10-15
+
+### Fixed
+
+- Use current QGIS shader/storage enum paths on both supported Qt generations,
+  removing obsolete compatibility branches flagged by the catalog's Qt6 checker.
+- Require an existing absolute interpreter executable at the engine process
+  boundary, reject shell wrappers, explicitly disable shells and retain bounded
+  owned-process cancellation. Audited subprocess exceptions are line-specific.
+- Include a deterministic detect-secrets baseline acknowledging only verified
+  public SHA-256 file/wheel checksums. It does not disable detectors or exclude
+  files; modified baseline bytes are rejected by package verification.
+
+### Added
+
+- Independent unbaselined Bandit/detect-secrets checks against built ZIPs, with
+  adversarial tests proving new secrets and subprocess calls remain detectable.
+- Catalog submission checks in CI, including the official QGIS Qt6 checker.
+
+The baseline is generated outside its own integrity manifest to avoid circular
+hashing and is verified against the manifest and hash-locked wheel provenance.
+Existing 0.3.7 release assets and license/authorship notices remain unchanged.
+Catalog acceptance still requires the site's own scan and moderation.
+
 ## [0.3.7] - 2026-10-15
 
 This modernization consolidates the unpublished 0.2.0–0.3.7 development stages.

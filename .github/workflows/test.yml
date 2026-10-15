@@ -31,7 +31,9 @@ jobs:
             requirements.txt
             requirements-engine.lock
             requirements-dev.txt
+            requirements-security.txt
       - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pip install --require-hashes -r requirements-security.txt
       - name: Check release metadata and tag identity
         run: python scripts/check_release.py
       - name: Verify clean isolated engine setup on Windows
@@ -56,6 +58,34 @@ jobs:
       - run: python -m pytest -m "not qgis" -q
       - run: python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
       - run: python scripts/build_plugin.py
+      - name: Independently scan the built ZIP for security findings
+        run: python scripts/check_catalog.py dist/pypopRF.zip
+
+  catalog-qt6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Run the official catalog Qt6 checker against a built ZIP
+        run: |
+          python scripts/build_plugin.py --output "$RUNNER_TEMP/catalog-plugin.zip"
+          docker run --rm --memory 2g --cpus 2 --user 0 \
+            -e QT_QPA_PLATFORM=offscreen \
+            --mount "type=bind,source=$RUNNER_TEMP/catalog-plugin.zip,target=/tmp/plugin.zip,readonly" \
+            -w /tmp ghcr.io/qgis/pyqgis4-checker@sha256:c96df111845eb0c86ad56364fb792d35fa6931e01d3d629d2b1bc6388ed43ece \
+            bash -ec '
+              python3 -c "import qgis.core, qgis.gui, qgis.analysis, qgis._3d"
+              python3 -m zipfile -e /tmp/plugin.zip /tmp/plugin-package
+              status=0
+              pyqt5_to_pyqt6.py /tmp/plugin-package --dry_run --logfile /tmp/qt6-check.log || status=$?
+              cat /tmp/qt6-check.log
+              test "$status" -eq 0
+              # Dry-run mode can return zero with findings. On this disposable
+              # extracted copy, the normal mode also fails when it would edit.
+              pyqt5_to_pyqt6.py /tmp/plugin-package
+            '
 
   native-qgis:
     runs-on: ubuntu-latest

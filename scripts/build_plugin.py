@@ -48,6 +48,56 @@ RUNTIME_DIRECTORIES = ("core", "gui", "controllers", "services", "shared")
 MAX_ARCHIVE_FILES = 10_000
 MAX_MEMBER_BYTES = 25 * 1024 * 1024
 MAX_EXPANDED_BYTES = 100 * 1024 * 1024
+SECRETS_BASELINE = ".secrets.baseline"
+SECRETS_PLUGINS = (
+    "ArtifactoryDetector", "AWSKeyDetector", "AzureStorageKeyDetector", "Base64HighEntropyString",
+    "BasicAuthDetector", "CloudantDetector", "DiscordBotTokenDetector", "GitHubTokenDetector",
+    "GitLabTokenDetector", "HexHighEntropyString", "IbmCloudIamDetector", "IbmCosHmacDetector",
+    "IPPublicDetector", "JwtTokenDetector", "KeywordDetector", "MailchimpDetector", "NpmDetector",
+    "OpenAIDetector", "PrivateKeyDetector", "PypiTokenDetector", "SendGridDetector", "SlackDetector",
+    "SoftlayerDetector", "SquareOAuthDetector", "StripeDetector", "TelegramBotTokenDetector", "TwilioKeyDetector",
+)
+SECRETS_FILTERS = ("allowlist.is_line_allowlisted", "heuristic.is_indirect_reference",
+    "heuristic.is_likely_id_string", "heuristic.is_lock_file", "heuristic.is_not_alphanumeric_string",
+    "heuristic.is_potential_uuid", "heuristic.is_prefixed_with_dollar_sign", "heuristic.is_sequential_string",
+    "heuristic.is_swagger_file", "heuristic.is_templated_secret")
+
+
+def checksum_baseline(manifest, wheels, engine_lock):
+    """Acknowledge only public content hashes, never arbitrary detected strings.
+
+    This generated scan config is derived from the integrity manifest and pinned
+    wheel digests, not a developer's unreviewed secret-scan output. It is outside
+    the manifest to avoid a circular hash; verify_package checks its exact bytes.
+    Explicitly retain every detect-secrets 1.5 default detector/filter. Omitting
+    plugins_used would make that CLI load an empty detector selection!
+    """
+    pins = set(re.findall(rb"--hash=sha256:([0-9a-f]{64})", engine_lock))
+    digests = set()
+    for release in wheels["releases"]:
+        for wheel in release["wheels"]:
+            digest = wheel["sha256"]
+            if not isinstance(digest, str) or digest.encode() not in pins:
+                raise ValueError("Wheel provenance hash is absent from the verified engine lock")
+            digests.add(digest)
+    values = {"PACKAGE_MANIFEST.json": set(manifest["files"].values()),
+              "requirements-engine-wheels.json": digests}
+    results = {}
+    for name, hashes in values.items():
+        filename = f"{PLUGIN_NAME}/{name}"
+        results[filename] = [{"type": "Hex High Entropy String", "filename": filename,
+            "hashed_secret": hashlib.sha1(value.encode(), usedforsecurity=False).hexdigest(),
+            "is_secret": False, "is_verified": False} for value in sorted(hashes)]
+    plugins = [{"name": name} for name in SECRETS_PLUGINS]
+    for plugin in plugins:
+        if plugin["name"] in {"Base64HighEntropyString", "HexHighEntropyString"}:
+            plugin["limit"] = 4.5 if plugin["name"] == "Base64HighEntropyString" else 3.0
+        if plugin["name"] == "KeywordDetector":
+            plugin["keyword_exclude"] = ""
+    return json.dumps({"version": "1.5.0", "results": results, "plugins_used": plugins,
+        "filters_used": [{"path": "detect_secrets.filters." + name} for name in SECRETS_FILTERS],
+        "_comment": "Reviewed public SHA-256 content/wheel hashes only; no detector or file exclusions."},
+        sort_keys=True, indent=2).encode()
 
 
 def _portable_member(name):
@@ -126,7 +176,11 @@ def verify_package(archive):
         if any(not isinstance(name, str) or not isinstance(digest, str)
                or re.fullmatch(r"[0-9a-f]{64}", digest) is None for name, digest in declared.items()):
             raise ValueError("Invalid package manifest file hashes")
-        actual = set(members) - {prefix + "PACKAGE_MANIFEST.json"}
+        control_files = {prefix + "PACKAGE_MANIFEST.json"}
+        has_baseline = prefix + SECRETS_BASELINE in members
+        if has_baseline:
+            control_files.add(prefix + SECRETS_BASELINE)
+        actual = set(members) - control_files
         if actual != {prefix + name for name in declared}:
             raise ValueError("Archive contents differ from manifest")
         for name, digest in declared.items():
@@ -140,6 +194,12 @@ def verify_package(archive):
             raise ValueError("Invalid packaged metadata") from exc
         if version != manifest["version"]:
             raise ValueError("Package manifest version differs from metadata")
+        if has_baseline:
+            expected = checksum_baseline(manifest,
+                json.loads(package.read(prefix + "requirements-engine-wheels.json")),
+                package.read(prefix + "requirements-engine.lock"))
+            if package.read(prefix + SECRETS_BASELINE) != expected:
+                raise ValueError("Secret baseline differs from the package's verified public checksums")
     return manifest
 
 
@@ -163,6 +223,8 @@ def build_plugin(destination, root=ROOT):
         "files": {name: hashlib.sha256(data).hexdigest() for name, data in contents.items()},
     }
     contents["PACKAGE_MANIFEST.json"] = json.dumps(manifest, sort_keys=True, indent=2).encode()
+    contents[SECRETS_BASELINE] = checksum_baseline(manifest,
+        json.loads(contents["requirements-engine-wheels.json"]), contents["requirements-engine.lock"])
     destination.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(suffix=".zip", dir=destination.parent)
     os.close(descriptor)

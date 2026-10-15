@@ -7,7 +7,7 @@ QGIS. It fits a Random Forest to aligned geospatial covariates, then redistribut
 each zone's total across eligible pixels. Water/support masks and age-sex maps
 are optional. Every completed population map is checked against the census totals.
 
-This checkout contains **version 0.3.7**. Use a matching plugin ZIP or build one
+This checkout contains **version 0.3.8**. Use a matching plugin ZIP or build one
 from this source. The [development guide](docs/development.md) describes the
 architecture, regression checks and release procedure. Building a local ZIP
 does not publish a GitHub or QGIS release.

@@ -1,6 +1,6 @@
 # Installation and updates
 
-These instructions describe version **0.3.7**. Use a matching plugin ZIP or build
+These instructions describe version **0.3.8**. Use a matching plugin ZIP or build
 one from this checkout; older packages do not contain this workflow. A local ZIP
 build is not publication to GitHub or the QGIS plugin repository.
 
