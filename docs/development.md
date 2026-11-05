@@ -1,190 +1,285 @@
+# Development
 
-# Development Guide  
-  
-This guide is for developers who want to understand, modify, or contribute to the QGIS pypopRF plugin. We welcome contributions and suggestions from the community!  
-  
-## Project Structure  
-  
-```  
-QGIS-pypopRF/  
-├── core/                    # Core functionality  
-│   ├── pypoprf/            # Population modeling components  
-├── q_models/               # QGIS-specific models  
-│   ├── console_handler.py  # Console output management  
-│   ├── config_manager.py   # Configuration handling  
-│   ├── covariate_table.py # Covariate UI management  
-│   ├── file_handlers.py   # File operations  
-│   ├── process_executor.py # Analysis execution  
-│   └── settings_handler.py # Settings management  
-├── qgis_pypoprf_dialog.py  # Main dialog implementation  
-├── qgis_pypoprf_dialog_base.ui  # Qt UI definition  
-├── metadata.txt           # Plugin metadata  
-└── __init__.py           # Plugin entry point  
-```  
-  
-## Core Components  
-  
-### 1. Main Dialog (qgis_pypoprf_dialog.py)  
+The plugin has two deliberately separate execution environments: the QGIS/Qt
+adapter and a locked CPython 3.12 numerical engine. Keep scientific imports and
+calculation inside the engine. Plugin activation must not run pip, add binary
+packages to the QGIS path, or select another interpreter implicitly for host
+installation.
 
-- Manages plugin UI lifecycle  
-- Connects UI signals and slots  
-- Coordinates between components  
-- Handles user interactions  
-  
-### 2. Model Classes  
-  
-#### Console and Logging (console_handler.py)  
+## Architecture
 
-- Real-time console output  
-- Log file management  
-- Progress reporting  
-- Error handling  
-  
-#### Configuration (config_manager.py)  
+```text
+__init__.py, metadata.txt, qgis_pypoprf.py  QGIS plugin entrypoint
+core/pypoprf/                            isolated numerical engine
+  algorithms/                           extraction, RF and allocation
+  config/, utils/                       engine validation and raster tasks
+gui/
+  dialogs/, forms/, widgets/             native Qt views and Designer form
+  icons/                                packaged vector control/action indicators
+  presenters/                           project, results and preparation views
+controllers/                            owned asynchronous workflows
+services/                               configuration, runtime and saved metadata
+shared/                                 stdlib atomic/environment contracts
+tests/
+  engine/, services/, gui/               focused regression suites
+  integration/, native/, packaging/     workflow, real QGIS and ZIP checks
+scripts/                                build, test, translation and upload tools
+docs/                                   maintained user/developer guides
+.local/                                 ignored reports, experiments and legacy files
+dist/                                   ignored generated plugin ZIPs
+```
 
-- YAML configuration handling  
-- Settings validation  
-- Project structure management  
-- Default configurations  
-  
-#### Data Management  
-- **CovariateTableHandler**: Manages covariate inputs and table UI  
-- **FileHandler**: Handles file operations and validation  
-- **ProcessExecutor**: Manages analysis execution and threading  
-- **SettingsHandler**: Manages plugin settings and preferences  
-  
-### 3. UI Design (qgis_pypoprf_dialog_base.ui)  
-- Qt Designer UI definition  
-- Intuitive tab-based interface  
-- Progress monitoring  
-- File selection widgets  
-- Advanced settings panels  
-  
-## Development Setup  
-  
-### Requirements  
-```bash  
-# Install plugin requirements  
-pip install -r requirements.txt  
-```  
-  
-### Environment Setup  
-1. Clone repository:  
-```bash  
-git clone https://github.com/wpgp/QGIS-pypopRF.git```  
-  
-2. Install for development:  
-```bash  
-# Linux/macOS  
-ln -s /path/to/QGIS-pypopRF ~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/  
-  
-# Windows (PowerShell)  
-New-Item -ItemType SymbolicLink -Path "$env:APPDATA\QGIS\QGIS3\profiles\default\python\plugins\QGIS-pypopRF" -Target "path\to\QGIS-pypopRF"  
-```  
-  
-3. Reload QGIS plugins  
-  
-## Development Guidelines  
-  
-### Code Style  
-- Follow PEP 8 conventions  
-- Use type hints for better code clarity  
-- Write comprehensive docstrings  
-- Keep methods focused and maintainable  
-- Comment complex logic sections  
-- Use meaningful variable names  
-  
-### UI Development  
-- Use Qt Designer for UI modifications  
-- Maintain consistent tab-based organization  
-- Follow QGIS UI guidelines  
-- Consider user workflow and experience  
-- Ensure responsive interface  
-  
-### Error Handling  
-```python  
-try:  
- # Operation process_data()except Exception as e:  
- # Log error self.logger.error(f"Operation failed: {str(e)}") # Inform user self.show_error_message("Operation failed", str(e))finally:  
- # Cleanup self.cleanup_resources()  
-```  
-  
-### Logging Best Practices  
-```python  
-# Use appropriate log levels  
-self.logger.debug("Detailed technical information")  
-self.logger.info("General process information")  
-self.logger.warning("Warning about potential issues")  
-self.logger.error("Error that needs attention")  
-```  
-  
-## Threading and Performance  
-  
-### Thread Management  
-- Use QThread for heavy processing  
-- Emit progress signals  
-- Handle cancellation properly  
-- Manage memory usage  
-  
-```python  
-class ProcessWorker(QThread):  
- progress = pyqtSignal(int, str) finished = pyqtSignal(bool, str)     def run(self):  
- try: # Processing steps self.progress.emit(50, "Processing...")             # Check for cancellation  
- if not self._is_running: return         except Exception as e:  
- self.finished.emit(False, str(e))  
-```  
-  
-### Resource Management  
-- Implement block processing for large datasets  
-- Monitor memory usage  
-- Clean up temporary files  
-- Release resources properly  
-- Handle large input files efficiently  
-  
-## Contributing  
-  
-We welcome contributions from the community! Here's how you can help:  
-  
-### How to Contribute  
-1. Fork the repository  
-2. Create a feature branch  
-3. Make your changes  
-4. Write/update tests  
-5. Submit a pull request  
-  
-### What to Contribute  
-- Bug fixes  
-- New features  
-- Documentation improvements  
-- Performance enhancements  
-- UI/UX improvements  
-- Translations  
-  
-### Development Process  
-1. Check existing issues or create a new one  
-2. Discuss proposed changes  
-3. Implement changes  
-4. Submit pull request  
-5. Respond to review comments  
-  
-### Code Review Process  
-- All changes require review  
-- Follow the pull request template  
-- Include test cases  
-- Update documentation  
-- Maintain code quality  
-  
-## Getting Help  
-  
-- GitHub Issues: Report bugs and feature requests  
-- Discussions: Ask questions and share ideas  
-- Wiki: Additional documentation  
-- Email: Contact the development team  
-  
-## License  
-  
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.  
-  
----  
-  
-We appreciate your interest in contributing to the QGIS pypopRF plugin! Your contributions help make the tool better for everyone.
+The required QGIS files remain at the plugin root. Internal modules are not
+compatibility aliases: update their imports when developing against this layout.
+The public engine commands remain `python -m core.pypoprf` and
+`python -m core.pypoprf.tools`.
+
+| Boundary | Rule |
+| --- | --- |
+| `core` | Numerical/geospatial computation; no Qt, GUI, controllers or provisioning services. |
+| `gui` | Widgets, dialog composition, native layer presentation and desktop actions; no numerical imports. |
+| `controllers` | Owned tasks and view coordination; no numerical imports. |
+| `services` | Config files, runtime setup/process ownership and saved artifacts; no Qt or numerical imports. |
+| `shared` | Standard library only; no engine, services or GUI dependencies. |
+
+The main dialog composes project/input, result and preparation presenters rather
+than mixing all tab behavior into one class. Dialogs and reusable widgets live
+separately. Opening folders is a GUI desktop action, not a file-copy service.
+Runtime provisioning uses the shared environment contract; importing that
+contract does not start setup, mutate the parent environment or import numerical
+libraries. `services/owned_process.py` implements platform process ownership;
+`services/process_exit_guard.py` verifies actual Windows launch descendants.
+
+### GUI state and appearance contracts
+
+`ProjectInputsPresenter.selection_is_active()` distinguishes folder selection
+from successful activation. Central readiness refresh also calls
+`refresh_project_action()`: an active folder shows Project open (disabled), a
+different candidate requires explicit Create/Open, and a failed candidate is
+never labelled active. Duplicate direct activation calls do not reload settings
+or reinitialize logging. Worker completion must restore this state, not blindly
+enable the activation button. Keep location/configured-path/log checks before
+activating any new folder.
+
+`gui/widgets/light_theme.py` owns one full light palette, window-scoped QSS and
+parent-owned event guard. Never call application-global palette/style/font setters
+to implement plugin colors. Vector glyphs in `gui/icons/` must remain in the
+packaging allowlist; Run/Stop have explicit normal and disabled variants.
+`FittedLabel` bounds rendered footer lines without losing caller-bounded text;
+tests must check actual font/DPI geometry, not just source newline count.
+
+Maintain native state, import, lifecycle, hostile-host-theme and project-activation
+tests alongside changes. Public screenshots use real QGIS synthetic fixtures;
+private user paths/data and qualification reports stay in `.local/`.
+
+QProcess stdout carries newline-delimited JSON progress/result events; stderr
+carries diagnostics. A successful result requires normal exit, a matching
+complete result event, a complete manifest and present contained result paths.
+Progress alone never establishes successful completion. Native process/thread
+completion determines when a controller can release its owned resources.
+
+Before analysis or preparation starts, `services/engine_snapshot.py` freezes a
+bounded, verified copy of engine/shared code, provenance resources and dependency
+locks in the owned job cache. The child starts with `-I -B`, verifies the snapshot
+manifest, exact file inventory and installed dependency versions before importing
+the numerical engine, and uses an external job working directory. Replacing the
+installed plugin cannot change that child's imports or recorded source hashes.
+Analysis manifests distinguish `verified_snapshot` from direct CLI `live_source`
+execution and retain the frozen-manifest digest. No snapshot is shared between
+jobs or removed before the actual owned child exits.
+
+Setup creates a venv at its permanent unique location. It does not move a venv
+after creation. Installation accepts exact pinned requirements, uses binary
+wheels, checks package consistency and native imports, and activates through a
+small atomic pointer after health checks. A failed update preserves the previous
+environment. Readiness and discovery belong in background workers as they run
+subprocesses. Cancellation must reach those subprocess checks as well as setup.
+
+## Engine development environment
+
+Use an independent environment, not the QGIS interpreter:
+
+```powershell
+py -3.12 -m venv .venv-dev
+.\.venv-dev\Scripts\python -m pip install -r requirements-dev.txt
+.\.venv-dev\Scripts\python -m pytest -m "not qgis" -q
+.\.venv-dev\Scripts\python -m ruff check core gui controllers services shared qgis_pypoprf.py __init__.py scripts tests
+```
+
+On Linux use an installed `python3.12`, then `.venv-dev/bin/python` for the
+same commands. `requirements-dev.txt` includes the exact engine lock plus test
+and lint tools. Dependency upgrades are a separate change: validate clean
+installation and regression/artifact compatibility before replacing the lock.
+
+For native development, build the plugin ZIP and install it into a dedicated
+QGIS profile using its plugin manager. This avoids suggesting a hard-coded
+profile directory or a module directory name containing a hyphen.
+
+## Tests and acceptance
+
+The headless suite tests production code with temporary GeoTIFF/CSV fixtures,
+including keyed joins, NoData, alignment, singleton zones, population
+conservation, target inversion, CV isolation, model reload, cancellation,
+atomic failures and provenance. The bundled Rwanda test checks extraction and
+416-zone allocation; it skips explicitly if the case-study data are absent.
+
+Qt doubles exercise controller state and error paths; they do not validate
+native Qt ownership or widget binding compatibility. Run
+`tests/native/` in a genuine QGIS application/runtime with an
+available separate engine. Offscreen container acceptance is useful, but it
+does not replace an interactive operating-system smoke test. CI configuration
+in `.github/workflows/test.yml` declares the actual current test matrix.
+
+The Windows headless job also creates an empty temporary engine cache and invokes
+the real locked setup and health checks. Installing development dependencies or
+using a prepared engine is not evidence that a fresh Windows installation works.
+New environments use a shorter full-UUID basename; legacy verified names remain
+accepted without moving their virtual environments. Arbitrarily long custom cache
+paths remain subject to operating-system and wheel path limits.
+
+`scripts/run_native_tests.py` discovers all test modules in `tests/native/` by default;
+this includes the original adapter, preparation/layer/AOI workflow and quality
+widget tests plus isolated actual-installer replacement/recovery tests. Set
+`PYPOPRF_TEST_PLUGIN_ROOT` to the freshly extracted plugin and
+`PYPOPRF_TEST_PLUGIN_ZIP` to the same verified ZIP. On Windows,
+`PYPOPRF_TEST_ENGINE` must name a standalone prepared engine, not the portable
+QGIS host interpreter. The installer subprocess tests redirect home, cache,
+profile and Qt INI settings into a nonce-owned temporary directory before any
+settings write; they never use an existing desktop profile. They include a
+Windows-only copied-DLL, normal-process-exit migration fixture, not forced DLL
+unloading or manual deletion of a user installation.
+
+Windows launcher termination is not itself proof that the redirected
+Python child has exited: the adapter asynchronously checks held, birth-identified
+Windows process handles before releasing metadata or deleting owned scratch.
+Tracking failures remain explicit and do not falsely establish cleanup safety.
+
+Maintainer ZIP verification checks portable raw member names (including Windows
+aliases/device names), regular-file inventory and manifest/version consistency
+without extracting files. It rejects more than 10,000 members, a member larger
+than 25 MiB, more than 100 MiB expanded data, a manifest larger than 4 MiB, or an
+archive larger than 25 MB before content verification. These are resource and
+consistency checks, not publisher signatures or proof of authentic code.
+
+An access-denied candidate can be excluded only when a limited query proves its
+creation time lies outside every held parent's lifetime. Query-only handles are
+never retained or used to establish exit; Windows live-process exit-time fields
+are undefined. Fully inaccessible or possibly owned children remain fail-closed,
+with explicit tracking diagnostics rather than premature resource cleanup.
+
+The extra tools protocol is
+`python -m core.pypoprf.tools --request absolute-request.json --cancel-file marker`.
+Schema1 requests choose `inspect`, `prepare` or `population_summary`; both progress
+and final events carry an ownership nonce. Complete output requires an owned new
+directory, fixed `report.json`, matching request ID and (for preparation) validated
+`config.yaml`. GUI preparation additionally carries the inspected `expected_inputs`
+fingerprint list. AOI summaries can bind a population map to its recorded artifact
+SHA, and explain partial coverage separately. No tool imports QGIS into the engine
+or numerical libraries into the QGIS host.
+
+The research command compares predeclared candidates on identical spatial
+outer folds and saves the predictions, source hashes and split provenance:
+
+```powershell
+python -m scripts.benchmark_models --output .local/benchmarks/new_comparison --trees 100 --spatial-grid 4 4
+```
+
+It requires a fresh output directory and does not change the production model.
+Experiment results and qualification evidence belong under ignored `.local/`,
+not in Git or the runtime ZIP. Do not turn an improvement on one block partition
+into a pixel-accuracy guarantee. Old generated resources and historical
+screenshots are archived locally; the live interface uses filesystem icons and
+the maintained Designer form, not a PyQt5-only generated resources module.
+
+`tests/packaging/test_architecture.py` checks import boundaries, canonical and
+plugin-alias loading, and an extracted ZIP without repository paths. Tests,
+maintained documentation, dependency locks, scripts and CI are project sources;
+private audits/reviews, run outputs, caches, environments and experiments are not.
+Commit a coherent tested stage with explicit paths; never force-add `.local/` or
+`dist/`, and do not push without the owner's request.
+
+## Numerical and lifecycle invariants
+
+- Inputs are never rewritten by validation or replaced by output publication.
+- Census joins are by unique ID; density support comes from eligible mastergrid pixels.
+- Missing predictors remain distinct from numeric zero; errors propagate from every tile.
+- A positive population without positive eligible prediction support fails explicitly.
+- Every published population raster is read back and checked per zone.
+- Every outer validation fit recomputes preprocessing and selection from training data only.
+- Spatial grouping metadata states CRS, scale, centroid method and lack of buffers.
+- Failed/cancelled attempts cannot become complete maps or remove earlier runs.
+- Temporary files and process/thread resources belong to one run and are cleaned only after use ends.
+
+Model bundles include feature order, target transform, version and training-grid
+contracts. Treat joblib as trusted executable serialization; mismatched old
+model/scaler pairs require retraining. Effective settings must be recorded using
+`Settings.to_config()` rather than copying only explicit YAML fields.
+
+## Packaging and contribution
+
+```powershell
+python scripts/build_plugin.py --output dist/pypopRF.zip
+```
+
+The builder uses an explicit runtime allowlist, deterministic ZIP metadata and
+a hashed package manifest. User data, tests, benchmark outputs and local engine
+environments do not belong in the distributable. `python -m scripts.plugin_upload` is an
+explicit maintainer publishing command; normal builds and activation do not
+upload anything.
+
+### Release checklist
+
+1. Finish regression/native-QGIS checks and owner acceptance before formatting
+   a release. Keep private qualification evidence under ignored `.local/`.
+2. Update the canonical version in `metadata.txt` (also read by the engine).
+   For a stable release set
+   `experimental=False` and put the matching version/date first in `CHANGELOG.md`.
+   Retain repository and file-specific license/authorship notices.
+3. Run `python scripts/check_release.py`, headless tests, Ruff and native tests
+   against the exact newly built ZIP. Build twice and compare SHA-256 hashes;
+   preserve the previously accepted archive before replacing local artifacts.
+4. Build the documentation with `mkdocs build --strict` and check local links and
+   packaged assets. Commit only maintained project sources, tests, guides and CI.
+5. With owner approval, push the commit and require GitHub Actions to pass for
+   that commit. Local checks do not establish remote CI success. Pushing `master`
+   also triggers the existing documentation deployment workflow.
+6. Prepare a `v<version>` tag pointing at the accepted commit. Tag pushes run the
+   test workflow and verify tag/metadata identity. Publishing to GitHub or QGIS
+   remains a separate, explicitly authorized maintainer action.
+
+For example, `python scripts/build_plugin.py --output dist/pypopRF-0.3.8.zip`
+builds this version without tagging, uploading or deploying it. The CI test
+workflow has read-only repository permissions; it does not publish packages.
+
+### Catalog submission checks
+
+```powershell
+python -m pip install --require-hashes -r requirements-security.txt
+python scripts/check_catalog.py dist/pypopRF-0.3.8.zip --report .local/reports/catalog.json
+```
+
+This runs all default Bandit rules and a fresh, offline detect-secrets scan on
+the extracted verified ZIP. It never accepts scanner errors or empty output as
+success. Only exact known checksum fingerprints in the generated baseline are
+acknowledged; detectors remain enabled and a new finding fails the gate. The
+catalog's own scan and manual approval remain separate external checks.
+
+The packaged `.secrets.baseline` is generated from verified file hashes and
+wheel hashes present in `requirements-engine.lock`, not arbitrary scan findings.
+It explicitly keeps all 27 detect-secrets 1.5 default detectors and the standard
+filters, with no added regex/file exclusions. To avoid circular hashing, the baseline
+is a control file outside the integrity manifest; `verify_package()` checks its
+exact derived bytes separately. Never add whole-rule or whole-file suppressions
+to make a submission pass. Subprocess exceptions explain the reviewed argv-only
+Python invocation and the owned-process Windows termination call at their lines.
+
+CI also runs the official QGIS Qt6 migration checker in a digest-pinned image,
+on the built ZIP with a read-only source mount. It supplements, not replaces,
+the actual Qt5/Qt6 native application tests.
+
+When submitting a change, include the concrete before/after behaviour, meaningful
+validation and material limits. Preserve unrelated user changes and historical
+data. Keep source attribution, `CITATION.cff`, the repository
+[LICENSE](https://github.com/wpgp/QGIS-pypopRF/blob/master/LICENSE) and individual
+file notices intact. Report reproducible issues through
+[GitHub Issues](https://github.com/wpgp/QGIS-pypopRF/issues).

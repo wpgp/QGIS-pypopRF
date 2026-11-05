@@ -4,6 +4,7 @@ import os
 from typing import Generator
 from contextlib import contextmanager
 import logging
+from joblib import parallel_config
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ def joblib_resources(
         str: Path to temporary directory
     """
     temp_folder = None
-    old_temp = os.environ.get("JOBLIB_TEMP_FOLDER")
 
     try:
         if qgis_mode and base_dir:
@@ -38,16 +38,12 @@ def joblib_resources(
             temp_folder = tempfile.mkdtemp(prefix="pypoprf_joblib_")
             logger.debug(f"Created standard temp directory: {temp_folder}")
 
-        os.environ["JOBLIB_TEMP_FOLDER"] = temp_folder
-        yield temp_folder
+        # Joblib configuration is thread-local. Two runs must not race over
+        # process-wide JOBLIB_TEMP_FOLDER or remove each other's resources.
+        with parallel_config(temp_folder=temp_folder):
+            yield temp_folder
 
     finally:
-        # Restore the original JOBLIB_TEMP_FOLDER
-        if old_temp is not None:
-            os.environ["JOBLIB_TEMP_FOLDER"] = old_temp
-        else:
-            os.environ.pop("JOBLIB_TEMP_FOLDER", None)
-
         # Cleanup the temporary directory
         try:
             if temp_folder and os.path.exists(temp_folder):

@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "python": "CPython 3.12 64-bit",
+  "qualified_platforms": [
+    "Windows AMD64",
+    "Linux glibc x86_64"
+  ],
+  "retrieved_utc": "2026-10-12",
+  "releases": [
+    {
+      "pin": "numpy==2.5.4",
+      "wheels": [
+        {
+          "sha256": "fbde6962867ee75b48b0ee29b2b9372ec5d617799dbaf38e82dc0596f2f7738a",
+          "filename": "numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/43/a3/c799c62e19c337e6d3770b08e475887fb30ce8477d3c09efca6b2f0228a6/numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "a7b1b6353e36a7e50de2973a38d705c88ee93adcf120673cee7f45a4a3fa223a",
+          "filename": "numpy-2.5.4-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/12/33/fefe62073dc8acfd0f2b9ed7c003af2f50aa61555e113e6db02b8f79f145/numpy-2.5.4-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/numpy/2.5.4/json"
+    },
+    {
+      "pin": "rasterio==1.5.2",
+      "wheels": [
+        {
+          "sha256": "8d0f9c1ba8975fe2980bbef313310982eeea0558f8c8f4989aed5fc6fbeac5c0",
+          "filename": "rasterio-1.5.2-cp312-cp312-manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/06/c5/860f1c58249b5229722bcde42b4c9c88766450107977f57d283579a7934b/rasterio-1.5.2-cp312-cp312-manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "508d8ca45893fea9785128b6206e0347300d015a7dc453822f9d25a376aa3754",
+          "filename": "rasterio-1.5.2-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/d4/b7/91643e597cd59c7c74fa6ae1b5f48a6baf04a8b457434e80059fca8c392d/rasterio-1.5.2-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/rasterio/1.5.2/json"
+    },
+    {
+      "pin": "geopandas==1.2.0",
+      "wheels": [
+        {
+          "sha256": "948fd57df4f713697d5cce149333c0e4714965320c9f5ffa411666c577962eba",
+          "filename": "geopandas-1.2.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/c7/26/10e1061c79b388621b7bae46fcd4942a8c62f960018adf4c38719e9e91ac/geopandas-1.2.0-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/geopandas/1.2.0/json"
+    },
+    {
+      "pin": "scikit-learn==1.9.1",
+      "wheels": [
+        {
+          "sha256": "e5d7b18a5b9dca241a74695f3275fa4c895a9dadc72b3d8df5fa9d1083c9b83e",
+          "filename": "scikit_learn-1.9.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/8e/57/a50162f3d29feb979ab6347c6debda506dfb525bcff3c50dd17606651c7e/scikit_learn-1.9.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "4b59abb30618121cc46b45972d6bf53a7128b4df4cd346c6ca6f4d5f9031e49c",
+          "filename": "scikit_learn-1.9.1-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/72/8d/27c054166bac671770d1ea0ef7716134fe8119c0df224a58c89fd735a61c/scikit_learn-1.9.1-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/scikit-learn/1.9.1/json"
+    },
+    {
+      "pin": "pandas==3.0.6",
+      "wheels": [
+        {
+          "sha256": "0704044b676496b8350e023b09f174a26772456c974a2b11c36bebb558c9490d",
+          "filename": "pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/cb/67/0c0f18e38d7f2d2af8c24b3315bc4046e73bbdd4a5540405506671ad0c0d/pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "3ef908d28590b3f42d7070e7ad8f9b34b442b260b7f3c1afb57e0040c58cdb1b",
+          "filename": "pandas-3.0.6-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/bd/2a/14b3b17cd75cef4a1ee1af4234eb41cc1afe4103b98c2d80e8916abfd42b/pandas-3.0.6-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/pandas/3.0.6/json"
+    },
+    {
+      "pin": "joblib==1.6.0",
+      "wheels": [
+        {
+          "sha256": "3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba",
+          "filename": "joblib-1.6.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/18/53/84099323c2ec4be98d935f63c033ac4151ee83836ca1050ede3b3aadf155/joblib-1.6.0-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/joblib/1.6.0/json"
+    },
+    {
+      "pin": "PyYAML==6.0.3",
+      "wheels": [
+        {
+          "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
+          "filename": "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/8b/9d/b3589d3877982d4f2329302ef98a8026e7f4443c765c46cfecc8858c6b4b/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "5fcd34e47f6e0b794d17de1b4ff496c00986e1c83f7ab2fb8fcfe9616ff7477b",
+          "filename": "pyyaml-6.0.3-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/86/bf/899e81e4cce32febab4fb42bb97dcdf66bc135272882d1987881a4b519e9/pyyaml-6.0.3-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/PyYAML/6.0.3/json"
+    },
+    {
+      "pin": "affine==3.0.1",
+      "wheels": [
+        {
+          "sha256": "cda3b303325e7bf2bf34817e68753a0d1c4cacbdd451fe67c4878dc2ecbaa540",
+          "filename": "affine-3.0.1-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/3d/87/e62f55c956b583380e7d2a71705dfd431ee32dd1689d50491ba0c610fc11/affine-3.0.1-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/affine/3.0.1/json"
+    },
+    {
+      "pin": "attrs==26.1.0",
+      "wheels": [
+        {
+          "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+          "filename": "attrs-26.1.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/attrs/26.1.0/json"
+    },
+    {
+      "pin": "certifi==2026.7.22",
+      "wheels": [
+        {
+          "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "filename": "certifi-2026.7.22-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/certifi/2026.7.22/json"
+    },
+    {
+      "pin": "click==8.5.0",
+      "wheels": [
+        {
+          "sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+          "filename": "click-8.5.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/click/8.5.0/json"
+    },
+    {
+      "pin": "cloudpickle==3.1.2",
+      "wheels": [
+        {
+          "sha256": "9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a",
+          "filename": "cloudpickle-3.1.2-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/88/39/799be3f2f0f38cc727ee3b4f1445fe6d5e4133064ec2e4115069418a5bb6/cloudpickle-3.1.2-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/cloudpickle/3.1.2/json"
+    },
+    {
+      "pin": "narwhals==2.27.1",
+      "wheels": [
+        {
+          "sha256": "d057df13f5852b8e157596e82eb5e955fad267425df5e420e0ee9863da483b31",
+          "filename": "narwhals-2.27.1-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/d1/89/5d4c86da1130d9059681e5b6cd7645df5c10279a6a079c5c37dcb2cc6f3f/narwhals-2.27.1-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/narwhals/2.27.1/json"
+    },
+    {
+      "pin": "packaging==26.3",
+      "wheels": [
+        {
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "filename": "packaging-26.3-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/packaging/26.3/json"
+    },
+    {
+      "pin": "pyogrio==0.13.0",
+      "wheels": [
+        {
+          "sha256": "9e84e7b09b073ee4cc8c35663afcf644b0c17db75ac72c7591dc3864252db461",
+          "filename": "pyogrio-0.13.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/55/30/3e38d8532a33adf15c6465dcd8c1bb2a146dce0da3fd8ba0aa9ec9ba74e4/pyogrio-0.13.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+        },
+        {
+          "sha256": "220a988ce2a26591d6db5c775b07289d4f54cabdf274cc048f0e17a0b9d5be14",
+          "filename": "pyogrio-0.13.0-cp311-abi3-manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/20/c2/247c150f5ca12f8593c20e39115db551b18de5c6cb383006de21b57399e4/pyogrio-0.13.0-cp311-abi3-manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "1b91f6d6e6757a6ea84b9459d24f479dcb52bbf4ebcdb16baf39e49d2836a1cf",
+          "filename": "pyogrio-0.13.0-cp311-abi3-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/d2/ba/3757e312a98c428ac5d8b787f3608ae325174ebef6897930a42e21dd057a/pyogrio-0.13.0-cp311-abi3-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/pyogrio/0.13.0/json"
+    },
+    {
+      "pin": "pyparsing==3.3.3",
+      "wheels": [
+        {
+          "sha256": "ece8c00a69cf01b45d0b1dedabb469c90d8caf996d4fda40f147627a122849a4",
+          "filename": "pyparsing-3.3.3-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/38/bb/d215ee7c73b61497b28a5503f9f53523f294fcc936762b7caf90e0c1c2b5/pyparsing-3.3.3-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/pyparsing/3.3.3/json"
+    },
+    {
+      "pin": "pyproj==3.8.0",
+      "wheels": [
+        {
+          "sha256": "6b34cec6bdd66b721980c003cc2a0fce0cab7949444ad037fc2a7ecb6f3b996c",
+          "filename": "pyproj-3.8.0-cp312-cp312-manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/5f/ed/035354de8fbc1c1350f5b7f66361995f187d89675622eb63016bf7261dd5/pyproj-3.8.0-cp312-cp312-manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "0556ce011e1530aea2084a12e39dc9c6ccd25a16c1db5457f39bf83161e7c301",
+          "filename": "pyproj-3.8.0-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/b7/d7/2c861a429581577a441e03020d27274812d7969748f5951d972f6e34597f/pyproj-3.8.0-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/pyproj/3.8.0/json"
+    },
+    {
+      "pin": "python-dateutil==2.9.0.post0",
+      "wheels": [
+        {
+          "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+          "filename": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/python-dateutil/2.9.0.post0/json"
+    },
+    {
+      "pin": "scipy==1.18.1",
+      "wheels": [
+        {
+          "sha256": "f55fa87b6c612ecd6b058f167c53231b1d14e412efe361d3d6e38b3631c73218",
+          "filename": "scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/df/64/ff35eb9e54894cf471ff4716abd3c81eb0a0626869217ce3e6ba4ccf17d7/scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "5e4d44984abc0020154ea81b247adeddcc3ac5527b975ff798bd1ba0adc513c2",
+          "filename": "scipy-1.18.1-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/39/e7/979fd14e75008623df31ba70d6bb144700f68feadcea042021c06a05bf82/scipy-1.18.1-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/scipy/1.18.1/json"
+    },
+    {
+      "pin": "shapely==2.2.0",
+      "wheels": [
+        {
+          "sha256": "650a5f4d8a8e3c96982079d8c99b6ddbe6602bbd1e34c75c2b95dbc0d28ac997",
+          "filename": "shapely-2.2.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/ad/87/6842e4c996914a47b6bfd3ef14a543e67e993f86a9ea5679c34efc9314ab/shapely-2.2.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl"
+        },
+        {
+          "sha256": "90895df6542ae039fc6557dec6194e3509e883fbd6f5788e3c3e7a38fe46b257",
+          "filename": "shapely-2.2.0-cp312-cp312-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/f6/26/ba9192f0a72c830aa8cc1c61e207ada57cc54b7de81668b1836f575ee717/shapely-2.2.0-cp312-cp312-win_amd64.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/shapely/2.2.0/json"
+    },
+    {
+      "pin": "six==1.17.0",
+      "wheels": [
+        {
+          "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+          "filename": "six-1.17.0-py2.py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/six/1.17.0/json"
+    },
+    {
+      "pin": "threadpoolctl==3.7.0",
+      "wheels": [
+        {
+          "sha256": "cd8b60b5641b45c67bbf73c64c843235fc2d8a480c87389f52f5dbee893b86be",
+          "filename": "threadpoolctl-3.7.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/43/3f/f88a53f60a472b46f4023f56d204dd7de33d34c5d2acbfa0d70a674e639e/threadpoolctl-3.7.0-py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/threadpoolctl/3.7.0/json"
+    },
+    {
+      "pin": "tzdata==2026.5",
+      "wheels": [
+        {
+          "sha256": "b683bd1b6659ddcd810ff02ad09ba821d4bf1065072805063eb35c49617905ac",
+          "filename": "tzdata-2026.5-py2.py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/94/21/1e5995a1c920cce14e4bffae20c665ec10e7ed03ab25e006cd741092b718/tzdata-2026.5-py2.py3-none-any.whl"
+        }
+      ],
+      "source": "https://pypi.org/pypi/tzdata/2026.5/json"
+    }
+  ]
+}

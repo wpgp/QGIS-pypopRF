@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: 'QGIS pypopRF Plugin: A tool for the construction of gridded population distribution maps'
+type: software
+authors:
+- given-names: Tom
+  family-names: McKeen
+  orcid: https://orcid.org/0000-0003-4499-7319
+- given-names: Rhorom
+  family-names: Priyatikanto
+  orcid: https://orcid.org/0000-0003-1203-2651
+- given-names: Borys
+  family-names: Nosatiuk
+- given-names: Wenbin
+  family-names: Zhang
+  orcid: https://orcid.org/0000-0002-9295-1019
+- given-names: Elena
+  family-names: Vataga
+- given-names: Natalia
+  family-names: Tejedor-Garavito
+  orcid: https://orcid.org/0000-0002-1140-6263
+- given-names: Andrew J.
+  family-names: Tatem
+  orcid: https://orcid.org/0000-0002-7270-941X
+- given-names: Maksym
+  family-names: Bondarenko
+  orcid: https://orcid.org/0000-0003-4958-6551
+repository-code: https://github.com/wpgp/QGIS-pypopRF
+license: MIT

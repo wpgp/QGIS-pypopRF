@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/pypopRF" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
